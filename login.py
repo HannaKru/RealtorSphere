@@ -1,21 +1,20 @@
-# login.py
-from firebase_config import db
+from firebase_config import initialize_firebase
+
+db = initialize_firebase()
 
 def login_user(email, password):
     try:
-        # Fetch all persons
-        persons_ref = db.collection('Person')
-        docs = persons_ref.stream()
-
-        for doc in docs:
-            person = doc.to_dict()
-            if person.get('email') == email and 'Realtor' in person.get('Type', {}):
-                realtor_info = person['Type']['Realtor']
-                if realtor_info['password'] == password:
-                    return person
-        return None
+        from firebase_admin import auth
+        user = auth.get_user_by_email(email)
+        # Additional verification if needed
+        return user
     except Exception as e:
         print(f"Error logging in: {e}")
         return None
 
-#topush
+# Example usage
+user = login_user("test@example.com", "password123")
+if user:
+    print(f"User logged in: {user.uid}")
+else:
+    print("Login failed")

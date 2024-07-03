@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         body {
-            background-image: url('/pics/RealtorSphere.jpg');
+            background-image: url('/static/pics/RealtorSphere.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -28,8 +28,7 @@
 
             const result = await response.json();
             if (response.status === 200) {
-                alert('Login successful!');
-                // Redirect or update the UI
+                window.location.href = '/homescreen';  // Redirect to home screen
             } else {
                 alert('Login failed!');
             }
