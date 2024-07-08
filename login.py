@@ -1,13 +1,16 @@
-from firebase_config import db
-#hi
+from firebase_config import initialize_firebase
+
+db = initialize_firebase()
+
 def login_user(email, password):
     try:
-        users = db.child("Person").get().val()
-
-        for user_id, user_info in users.items():
-            if user_info.get('email') == email:
-                if 'Realtor' in user_info.get('Type', {}) and user_info['Type']['Realtor'].get('password') == password:
-                    return user_info
+        users_ref = db.collection('Person')
+        query = users_ref.where('email', '==', email).stream()
+        for user in query:
+            user_data = user.to_dict()
+            # Check if the user is a Realtor and if the password matches
+            if 'Realtor' in user_data.get('Type', {}) and user_data['Type']['Realtor']['password'] == password:
+                return user_data
         return None
     except Exception as e:
         print(f"Error logging in: {e}")
