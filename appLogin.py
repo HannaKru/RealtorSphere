@@ -1,9 +1,8 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for
 from login import login_user  # Ensure this is the correct import based on your file structure
 from firebase_config import initialize_firebase
-from firebase_config import db  # Import db directly
 
-app = Flask(__name__)
+app = Flask(_name_)
 #db = initialize_firebase()
 
 
@@ -30,5 +29,5 @@ def homescreen():
     return render_template('homescreen.html')
 
 
-if __name__ == '__main__':
+if _name_ == '_main_':
     app.run(debug=True)

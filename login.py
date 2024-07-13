@@ -1,13 +1,13 @@
-from firebase_config import db  # Import db directly
+from firebase_config import initialize_firebase
+
+db = initialize_firebase()
 
 def login_user(email, password):
     try:
-        query = db.query(kind='Person')
-        query.add_filter('email', '=', email)
-        results = list(query.fetch())
-
-        for user in results:
-            user_data = user
+        users_ref = db.collection('Person')
+        query = users_ref.where('email', '==', email).stream()
+        for user in query:
+            user_data = user.to_dict()
             # Check if the user is a Realtor and if the password matches
             if 'Realtor' in user_data.get('Type', {}) and user_data['Type']['Realtor']['password'] == password:
                 return user_data
