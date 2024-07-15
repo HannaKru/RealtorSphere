@@ -3,8 +3,8 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # Application Default credentials are automatically created.
-app = firebase_admin.initialize_app()
-db = firestore.client()
+#app = firebase_admin.initialize_app()
+#db = firestore.client()
 
 def initialize_firebase():
     # Path to your Firebase service account key JSON file
