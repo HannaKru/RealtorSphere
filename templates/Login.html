@@ -8,43 +8,55 @@
     <style>
         body {
             background-image: url('/static/pics/RealtorSphere.jpg');
+            background-image: url('/static/pics/RealtorSphere.jpg');
             background-size: cover;
             background-position: center;
         }
+        .highlight {
+            background-color: rgba(255, 255, 255, 0.75);
+        }
+    </style>
     </style>
     <script>
-        async function login(event) {
-            event.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+    async function login(event) {
+        event.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-            const response = await fetch('/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            });
+        const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email, password })
+        });
 
-            const result = await response.json();
-            if (response.status === 200) {
-                window.location.href = '/homescreen';  // Redirect to home screen
-            } else {
-                alert('Login failed!');
-            }
+        const result = await response.json();
+        if (response.status === 200) {
+            window.location.href = '/homescreen';  // Redirect to home screen
+        } else {
+            alert(result.message);  // Display the error message
         }
-    </script>
+    }
+</script>
 </head>
 <body class="flex items-center justify-center min-h-screen text-blue-950">
 
-<div class="absolute bottom-2 left-50 m-4 p-5 bg-white bg-opacity-80 rounded-lg shadow-lg">
-    <h1 class="text-4xl font-bold mb-4">אימייל</h1>
-    <input type="email" id="email" class="input-field px-4 py-2 mb-4 text-3xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס כתובת אימייל">
-    <h1 class="text-4xl font-bold mb-4">סיסמה</h1>
-    <input type="password" id="password" class="input-field px-4 py-2 mb-4 text-3xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס סיסמה">
-    <button onclick="login(event)" class="block px-8 py-4 mt-6 text-4xl text-white backdrop-blur-none border-blue-900 bg-blue-900 w-[275px] rounded-3xl shadow-lg">התחבר</button>
-    <a href="#" class="block mt-4 text-xl text-sky-900">שכחתי סיסמה</a>
-    <a href="#" class="block mt-2 text-xl text-sky-900">אין משתמש? הירשם עכשיו</a>
+<div class="relative w-full max-w-md mt-32">
+     <div dir="rtl">
+            <h1 class="text-2xl font-bold mb-4 text-center">אימייל</h1>
+            <input type="email" id="email" class="input-field w-full px-4 py-2 mb-4 text-xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס כתובת אימייל">
+        </div>
+        <div dir="rtl">
+            <h1 class="text-2xl font-bold mb-4 text-center">סיסמה</h1>
+            <input type="password" id="password" class="input-field w-full px-4 py-2 mb-4 text-xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס סיסמה">
+        </div>
+    <div dir="rtl">
+    <button onclick="login(event)" class="block w-full px-8 py-4 mt-6 text-xl text-white border-blue-900 bg-blue-900 rounded-3xl shadow-lg">התחבר</button>
+</div>
+
+    <a href="#" class="block mt-4 text-center text-lg text-sky-900 highlight px-2 rounded-md">שכחתי סיסמה</a>
+    <a href="#" class="block mt-2 text-center text-lg text-sky-900 highlight px-2 rounded-md">אין משתמש? הירשם עכשיו</a>
 </div>
 
 </body>
