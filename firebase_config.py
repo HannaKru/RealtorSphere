@@ -1,17 +1,11 @@
 # firebase_config.py
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, db
 
-# Application Default credentials are automatically created.
-#app = firebase_admin.initialize_app()
-#db = firestore.client()
+cred = credentials.Certificate("static/realtorspheredb-firebase-adminsdk-k43ko-0110db9863.json")
+default_app = firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://realtorspheredb-default-rtdb.firebaseio.com/'  # Replace with your database URL
+})
 
 def initialize_firebase():
-    # Path to your Firebase service account key JSON file
-    cred = credentials.Certificate("static/realtorsphere-34d53-firebase-adminsdk-psu5p-c71cbe2996.json")
-    firebase_admin.initialize_app(cred)
-
-    db = firestore.client()
-    return db
-
-#db = initialize_firebase()
+    return db.reference()
