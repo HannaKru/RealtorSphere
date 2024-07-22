@@ -7,31 +7,78 @@
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
         body {
-            background-image: url('static/pics/RealtorSphereRegistration.jpg');
+            background-image: url('/static/pics/RealtorSphereRegistration.jpg');
             background-size: cover;
             background-position: center;
+            background-repeat: no-repeat;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+        }
+        .input-field {
+            width: 100%;
+            direction: rtl;
+            text-align: right;
+        }
+        .form-container {
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 2rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            margin-left: 10rem;
+        }
+        .rtl {
+            direction: rtl;
+            text-align: right;
         }
     </style>
+</head>
+<body>
 
-  </head>
-<body class="flex items-center justify-center min-h-screen text-blue-950">
+<div class="form-container rtl">
+    <h1 class="text-3xl font-bold mb-4 text-center">רישום משתמש חדש</h1>
 
-<div class="absolute bottom-2 left-50 m-4 p-5 bg-white bg-opacity-80 rounded-lg shadow-lg">
-    <h1 class="text-4xl font-bold mb-4">שם פרטי</h1>
-    <input type="userName" id="userName" class="input-field px-4 py-2 mb-4 text-3xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס שם פרטי">
-    <h1 class="text-4xl font-bold mb-4">שם משפחה</h1>
-    <input type="lastName" id="lastName" class="input-field px-4 py-2 mb-4 text-3xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס שם משפחה">
-    <h1 class="text-4xl font-bold mb-4">טלפון</h1>
-    <input type="phone" id="phone" class="input-field px-4 py-2 mb-4 text-3xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס מספר טלפון">
-    <h1 class="text-4xl font-bold mb-4">אימייל</h1>
-    <input type="email" id="email" class="input-field px-4 py-2 mb-4 text-3xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס כתובת אימייל">
-    <h1 class="text-4xl font-bold mb-4">סיסמה</h1>
-    <input type="password" id="password" class="input-field px-4 py-2 mb-4 text-3xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס סיסמה">
-    <h1 class="text-4xl font-bold mb-4">וידוי סיסמה</h1>
-    <input type="password" id="passwordRepeat" class="input-field px-4 py-2 mb-4 text-3xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס סיסמה פעם נוספת">
-    <h1 class="text-4xl font-bold mb-4">מספר רישון</h1>
-    <input type="lincese" id="lincese" class="input-field px-4 py-2 mb-4 text-3xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס מספר רישיון">
-    <button  class="block px-8 py-4 mt-6 text-4xl text-white backdrop-blur-none border-blue-900 bg-blue-900 w-[275px] rounded-3xl shadow-lg">הירשם</button>
+    <div class="mb-4">
+        <label for="userName" class="block text-xl font-semibold mb-2">שם פרטי</label>
+        <input type="text" id="userName" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס שם פרטי">
+    </div>
+
+    <div class="mb-4">
+        <label for="lastName" class="block text-xl font-semibold mb-2">שם משפחה</label>
+        <input type="text" id="lastName" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס שם משפחה">
+    </div>
+
+    <div class="mb-4">
+        <label for="phone" class="block text-xl font-semibold mb-2">טלפון</label>
+        <input type="tel" id="phone" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס מספר טלפון">
+    </div>
+
+    <div class="mb-4">
+        <label for="email" class="block text-xl font-semibold mb-2">אימייל</label>
+        <input type="email" id="email" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס כתובת אימייל">
+    </div>
+
+    <div class="mb-4">
+        <label for="password" class="block text-xl font-semibold mb-2">סיסמה</label>
+        <input type="password" id="password" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס סיסמה">
+    </div>
+
+    <div class="mb-4">
+        <label for="passwordRepeat" class="block text-xl font-semibold mb-2">וידוי סיסמה</label>
+        <input type="password" id="passwordRepeat" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס סיסמה פעם נוספת">
+    </div>
+
+    <div class="mb-4">
+        <label for="license" class="block text-xl font-semibold mb-2">מספר רישיון</label>
+        <input type="text" id="license" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס מספר רישיון">
+    </div>
+
+    <button class="block w-full px-8 py-4 mt-6 text-xl text-white bg-blue-900 border-blue-900 rounded-3xl shadow-lg">הירשם</button>
 </div>
 
 </body>
