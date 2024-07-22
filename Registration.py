@@ -1,31 +1,18 @@
-# appLogin.py
-from flask import Flask, request, jsonify, render_template
-from login import login_user
 from flask import Flask, request, redirect, url_for, render_template_string, flash
 import firebase_admin
 from firebase_admin import credentials, db
 
+app = Flask(__name__)
+app.config['SECRET_KEY'] = 'your_secret_key'
+
+# Initialize Firebase
+cred = credentials.Certificate("static/realtorspheredb-firebase-adminsdk-k43ko-0110db9863.json")
+firebase_admin.initialize_app(cred, {
+    'databaseURL': 'https://realtorspheredb-default-rtdb.firebaseio.com/'  # Replace with your database URL
+})
+
 def get_firebase_db():
     return db.reference()
-
-app = Flask(__name__)
-
-@app.route('/')
-def index():
-    return render_template('login.html')
-
-@app.route('/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    email = data.get('email')
-    password = data.get('password')
-    status_code, message = login_user(email, password)
-
-    return jsonify({"message": message}), status_code
-
-@app.route('/homescreen')
-def homescreen():
-    return render_template('homescreen.html')
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -49,7 +36,6 @@ def register():
         else:
             flash('שם מלא צריך לכלול שם פרטי ושם משפחה', 'error')
             return redirect(url_for('register'))
-
 
         # Prepare data for Firebase
         user_data = {
