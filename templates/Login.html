@@ -8,7 +8,6 @@
     <style>
         body {
             background-image: url('/static/pics/RealtorSphere.jpg');
-            background-image: url('/static/pics/RealtorSphere.jpg');
             background-size: cover;
             background-position: center;
         }
@@ -16,29 +15,28 @@
             background-color: rgba(255, 255, 255, 0.75);
         }
     </style>
-    </style>
     <script>
-    async function login(event) {
-        event.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+        async function login(event) {
+            event.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
 
-        const response = await fetch('/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ email, password })
-        });
+            const response = await fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
 
-        const result = await response.json();
-        if (response.status === 200) {
-            window.location.href = '/homescreen';  // Redirect to home screen
-        } else {
-            alert(result.message);  // Display the error message
+            const result = await response.json();
+            if (response.status === 200) {
+                window.location.href = '/homescreen';  // Redirect to home screen
+            } else {
+                alert(result.message);  // Display the error message
+            }
         }
-    }
-</script>
+    </script>
 </head>
 <body class="flex items-center justify-center min-h-screen text-blue-950">
 
@@ -55,8 +53,8 @@
     <button onclick="login(event)" class="block w-full px-8 py-4 mt-6 text-xl text-white border-blue-900 bg-blue-900 rounded-3xl shadow-lg">התחבר</button>
 </div>
 
-    <a href="#" class="block mt-4 text-center text-lg text-sky-900 highlight px-2 rounded-md">שכחתי סיסמה</a>
-    <a href="#" class="block mt-2 text-center text-lg text-sky-900 highlight px-2 rounded-md">אין משתמש? הירשם עכשיו</a>
+    <a href="/register" class="block mt-4 text-center text-lg text-sky-900 highlight px-2 rounded-md">שכחתי סיסמה</a>
+    <a href="/register" class="block mt-2 text-center text-lg text-sky-900 highlight px-2 rounded-md">אין משתמש? הירשם עכשיו</a>
 </div>
 
 </body>
