@@ -10,6 +10,7 @@
             background-image: url('/static/pics/RealtorSphere.jpg');
             background-size: cover;
             background-position: center;
+            background-attachment: fixed;
         }
         .highlight {
             background-color: rgba(255, 255, 255, 0.75);
@@ -40,19 +41,19 @@
 </head>
 <body class="flex items-center justify-center min-h-screen text-blue-950">
 
-<div class="relative w-full max-w-md mt-32">
-     <div dir="rtl">
-            <h1 class="text-2xl font-bold mb-4 text-center">אימייל</h1>
-            <input type="email" id="email" class="input-field w-full px-4 py-2 mb-4 text-xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס כתובת אימייל">
-        </div>
-        <div dir="rtl">
-            <h1 class="text-2xl font-bold mb-4 text-center">סיסמה</h1>
-            <input type="password" id="password" class="input-field w-full px-4 py-2 mb-4 text-xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס סיסמה">
-        </div>
-    <div dir="rtl">
-    <button onclick="login(event)" class="block w-full px-8 py-4 mt-6 text-xl text-white border-blue-900 bg-blue-900 rounded-3xl shadow-lg">התחבר</button>
-</div>
 
+<div class="relative w-full max-w-md p-4 md:p-8 lg:p-12 mt-32 bg-white bg-opacity-75 rounded-lg shadow-lg">
+    <div dir="rtl" class="mb-4">
+        <h1 class="text-2xl font-bold mb-4 text-center">אימייל</h1>
+        <input type="email" id="email" class="w-full px-4 py-2 mb-4 text-xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס כתובת אימייל">
+    </div>
+    <div dir="rtl" class="mb-4">
+        <h1 class="text-2xl font-bold mb-4 text-center">סיסמה</h1>
+        <input type="password" id="password" class="w-full px-4 py-2 mb-4 text-xl text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס סיסמה">
+    </div>
+    <div dir="rtl">
+        <button onclick="login(event)" class="block w-full px-8 py-4 mt-6 text-xl text-white bg-blue-900 border-blue-900 rounded-3xl shadow-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50">התחבר</button>
+    </div>
     <a href="/register" class="block mt-4 text-center text-lg text-sky-900 highlight px-2 rounded-md">שכחתי סיסמה</a>
     <a href="/register" class="block mt-2 text-center text-lg text-sky-900 highlight px-2 rounded-md">אין משתמש? הירשם עכשיו</a>
 </div>

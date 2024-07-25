@@ -26,7 +26,8 @@ def homescreen():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        full_name = request.form['userName'].strip()
+        first_name = request.form['firstName'].strip()
+        last_name = request.form['lastName'].strip()
         id_number = request.form['id'].strip()
         phone = request.form['phone'].strip()
         email = request.form['email'].strip()

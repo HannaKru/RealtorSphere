@@ -10,7 +10,7 @@
             background-image: url('/static/pics/RealtorSphereRegistration.jpg');
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
+            background-attachment: fixed;
             margin: 0;
             padding: 0;
             display: flex;
@@ -53,8 +53,13 @@
     <h1 class="text-3xl font-bold mb-4 text-center">רישום משתמש חדש</h1>
 
     <div class="mb-4">
-        <label for="userName" class="block text-xl font-semibold mb-2">שם מלא</label>
-        <input type="text" id="userName" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס שם פרטי">
+        <label for="firstName" class="block text-xl font-semibold mb-2">שם פרטי</label>
+        <input type="text" id="firstName" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס שם פרטי">
+    </div>
+
+        <div class="mb-4">
+        <label for="lastName" class="block text-xl font-semibold mb-2">שם משפחה</label>
+        <input type="text" id="lastName" class="input-field px-4 py-2 text-lg text-sky-900 border-2 border-sky-800 rounded-3xl shadow-lg" placeholder="הכנס שם משפחה">
     </div>
 
     <div class="mb-4">
