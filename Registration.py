@@ -4,20 +4,24 @@ from firebase_config import initialize_firebase
 
 db_ref = initialize_firebase()
 
-def register_user(first_name, last_name, id_number, phone, email, password, password_repeat, license_number):
+def register_user(first_name, last_name, id_number, phonePrefix,phone, email, password, password_repeat, license_number):
     # Check if passwords match
     if password != password_repeat:
         return 'error', 'סיסמאות לא תואמות'
 
+    fullPhone = phonePrefix + phone
     # Prepare data for Firebase
     user_data = {
         'FirstName': first_name,
         'LastName': last_name,
-        'Phone': phone,
-        'Type': 'Realtor',
-        'email': email,
-        'license': license_number,
-        'password': password  # In a real app, hash the password!
+        'Phone': int(fullPhone),  # Ensure phone is stored as an integer
+        'Type': {
+            'Realtor': {
+                'license': int(license_number),
+                'password': password  # In a real app, hash the password!
+            }
+        },
+        'email': email
     }
 
     users_ref = db_ref.child('Person')
