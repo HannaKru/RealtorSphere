@@ -8,7 +8,7 @@ class TestRegisterUser(unittest.TestCase):
     def test_register_user_success(self, mock_db_ref):
         # Setup mock
         mock_users_ref = MagicMock()
-        mock_db_ref.return_value.child.return_value = mock_users_ref
+        mock_db_ref.child.return_value = mock_users_ref
         mock_users_ref.child.return_value.get.return_value = None  # Simulate no existing user
 
         # Mock the set method to return None
@@ -16,6 +16,10 @@ class TestRegisterUser(unittest.TestCase):
 
         # Call the function
         status, message = register_user('John', 'Doe', '997654321', '052', '1234567', 'johndoe@example.com', 'password123', 'password123', '67890')
+
+        # Debugging prints
+        print("Status:", status)
+        print("Message:", message)
 
         # Assertions
         self.assertEqual(status, 'success')
@@ -34,7 +38,7 @@ class TestRegisterUser(unittest.TestCase):
     def test_register_user_existing_id(self, mock_db_ref):
         # Setup mock
         mock_users_ref = MagicMock()
-        mock_db_ref.return_value.child.return_value = mock_users_ref
+        mock_db_ref.child.return_value = mock_users_ref
         mock_users_ref.child.return_value.get.return_value = {
             'FirstName': 'Asaf',
             'LastName': 'Lotz',
@@ -59,7 +63,7 @@ class TestRegisterUser(unittest.TestCase):
     def test_register_user_firebase_exception(self, mock_db_ref):
         # Setup mock
         mock_users_ref = MagicMock()
-        mock_db_ref.return_value.child.return_value = mock_users_ref
+        mock_db_ref.child.return_value = mock_users_ref
         mock_users_ref.child.return_value.get.return_value = None  # Simulate no existing user
 
         # Simulate an exception during set
@@ -67,6 +71,10 @@ class TestRegisterUser(unittest.TestCase):
 
         # Call the function
         status, message = register_user('John', 'Doe', '967654321', '052', '1334567', 'johndoe@example.com', 'password123', 'password123', '67890')
+
+        # Debugging prints
+        print("Status:", status)
+        print("Message:", message)
 
         # Assertions
         self.assertEqual(status, 'error')
