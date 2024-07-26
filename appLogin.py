@@ -1,4 +1,6 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash
+
+from Registration import register_user
 from login import login_user
 from firebase_config import initialize_firebase
 
@@ -35,39 +37,9 @@ def register():
         password_repeat = request.form['passwordRepeat'].strip()
         license_number = request.form['license'].strip()
 
-        if password != password_repeat:
-            flash('סיסמאות לא תואמות', 'error')
-            return redirect(url_for('register'))
-
-        if ' ' in full_name:
-            first_name, last_name = full_name.split(' ', 1)
-        else:
-            flash('שם מלא צריך לכלול שם פרטי ושם משפחה', 'error')
-            return redirect(url_for('register'))
-
-        user_data = {
-            'FirstName': first_name,
-            'LastName': last_name,
-            'Phone': phone,
-            'Type': 'Realtor',
-            'email': email,
-            'license': license_number,
-            'password': password  # In a real app, hash the password!
-        }
-
-        users_ref = db_ref.child('Person')
-
-        existing_user = users_ref.child(id_number).get()
-        if existing_user:
-            flash('המספר כבר קיים במערכת', 'error')
-            return redirect(url_for('register'))
-
-        try:
-            users_ref.child(id_number).set(user_data)
-            flash('הרשמה הצליחה!', 'success')
-            return redirect(url_for('register'))
-        except Exception as e:
-            flash(f'שגיאה בהרשמה: {str(e)}', 'error')
+        status, message = register_user(first_name, last_name, id_number, phone, email, password, password_repeat, license_number)
+        flash(message, status)
+        return redirect(url_for('register'))
 
     return render_template('registration.html')
 
