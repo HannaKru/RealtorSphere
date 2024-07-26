@@ -31,13 +31,14 @@ def register():
         first_name = request.form['firstName'].strip()
         last_name = request.form['lastName'].strip()
         id_number = request.form['id'].strip()
+        phonePrefix = request.form['phonePrefix'].strip()
         phone = request.form['phone'].strip()
         email = request.form['email'].strip()
         password = request.form['password'].strip()
         password_repeat = request.form['passwordRepeat'].strip()
         license_number = request.form['license'].strip()
 
-        status, message = register_user(first_name, last_name, id_number, phone, email, password, password_repeat, license_number)
+        status, message = register_user(first_name, last_name, id_number,phonePrefix,phone, email, password, password_repeat, license_number)
         flash(message, status)
         return redirect(url_for('register'))
 
