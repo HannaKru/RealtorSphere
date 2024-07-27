@@ -42,22 +42,26 @@ def logout():
     session.pop('user_email', None)  # Remove user email from session
     return redirect(url_for('index'))
 
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         first_name = request.form['firstName'].strip()
         last_name = request.form['lastName'].strip()
         id_number = request.form['id'].strip()
-        phonePrefix = request.form['phonePrefix'].strip()
+        phone_prefix = request.form['phonePrefix'].strip()
         phone = request.form['phone'].strip()
         email = request.form['email'].strip()
         password = request.form['password'].strip()
         password_repeat = request.form['passwordRepeat'].strip()
         license_number = request.form['license'].strip()
 
-        status, message = register_user(first_name, last_name, id_number, phonePrefix, phone, email, password, password_repeat, license_number)
+        status, message = register_user(first_name, last_name, id_number, phone_prefix, phone, email, password,
+                                        password_repeat, license_number)
         flash(message, status)
-        return redirect(url_for('register'))
+
+        if status == 'success':
+            return render_template('registration.html', message=message, status='success')
 
     return render_template('registration.html')
 

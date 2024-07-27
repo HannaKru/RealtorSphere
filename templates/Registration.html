@@ -68,6 +68,19 @@
 <div class="form-container rtl">
     <h1 class="text-3xl font-bold mb-4 text-center">רישום משתמש חדש</h1>
 
+    <!-- Display flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="mb-4">
+                {% for category, message in messages %}
+                    <div class="bg-{{ 'green' if category == 'success' else 'red' }}-100 border border-{{ 'green' if category == 'success' else 'red' }}-400 text-{{ 'green' if category == 'success' else 'red' }}-700 px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">{{ message }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
     <form method="POST" action="{{ url_for('register') }}">
         <div class="mb-4">
             <label for="firstName" class="block text-xl font-semibold mb-2">שם פרטי</label>
