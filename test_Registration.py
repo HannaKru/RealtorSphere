@@ -50,7 +50,7 @@ class TestRegisterUser(unittest.TestCase):
                 }
             },
             'email': 'AsafLotz@gmail.com'
-        }  # Simulate existing user
+        }  # Simulate existing user id
 
         # Call the function
         status, message = register_user('John', 'Doe', '323344888', '052', '1234567', 'johndoe@example.com', 'password123', 'password123', '67890')
@@ -58,6 +58,35 @@ class TestRegisterUser(unittest.TestCase):
         # Assertions
         self.assertEqual(status, 'error')
         self.assertEqual(message, 'המספר כבר קיים במערכת')
+
+    @patch('Registration.db_ref')  # Mocking db_ref in Registration module
+    def test_register_user_existing_email(self, mock_db_ref):
+        # Setup mock
+        mock_users_ref = MagicMock()
+        mock_db_ref.child.return_value = mock_users_ref
+        mock_users_ref.child.return_value.get.return_value = {
+            'FirstName': 'Asaf',
+            'LastName': 'Lotz',
+            'Phone': 509994447,
+            'Type': {
+                'Realtor': {
+                    'license': 3334445,
+                    'password': '1234'
+                }
+            },
+            'email': 'AsafLotz@gmail.com'
+        }
+        # Simulate existing user with the same email
+
+        # Call the function
+        status, message = register_user('John', 'Doe', '423344888', '052', '1234567', 'AsafLotz@gmail.com',
+                                        'password123', 'password123', '67890')
+
+        # Assertions
+        self.assertEqual(status, 'error')
+        self.assertEqual(message, 'האימייל כבר קיים במערכת')
+
+
 
     @patch('Registration.db_ref')  # Mocking db_ref in Registration module
     def test_register_user_firebase_exception(self, mock_db_ref):

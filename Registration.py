@@ -31,6 +31,11 @@ def register_user(first_name, last_name, id_number, phonePrefix,phone, email, pa
     if existing_user:
         return 'error', 'המספר כבר קיים במערכת'
 
+    # Check if the email already exists
+    existing_email = users_ref.order_by_child('email').equal_to(email).get()
+    if existing_email:
+        return 'error', 'האימייל כבר קיים במערכת'
+
     # Add new user with the provided ID
     try:
         users_ref.child(id_number).set(user_data)
