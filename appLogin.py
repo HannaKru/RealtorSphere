@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, render_template, redirect, url_for, flash, session
 import secrets
+from flask_cors import CORS
 
 from Registration import register_user
 from firebase_config import initialize_firebase
@@ -9,6 +10,7 @@ from login import login_user
 # For production, you should load this from an environment variable or a secure location
 # Example: app.config['SECRET_KEY'] = os.getenv('FLASK_SECRET_KEY', 'default_secret_key')
 app = Flask(__name__)
+CORS(app)
 app.config['SECRET_KEY'] = secrets.token_hex(32)  # Generates a new secret key each time
 
 db_ref = initialize_firebase()
