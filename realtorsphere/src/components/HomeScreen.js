@@ -6,6 +6,9 @@ const HomeScreen = ({ user }) => {
   const [calendarDays, setCalendarDays] = useState([]);
   const [todoList, setTodoList] = useState([]);
   const [newTask, setNewTask] = useState('');
+  const [events, setEvents] = useState({});
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [newEvent, setNewEvent] = useState('');
   const [navigationLinks, setNavigationLinks] = useState([
     { name: 'נכסים', url: '/' },
     { name: 'ניהול לקוחות', url: '/clients' },
@@ -52,6 +55,19 @@ const HomeScreen = ({ user }) => {
     }
   };
 
+  const addEvent = () => {
+    if (newEvent.trim() && selectedDate) {
+      const dateKey = selectedDate.toDateString();
+      const newEvents = { ...events, [dateKey]: [...(events[dateKey] || []), newEvent] };
+      setEvents(newEvents);
+      setNewEvent('');
+    }
+  };
+
+  const selectDate = (day) => {
+    setSelectedDate(new Date(currentYear, currentMonth, day));
+  };
+
   return (
     <main
       className="flex flex-col items-center bg-cover bg-center min-h-screen p-4"
@@ -87,59 +103,79 @@ const HomeScreen = ({ user }) => {
 
         <div className="flex flex-row-reverse justify-between gap-10 w-full max-w-7xl pr-[310px]">
           {/* To-Do List */}
-          <div className="flex flex-col w-full md:w-1/3 p-4 bg-white rounded shadow-md bg-opacity-80">
-            <h2 className="text-xl font-semibold mb-4">לעשות</h2>
+          <div className="flex flex-col w-full md:w-1/3 p-4 bg-white rounded shadow-md bg-opacity-80 ml-16">
+            <h2 className="text-xl font-semibold mb-4">משימות</h2>
             <ul>
               {todoList.map((task, index) => (
-                  <li key={index} className="mb-2">{task}</li>
+                <li key={index} className="mb-2">{task}</li>
               ))}
             </ul>
             <input
-                type="text"
-                value={newTask}
-                onChange={(e) => setNewTask(e.target.value)}
-                className="mt-2 p-2 border rounded w-full"
-                placeholder="משימה חדשה"
+              type="text"
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              className="mt-2 p-2 border rounded w-full"
+              placeholder="משימה חדשה"
             />
             <button onClick={addTask} className="mt-2 p-2 bg-blue-500 text-white rounded w-full">הוסף משימה</button>
           </div>
 
           {/* Calendar */}
-          <div className="flex flex-col w-full md:w-1/3 p-4 bg-white rounded shadow-md bg-opacity-80 mt-8">
+          <div className="flex flex-col w-full md:w-1/3 p-4 bg-white rounded shadow-md bg-opacity-80 mt-20 ml-16">
             <div className="flex justify-between items-center mb-4">
               <button onClick={() => handleMonthChange(-1)} className="px-4 py-2 bg-gray-200 rounded-md">Prev</button>
-              <h2 className="text-xl font-semibold">{`${new Date(currentYear, currentMonth).toLocaleString('default', {month: 'long'})} ${currentYear}`}</h2>
+              <h2 className="text-xl font-semibold">{`${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} ${currentYear}`}</h2>
               <button onClick={() => handleMonthChange(1)} className="px-4 py-2 bg-gray-200 rounded-md">Next</button>
             </div>
             <div className="grid grid-cols-7 gap-4">
               {calendarDays.map((calendarDay, index) => (
-                  <div key={index} className="text-center py-1">
-                    {calendarDay ? calendarDay.day : ''}
-                  </div>
+                <div
+                  key={index}
+                  className={`text-center py-1 cursor-pointer ${calendarDay ? 'bg-blue-100 hover:bg-blue-200' : ''}`}
+                  onClick={() => calendarDay && selectDate(calendarDay.day)}
+                >
+                  {calendarDay ? calendarDay.day : ''}
+                </div>
               ))}
             </div>
 
-          {/* Events of the Day */}
-          <div className="mt-4">
-            <h3 className="text-lg font-semibold mb-2">אירועים להיום</h3>
-            <ul>
-              {/* Replace with actual events data */}
-              <li className="mb-2">No events scheduled for today.</li>
-            </ul>
+            {/* Events of the Day */}
+            <div className="mt-4">
+              <h3 className="text-lg font-semibold mb-2">אירועים להיום</h3>
+              <ul>
+                {selectedDate ? (
+                  (events[selectedDate.toDateString()] || []).map((event, index) => (
+                    <li key={index} className="mb-2">{event}</li>
+                  ))
+                ) : (
+                  <li className="mb-2">No events selected.</li>
+                )}
+              </ul>
+
+              {/* Add Event */}
+              {selectedDate && (
+                <div className="mt-4">
+                  <input
+                    type="text"
+                    value={newEvent}
+                    onChange={(e) => setNewEvent(e.target.value)}
+                    className="mt-2 p-2 border rounded w-full"
+                    placeholder="הוסף אירוע"
+                  />
+                  <button onClick={addEvent} className="mt-2 p-2 bg-blue-500 text-white rounded w-full">הוסף אירוע</button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-    </div>
 
-  {/* Progress Bar */
-  }
-
-  <div className="w-1/3 bg-gray-300 mt-6 fixed bottom-4 left-[45%] transform -translate-x-[40%]">
-    <div className="bg-blue-500 h-2" style={{width: '85%'}}></div>
-  </div>
-</main>
-)
-  ;
+      {/* Progress Bar */}
+      <div className="w-1/3 bg-gray-300 mt-6 fixed bottom-4 left-[40%] transform -translate-x-[40%]">
+        <div className="bg-blue-500 h-2" style={{ width: '85%' }}></div>
+      </div>
+    </main>
+  );
 };
 
 export default HomeScreen;
