@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-const HomeScreen = ({ user }) => {
+const HomeScreen = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date().getMonth());
   const [currentYear, setCurrentYear] = useState(new Date().getFullYear());
   const [calendarDays, setCalendarDays] = useState([]);
@@ -9,6 +10,7 @@ const HomeScreen = ({ user }) => {
   const [events, setEvents] = useState({});
   const [selectedDate, setSelectedDate] = useState(null);
   const [newEvent, setNewEvent] = useState('');
+  const [userName, setUserName] = useState('');
   const [navigationLinks, setNavigationLinks] = useState([
     { name: 'נכסים', url: '/' },
     { name: 'ניהול לקוחות', url: '/clients' },
@@ -21,7 +23,31 @@ const HomeScreen = ({ user }) => {
 
   useEffect(() => {
     generateCalendarDays(currentYear, currentMonth);
+    fetchUserName();
+    fetchTasks(); // Fetch tasks on component mount
   }, [currentYear, currentMonth]);
+
+  const fetchUserName = async () => {
+    try {
+      const response = await axios.get('/homescreen');
+      if (response.status === 200 && response.data.firstName) {
+        setUserName(response.data.firstName);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+  };
+
+  const fetchTasks = async () => {
+    try {
+      const response = await axios.get('/tasks');
+      if (response.status === 200) {
+        setTodoList(response.data.tasks);
+      }
+    } catch (error) {
+      console.error('Error fetching tasks:', error);
+    }
+  };
 
   const generateCalendarDays = (year, month) => {
     const numDays = new Date(year, month + 1, 0).getDate();
@@ -48,10 +74,17 @@ const HomeScreen = ({ user }) => {
     });
   };
 
-  const addTask = () => {
+  const addTask = async () => {
     if (newTask.trim()) {
-      setTodoList([...todoList, newTask]);
-      setNewTask('');
+      try {
+        const response = await axios.post('/tasks', { text: newTask });
+        if (response.status === 200) {
+          setTodoList([...todoList, response.data.task]);
+          setNewTask('');
+        }
+      } catch (error) {
+        console.error('Error adding task:', error);
+      }
     }
   };
 
@@ -68,19 +101,22 @@ const HomeScreen = ({ user }) => {
     setSelectedDate(new Date(currentYear, currentMonth, day));
   };
 
+  const logout = () => {
+    localStorage.removeItem('currentUser');
+    window.location.href = '/';
+  };
+
   return (
-    <main
-      className="flex flex-col items-center bg-cover bg-center min-h-screen p-4"
-      style={{ backgroundImage: `url('/RealtorSphereHomeScreen2.png')` }}
-    >
+    <main className="flex flex-col items-center bg-cover bg-center min-h-screen p-4" style={{ backgroundImage: `url('/RealtorSphereHomeScreen2.png')` }}>
       {/* Top Bar */}
       <div className="flex justify-end items-center w-full p-4">
         {/* Greeting */}
         <div className="text-right text-white font-bold text-2xl mr-4">
-          שלום, {user?.name || 'אורח'}
+          {userName ? `שלום, ${userName}` : 'Loading...'}
         </div>
         {/* Event Alert Icon */}
         <div className="text-white text-4xl">🔔</div>
+        <div className="text-white text-4xl" onClick={logout}>Logout</div>
       </div>
 
       <div className="flex flex-row-reverse justify-between w-full max-w-7xl mt-4">
@@ -90,10 +126,7 @@ const HomeScreen = ({ user }) => {
           <ul className="space-y-2">
             {navigationLinks.map((link, index) => (
               <li key={index}>
-                <a
-                  href={link.url}
-                  className="block text-white bg-blue-500 hover:bg-blue-700 py-2 px-4 rounded"
-                >
+                <a href={link.url} className="block text-white bg-blue-500 hover:bg-blue-700 py-2 px-4 rounded">
                   {link.name}
                 </a>
               </li>
@@ -107,7 +140,7 @@ const HomeScreen = ({ user }) => {
             <h2 className="text-xl font-semibold mb-4">משימות</h2>
             <ul>
               {todoList.map((task, index) => (
-                <li key={index} className="mb-2">{task}</li>
+                <li key={index} className="mb-2">{task.text}</li>
               ))}
             </ul>
             <input
@@ -129,50 +162,13 @@ const HomeScreen = ({ user }) => {
             </div>
             <div className="grid grid-cols-7 gap-4">
               {calendarDays.map((calendarDay, index) => (
-                <div
-                  key={index}
-                  className={`text-center py-1 cursor-pointer ${calendarDay ? 'bg-blue-100 hover:bg-blue-200' : ''}`}
-                  onClick={() => calendarDay && selectDate(calendarDay.day)}
-                >
+                <div key={index} className={`text-center py-1 cursor-pointer ${calendarDay ? 'bg-gray-100' : ''}`} onClick={() => selectDate(calendarDay.day)}>
                   {calendarDay ? calendarDay.day : ''}
                 </div>
               ))}
             </div>
-
-            {/* Events of the Day */}
-            <div className="mt-4">
-              <h3 className="text-lg font-semibold mb-2">אירועים להיום</h3>
-              <ul>
-                {selectedDate ? (
-                  (events[selectedDate.toDateString()] || []).map((event, index) => (
-                    <li key={index} className="mb-2">{event}</li>
-                  ))
-                ) : (
-                  <li className="mb-2">No events selected.</li>
-                )}
-              </ul>
-
-              {/* Add Event */}
-              {selectedDate && (
-                <div className="mt-4">
-                  <input
-                    type="text"
-                    value={newEvent}
-                    onChange={(e) => setNewEvent(e.target.value)}
-                    className="mt-2 p-2 border rounded w-full"
-                    placeholder="הוסף אירוע"
-                  />
-                  <button onClick={addEvent} className="mt-2 p-2 bg-blue-500 text-white rounded w-full">הוסף אירוע</button>
-                </div>
-              )}
-            </div>
           </div>
         </div>
-      </div>
-
-      {/* Progress Bar */}
-      <div className="w-1/3 bg-gray-300 mt-6 fixed bottom-4 left-[40%] transform -translate-x-[40%]">
-        <div className="bg-blue-500 h-2" style={{ width: '85%' }}></div>
       </div>
     </main>
   );
