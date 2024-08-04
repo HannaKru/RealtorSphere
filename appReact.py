@@ -1,10 +1,10 @@
-from flask import Flask, request, jsonify, session, redirect, url_for, flash
+from flask import Flask, request, jsonify, session, redirect, url_for
 import secrets
 from flask_cors import CORS
-
 from Registration import register_user
 from firebase_config import initialize_firebase
 from login import login_user
+from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status
 
 app = Flask(__name__)
 CORS(app)
@@ -29,11 +29,52 @@ def login():
     else:
         return jsonify({"message": message}), status_code
 
-@app.route('/homescreen')
+@app.route('/homescreen', methods=['GET'])
 def homescreen():
     if 'user_email' not in session:
-        return redirect(url_for('index'))
-    return jsonify({"message": "Welcome to the home screen"})
+        return jsonify({"message": "User not logged in"}), 401
+
+    email = session['user_email']
+    first_name = get_user_by_email(email)
+
+    if first_name:
+        return jsonify({"firstName": first_name}), 200
+    else:
+        return jsonify({"message": "User not found"}), 404
+
+@app.route('/tasks', methods=['GET'])
+def get_tasks():
+    if 'user_email' not in session:
+        return jsonify({"message": "User not logged in"}), 401
+
+    email = session['user_email']
+    tasks = get_tasks_by_email(email)
+    return jsonify({"tasks": tasks}), 200
+
+@app.route('/tasks', methods=['POST'])
+def add_new_task():
+    if 'user_email' not in session:
+        return jsonify({"message": "User not logged in"}), 401
+
+    data = request.get_json()
+    task_text = data.get('text')
+    email = session['user_email']
+
+    new_task = add_task(email, task_text)
+    return jsonify({"task": new_task}), 200
+
+@app.route('/tasks/<task_id>', methods=['PUT'])
+def update_task(task_id):
+    if 'user_email' not in session:
+        return jsonify({"message": "User not logged in"}), 401
+
+    data = request.get_json()
+    new_status = data.get('status')
+
+    if update_task_status(task_id, new_status):
+        return jsonify({"message": "Task updated"}), 200
+    else:
+        return jsonify({"message": "Task not found"}), 404
 
 @app.route('/logout')
 def logout():
