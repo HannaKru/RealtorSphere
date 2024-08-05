@@ -8,7 +8,7 @@ from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_t
 
 app = Flask(__name__)
 CORS(app)
-app.config['SECRET_KEY'] = secrets.token_hex(32)  # Generates a new secret key each time
+app.config['SECRET_KEY'] = secrets.token_hex(32)
 
 db_ref = initialize_firebase()
 
@@ -29,27 +29,19 @@ def login():
     else:
         return jsonify({"message": message}), status_code
 
-@app.route('/homescreen', methods=['GET'])
+@app.route('/homescreen')
 def homescreen():
     if 'user_email' not in session:
         return jsonify({"message": "User not logged in"}), 401
 
     email = session['user_email']
     first_name = get_user_by_email(email)
+    tasks = get_tasks_by_email(email)
 
     if first_name:
-        return jsonify({"firstName": first_name}), 200
+        return jsonify({"firstName": first_name, "tasks": tasks}), 200
     else:
         return jsonify({"message": "User not found"}), 404
-
-@app.route('/tasks', methods=['GET'])
-def get_tasks():
-    if 'user_email' not in session:
-        return jsonify({"message": "User not logged in"}), 401
-
-    email = session['user_email']
-    tasks = get_tasks_by_email(email)
-    return jsonify({"tasks": tasks}), 200
 
 @app.route('/tasks', methods=['POST'])
 def add_new_task():
@@ -63,12 +55,13 @@ def add_new_task():
     new_task = add_task(email, task_text)
     return jsonify({"task": new_task}), 200
 
-@app.route('/tasks/<task_id>', methods=['PUT'])
-def update_task(task_id):
+@app.route('/tasks_update', methods=['POST'])
+def update_task():
     if 'user_email' not in session:
         return jsonify({"message": "User not logged in"}), 401
 
     data = request.get_json()
+    task_id = data.get('id')
     new_status = data.get('status')
 
     if update_task_status(task_id, new_status):
