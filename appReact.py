@@ -4,7 +4,7 @@ from flask_cors import CORS
 from Registration import register_user
 from firebase_config import initialize_firebase
 from login import login_user
-#from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status
+from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task
 app = Flask(__name__)
 #CORS(app)
