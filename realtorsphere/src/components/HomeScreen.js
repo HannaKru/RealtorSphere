@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const HomeScreen = () => {
@@ -21,14 +21,9 @@ const HomeScreen = () => {
     { name: 'עריכת פרופיל', url: '/edit-profile' },
   ]);
 
-  useEffect(() => {
-    generateCalendarDays(currentYear, currentMonth);
-    fetchUserData();
-  }, [currentYear, currentMonth]);
-
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     try {
-      const response = await axios.get('/homescreen');
+      const response = await axios.get('http://localhost:5000/homescreen', { withCredentials: true });
       if (response.status === 200) {
         setUserName(response.data.firstName);
         setTodoList(response.data.tasks || []);
@@ -36,7 +31,12 @@ const HomeScreen = () => {
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    generateCalendarDays(currentYear, currentMonth);
+    fetchUserData();
+  }, [currentYear, currentMonth, fetchUserData]);
 
   const generateCalendarDays = (year, month) => {
     const numDays = new Date(year, month + 1, 0).getDate();
@@ -66,7 +66,7 @@ const HomeScreen = () => {
   const addTask = async () => {
     if (newTask.trim()) {
       try {
-        const response = await axios.post('/tasks', { text: newTask });
+        const response = await axios.post('http://localhost:5000/tasks', { text: newTask }, { withCredentials: true });
         if (response.status === 200) {
           setTodoList([...todoList, response.data.task]);
           setNewTask('');
@@ -79,7 +79,7 @@ const HomeScreen = () => {
 
   const updateTaskStatus = async (taskId, newStatus) => {
     try {
-      const response = await axios.post('/tasks_update', { id: taskId, status: newStatus });
+      const response = await axios.post('http://localhost:5000/tasks_update', { id: taskId, status: newStatus }, { withCredentials: true });
       if (response.status === 200) {
         setTodoList(todoList.map(task => task.id === taskId ? { ...task, status: newStatus } : task));
       }
