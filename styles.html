@@ -1,0 +1,31 @@
+.calendar-container {
+  width: 100%;
+  max-width: 300px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  .calendar-container {
+    max-width: 400px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .calendar-container {
+    max-width: 500px;
+  }
+}
+
+/* Portrait orientation */
+.portrait .calendar-container {
+  height: auto;
+}
+
+/* Landscape orientation */
+.landscape .calendar-container {
+  height: auto;
+}
