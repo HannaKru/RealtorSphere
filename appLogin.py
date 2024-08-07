@@ -48,6 +48,37 @@ def logout():
     return redirect(url_for('index'))
 
 
+@app.route('/forgotPass', methods=['GET', 'POST'])
+def forgot_pass():
+    if request.method == 'POST':
+        data = request.get_json()
+        email = data.get('email')
+        id_number = data.get('id')
+
+        if not email or not id_number:
+            return jsonify({"message": "נא למלא את כל השדות"}), 400
+
+        try:
+            users_ref = db_ref.child('Person')
+            users = users_ref.get()
+
+            for user_id, user_data in users.items():
+                if user_data.get('email') == email:
+                    if user_id == id_number:
+                        # Logic to send the password reset email goes here
+                        return jsonify({"message": "הסיסמה נשלחה למייל"}), 200
+
+                    else:
+                        return jsonify({"message": "השדות אינם תואמים- טעות באימייל או בתעודת הזהות"}), 400
+
+            return jsonify({"message": "אין משתמש עם המייל הנ\'ל"}), 404
+
+        except Exception as e:
+            print(f"Error in forgot_pass: {e}")
+            return jsonify({"message": "An error occurred. Please try again later."}), 500
+
+    return render_template('ForgotPass.html')
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
