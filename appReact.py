@@ -76,6 +76,29 @@ def logout():
     session.pop('user_email', None)
     return redirect(url_for('index'))
 
+
+@app.route('/forgot_password', methods=['POST'])
+def forgot_password():
+    data = request.get_json()
+    email = data.get('email')
+    id_number = data.get('id')
+
+    if not email or not id_number:
+        return jsonify({"message": "נא למלא את כל השדות"}), 400
+
+    users_ref = db_ref.child('Person')
+    users = users_ref.get()
+
+    for user_id, user_data in users.items():
+        if user_data.get('email') == email:
+            if user_id == id_number:
+                # Logic to send the password reset email goes here
+                return jsonify({"message": "הסיסמה נשלחה למייל"}), 200
+            else:
+                return jsonify({"message": "השדות אינם תואמים- טעות באימייל או בתעודת הזהות"}), 400
+
+    return jsonify({"message": "אין משתמש עם המייל הנ\'ל"}), 404
+
 @app.route('/registration', methods=['POST'])
 def register():
     data = request.get_json()
