@@ -62,7 +62,7 @@ function Login() {
                         התחבר
                     </button>
                 </div>
-                <a href="/registration" className="block mt-4 text-center text-lg text-sky-900 highlight px-2 rounded-md">
+                <a href="/forgotPass" className="block mt-4 text-center text-lg text-sky-900 highlight px-2 rounded-md">
                     שכחתי סיסמה
                 </a>
                 <a href="/registration" className="block mt-2 text-center text-lg text-sky-900 highlight px-2 rounded-md">

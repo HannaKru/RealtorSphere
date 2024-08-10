@@ -6,6 +6,7 @@ from Registration import register_user
 from firebase_config import initialize_firebase
 from login import login_user
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status
+from forgetPass import check_user_and_send_email
 
 app = Flask(__name__)
 #CORS(app)
@@ -82,7 +83,7 @@ def logout():
     return redirect(url_for('index'))
 
 
-@app.route('/forgot_password', methods=['POST'])
+@app.route('/forgotPass', methods=['POST'])
 def forgot_password():
     data = request.get_json()
     email = data.get('email')
@@ -91,18 +92,8 @@ def forgot_password():
     if not email or not id_number:
         return jsonify({"message": "נא למלא את כל השדות"}), 400
 
-    users_ref = db_ref.child('Person')
-    users = users_ref.get()
-
-    for user_id, user_data in users.items():
-        if user_data.get('email') == email:
-            if user_id == id_number:
-                # Logic to send the password reset email goes here
-                return jsonify({"message": "הסיסמה נשלחה למייל"}), 200
-            else:
-                return jsonify({"message": "השדות אינם תואמים- טעות באימייל או בתעודת הזהות"}), 400
-
-    return jsonify({"message": "אין משתמש עם המייל הנ\'ל"}), 404
+    response, status_code = check_user_and_send_email(email, id_number)
+    return jsonify(response), status_code
 
 @app.route('/registration', methods=['POST'])
 def register():
