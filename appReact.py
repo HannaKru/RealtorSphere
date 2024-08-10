@@ -1,3 +1,4 @@
+import requests
 from flask import Flask, request, jsonify, session, redirect, url_for
 import secrets
 from flask_cors import CORS
@@ -7,9 +8,11 @@ from login import login_user
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status
 
 app = Flask(__name__)
-CORS(app)
+#CORS(app)
+CORS(app, supports_credentials=True)
 #cors = CORS(app, resources={r"/*": {"origins": "http://localhost:3006"}}, supports_credentials=True)
 app.config['SECRET_KEY'] = secrets.token_hex(32)
+#s = requests.Session()
 
 db_ref = initialize_firebase()
 
@@ -32,6 +35,8 @@ def login():
 
 @app.route('/homescreen', methods=['GET'])
 def homescreen():
+    print("Current session state:", session)  # Debug line
+
     if 'user_email' not in session:
         return jsonify({"message": "User not logged in"}), 401
 
