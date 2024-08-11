@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import './tailwind.css';
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -8,21 +9,21 @@ function Login() {
         event.preventDefault();
         console.log('Attempting to log in with:', email, password);
         try {
-            const response = await fetch('http://localhost:5000/login', {  // Ensure the URL matches your backend's address
+            const response = await fetch('http://localhost:5000/login', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ email, password }),
-                credentials: 'include',  // Include credentials
+                credentials: 'include',
             });
 
             const result = await response.json();
             console.log('Login response:', result);
             if (response.status === 200) {
-                window.location.href = '/homescreen';  // Redirect to Home screen
+                window.location.href = '/homescreen';
             } else {
-                alert(result.message);  // Display the error message
+                alert(result.message);
             }
         } catch (error) {
             console.error('Error:', error);
