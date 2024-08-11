@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './tailwind.css';
+import './tailwind.css'; // Assuming you're using Tailwind, but you can use regular CSS as well.
 
 function Login() {
     const [email, setEmail] = useState('');
@@ -31,9 +31,9 @@ function Login() {
     };
 
     return (
-        <div className="flex items-center justify-center min-h-screen text-blue-950 bg-cover bg-center bg-fixed" style={{ backgroundImage: `url('/RealtorSphere.jpg')` }}>
-            <div className="relative w-full max-w-md p-4 md:p-8 lg:p-12 mt-32 bg-white bg-opacity-75 rounded-lg shadow-lg">
-                <div dir="rtl" className="mb-4">
+        <div className="min-h-screen grid place-items-center bg-cover bg-center bg-fixed text-blue-950" style={{ backgroundImage: `url('/RealtorSphere.jpg')` }}>
+            <div className="grid grid-cols-1 gap-4 max-w-md p-6 md:p-8 lg:p-12 mt-32 bg-white bg-opacity-75 rounded-lg shadow-lg">
+                <div dir="rtl">
                     <h1 className="text-2xl font-bold mb-4 text-center">אימייל</h1>
                     <input
                         type="email"
@@ -44,7 +44,7 @@ function Login() {
                         onChange={(e) => setEmail(e.target.value)}
                     />
                 </div>
-                <div dir="rtl" className="mb-4">
+                <div dir="rtl">
                     <h1 className="text-2xl font-bold mb-4 text-center">סיסמה</h1>
                     <input
                         type="password"
@@ -58,7 +58,7 @@ function Login() {
                 <div dir="rtl">
                     <button
                         onClick={handleLogin}
-                        className="block w-full px-8 py-4 mt-6 text-xl text-white bg-blue-900 border-blue-900 rounded-3xl shadow-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50"
+                        className="block w-full px-8 py-4 text-xl text-white bg-blue-900 border-blue-900 rounded-3xl shadow-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-opacity-50"
                     >
                         התחבר
                     </button>
