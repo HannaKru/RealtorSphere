@@ -13,7 +13,7 @@ function ForgotPassword() {
   }
 
   try {
-    const response = await fetch('/forgotPass', {
+    const response = await fetch('http://localhost:5000/forgotPass', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -9,7 +9,7 @@ def send_password_reset_email(email, password):
         # SMTP session for email sending
         s = smtplib.SMTP('smtp.gmail.com', 587)
         s.starttls()
-        s.login("RealtorSphereHelp@gmail.com", "Aa12345!")
+        s.login("RealtorSphereHelp@gmail.com", "cniz qghc nimu chcv")
 
         # Craft the email content
         subject = "Your Password Reset Request"
