@@ -5,7 +5,7 @@ from flask_cors import CORS
 from Registration import register_user
 from firebase_config import initialize_firebase
 from login import login_user
-from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status
+from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status, get_events_by_email,add_event, edit_event_by_id, delete_event_by_id
 from forgetPass import check_user_and_send_email
 
 app = Flask(__name__)
@@ -114,6 +114,47 @@ def register():
         return jsonify({"message": message}), 200
     else:
         return jsonify({"message": message}), 400
+
+    @app.route('/events', methods=['GET'])
+    def get_user_events():
+        if 'user_email' not in session:
+            return jsonify({"message": "User not logged in"}), 401
+
+        email = session['user_email']
+        events = get_events_by_email(email)
+        return jsonify({"events": events}), 200
+
+    @app.route('/events', methods=['POST'])
+    def add_new_event():
+        if 'user_email' not in session:
+            return jsonify({"message": "User not logged in"}), 401
+
+        data = request.get_json()
+        email = session['user_email']
+        date = data.get('date')
+        name = data.get('name')
+        hour = data.get('hour')
+        details = data.get('details')
+        new_event = add_event(email, date, name, hour, details)
+        return jsonify({"event": new_event}), 200
+
+    @app.route('/events/<event_id>', methods=['PUT'])
+    def edit_event(event_id):
+        if 'user_email' not in session:
+            return jsonify({"message": "User not logged in"}), 401
+
+        data = request.get_json()
+        updated_event = edit_event_by_id(event_id, data)
+        return jsonify({"event": updated_event}), 200
+
+    @app.route('/events/<event_id>', methods=['DELETE'])
+    def delete_event(event_id):
+        if 'user_email' not in session:
+            return jsonify({"message": "User not logged in"}), 401
+
+        delete_event_by_id(event_id)
+        return jsonify({"message": "Event deleted"}), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)

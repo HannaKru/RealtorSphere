@@ -7,9 +7,14 @@ const HomeScreen = () => {
   const [calendarDays, setCalendarDays] = useState([]);
   const [todoList, setTodoList] = useState([]);
   const [newTask, setNewTask] = useState('');
-  const [events, setEvents] = useState({});
+  const [events, setEvents] = useState([]);
+  const [newEventDetails, setNewEventDetails] = useState({
+    date: '',
+    name: '',
+    hour: '',
+    details: ''
+  });
   const [selectedDate, setSelectedDate] = useState(null);
-  const [newEvent, setNewEvent] = useState('');
   const [userName, setUserName] = useState('');
   const [navigationLinks] = useState([
     { name: 'נכסים', url: '/' },
@@ -21,6 +26,7 @@ const HomeScreen = () => {
     { name: 'עריכת פרופיל', url: '/edit-profile' },
   ]);
 
+  // Fetch user data
   const fetchUserData = useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:5000/homescreen', { withCredentials: true });
@@ -33,10 +39,77 @@ const HomeScreen = () => {
     }
   }, []);
 
+  // Fetch events for the logged-in user
+  const fetchUserEvents = useCallback(async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/events', { withCredentials: true });
+      if (response.status === 200) {
+        setEvents(response.data.events || []);
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+    }
+  }, []);
+
   useEffect(() => {
     generateCalendarDays(currentYear, currentMonth);
     fetchUserData();
-  }, [currentYear, currentMonth, fetchUserData]);
+    fetchUserEvents();
+  }, [currentYear, currentMonth, fetchUserData, fetchUserEvents]);
+
+  // Add new event
+  const addEvent = async () => {
+    try {
+      const response = await axios.post('http://localhost:5000/events', newEventDetails, { withCredentials: true });
+      if (response.status === 200) {
+        setEvents([...events, response.data.event]);
+        setNewEventDetails({ date: '', name: '', hour: '', details: '' });
+      }
+    } catch (error) {
+      console.error('Error adding event:', error);
+    }
+  };
+
+  // Edit an event
+  const editEvent = async (eventId, updatedEventDetails) => {
+    try {
+      const response = await axios.put(`http://localhost:5000/events/${eventId}`, updatedEventDetails, { withCredentials: true });
+      if (response.status === 200) {
+        setEvents(events.map(event => event.id === eventId ? response.data.event : event));
+      }
+    } catch (error) {
+      console.error('Error editing event:', error);
+    }
+  };
+
+  // Delete an event
+  const deleteEvent = async (eventId) => {
+    try {
+      await axios.delete(`http://localhost:5000/events/${eventId}`, { withCredentials: true });
+      setEvents(events.filter(event => event.id !== eventId));
+    } catch (error) {
+      console.error('Error deleting event:', error);
+    }
+  };
+
+  // Check for event alerts
+  useEffect(() => {
+    const checkAlerts = () => {
+      events.forEach(event => {
+        const eventDate = new Date(`${event.date} ${event.hour}`);
+        const now = new Date();
+        const timeDiff = eventDate - now;
+
+        if (timeDiff <= 86400000 && timeDiff > 0) {
+          alert(`Reminder: 24 hours until event ${event.name}`);
+        } else if (timeDiff <= 3600000 && timeDiff > 0) {
+          alert(`Reminder: 1 hour until event ${event.name}`);
+        }
+      });
+    };
+
+    checkAlerts();
+  }, [events]);
 
   const generateCalendarDays = (year, month) => {
     const numDays = new Date(year, month + 1, 0).getDate();
@@ -85,15 +158,6 @@ const HomeScreen = () => {
       }
     } catch (error) {
       console.error('Error updating task status:', error);
-    }
-  };
-
-  const addEvent = () => {
-    if (newEvent.trim() && selectedDate) {
-      const dateKey = selectedDate.toDateString();
-      const newEvents = { ...events, [dateKey]: [...(events[dateKey] || []), newEvent] };
-      setEvents(newEvents);
-      setNewEvent('');
     }
   };
 
@@ -150,21 +214,65 @@ const HomeScreen = () => {
               className="mt-2 p-2 border rounded w-full"
               placeholder="משימה חדשה"
             />
-            <button onClick={addTask} className="mt-2 p-2 bg-blue-500 text-white rounded w-full">הוסף משימה</button>
+            <button onClick={addTask} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">הוסף</button>
           </div>
 
-          <div className="flex flex-col w-full md:w-1/3 p-4 bg-white rounded shadow-md bg-opacity-80 mt-20 ml-16">
-            <div className="flex justify-between items-center mb-4">
-              <button onClick={() => handleMonthChange(-1)} className="px-4 py-2 bg-gray-200 rounded-md">Prev</button>
-              <h2 className="text-xl font-semibold">{`${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} ${currentYear}`}</h2>
-              <button onClick={() => handleMonthChange(1)} className="px-4 py-2 bg-gray-200 rounded-md">Next</button>
+          <div className="flex flex-col w-full md:w-2/3 p-4 bg-white rounded shadow-md bg-opacity-80">
+            <h2 className="text-xl font-semibold mb-4">אירועים</h2>
+            <div className="flex justify-between mb-2">
+              <button onClick={() => handleMonthChange(-1)}>Previous</button>
+              <div>{new Date(currentYear, currentMonth).toLocaleDateString('he-IL', { year: 'numeric', month: 'long' })}</div>
+              <button onClick={() => handleMonthChange(1)}>Next</button>
             </div>
-            <div className="grid grid-cols-7 gap-4">
-              {calendarDays.map((calendarDay, index) => (
-                <div key={index} className={`text-center py-1 cursor-pointer ${calendarDay ? 'bg-gray-100' : ''}`} onClick={() => selectDate(calendarDay?.day)}>
-                  {calendarDay ? calendarDay.day : ''}
+
+            <div className="grid grid-cols-7 gap-2">
+              {calendarDays.map((day, index) => (
+                <div key={index} className="border border-gray-300 p-2 text-center" onClick={() => day && selectDate(day.day)}>
+                  {day ? day.day : ''}
+                  {day && events.filter(event => new Date(event.date).getDate() === day.day && new Date(event.date).getMonth() === currentMonth).map((event, idx) => (
+                    <div key={idx} className="text-xs text-red-500 mt-1">{event.name}</div>
+                  ))}
                 </div>
               ))}
+            </div>
+
+            {selectedDate && (
+              <div className="mt-4">
+                <h3>הוסף אירוע ל-{selectedDate.toLocaleDateString('he-IL')}</h3>
+                <input
+                  type="text"
+                  value={newEventDetails.name}
+                  onChange={(e) => setNewEventDetails({ ...newEventDetails, name: e.target.value })}
+                  className="mt-2 p-2 border rounded w-full"
+                  placeholder="שם האירוע"
+                />
+                <input
+                  type="time"
+                  value={newEventDetails.hour}
+                  onChange={(e) => setNewEventDetails({ ...newEventDetails, hour: e.target.value })}
+                  className="mt-2 p-2 border rounded w-full"
+                />
+                <textarea
+                  value={newEventDetails.details}
+                  onChange={(e) => setNewEventDetails({ ...newEventDetails, details: e.target.value })}
+                  className="mt-2 p-2 border rounded w-full"
+                  placeholder="פרטים"
+                />
+                <button onClick={addEvent} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">הוסף אירוע</button>
+              </div>
+            )}
+
+            <div className="mt-4">
+              <h3>אירועים קרובים:</h3>
+              <ul>
+                {events.map((event, index) => (
+                  <li key={index} className="mb-2">
+                    <div>{event.name} - {new Date(`${event.date} ${event.hour}`).toLocaleString('he-IL')}</div>
+                    <button onClick={() => editEvent(event.id, { ...event, name: 'New Name' })}>Edit</button>
+                    <button onClick={() => deleteEvent(event.id)}>Delete</button>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
