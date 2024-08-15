@@ -26,36 +26,24 @@ const HomeScreen = () => {
     { name: 'עריכת פרופיל', url: '/edit-profile' },
   ]);
 
-  // Fetch user data
+  // Fetch user data, including tasks and events
   const fetchUserData = useCallback(async () => {
     try {
       const response = await axios.get('http://localhost:5000/homescreen', { withCredentials: true });
       if (response.status === 200) {
         setUserName(response.data.firstName);
         setTodoList(response.data.tasks || []);
+        setEvents(response.data.events || []);
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
     }
   }, []);
 
-  // Fetch events for the logged-in user
-  const fetchUserEvents = useCallback(async () => {
-    try {
-      const response = await axios.get('http://localhost:5000/events', { withCredentials: true });
-      if (response.status === 200) {
-        setEvents(response.data.events || []);
-      }
-    } catch (error) {
-      console.error('Error fetching events:', error);
-    }
-  }, []);
-
   useEffect(() => {
     generateCalendarDays(currentYear, currentMonth);
-    fetchUserData();
-    fetchUserEvents();
-  }, [currentYear, currentMonth, fetchUserData, fetchUserEvents]);
+    fetchUserData();  // Fetch all user data including tasks and events
+  }, [currentYear, currentMonth, fetchUserData]);
 
   // Add new event
   const addEvent = async () => {
@@ -207,73 +195,63 @@ const HomeScreen = () => {
                 </li>
               ))}
             </ul>
-            <input
-              type="text"
-              value={newTask}
-              onChange={(e) => setNewTask(e.target.value)}
-              className="mt-2 p-2 border rounded w-full"
-              placeholder="משימה חדשה"
-            />
-            <button onClick={addTask} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">הוסף</button>
+            <div className="mt-4">
+              <input
+                type="text"
+                value={newTask}
+                onChange={(e) => setNewTask(e.target.value)}
+                className="border border-gray-300 p-2 rounded w-full"
+                placeholder="הוסף משימה חדשה"
+              />
+              <button onClick={addTask} className="bg-blue-500 text-white py-2 px-4 rounded mt-2">
+                הוסף משימה
+              </button>
+            </div>
           </div>
 
-          <div className="flex flex-col w-full md:w-2/3 p-4 bg-white rounded shadow-md bg-opacity-80">
-            <h2 className="text-xl font-semibold mb-4">אירועים</h2>
-            <div className="flex justify-between mb-2">
-              <button onClick={() => handleMonthChange(-1)}>Previous</button>
-              <div>{new Date(currentYear, currentMonth).toLocaleDateString('he-IL', { year: 'numeric', month: 'long' })}</div>
-              <button onClick={() => handleMonthChange(1)}>Next</button>
+          <div className="flex flex-col w-full md:w-2/3 p-4 bg-white rounded shadow-md bg-opacity-80 ml-16">
+            <h2 className="text-xl font-semibold mb-4">לוח שנה</h2>
+            <div className="flex justify-between mb-4">
+              <button onClick={() => handleMonthChange(-1)}>&lt;</button>
+              <h3 className="text-xl font-semibold">{`${currentMonth + 1}/${currentYear}`}</h3>
+              <button onClick={() => handleMonthChange(1)}>&gt;</button>
             </div>
-
             <div className="grid grid-cols-7 gap-2">
               {calendarDays.map((day, index) => (
-                <div key={index} className="border border-gray-300 p-2 text-center" onClick={() => day && selectDate(day.day)}>
-                  {day ? day.day : ''}
-                  {day && events.filter(event => new Date(event.date).getDate() === day.day && new Date(event.date).getMonth() === currentMonth).map((event, idx) => (
-                    <div key={idx} className="text-xs text-red-500 mt-1">{event.name}</div>
-                  ))}
+                <div key={index} className={`h-16 flex items-center justify-center cursor-pointer ${day ? 'bg-blue-200' : ''}`} onClick={() => day && selectDate(day.day)}>
+                  {day && day.day}
                 </div>
               ))}
             </div>
-
-            {selectedDate && (
-              <div className="mt-4">
-                <h3>הוסף אירוע ל-{selectedDate.toLocaleDateString('he-IL')}</h3>
-                <input
-                  type="text"
-                  value={newEventDetails.name}
-                  onChange={(e) => setNewEventDetails({ ...newEventDetails, name: e.target.value })}
-                  className="mt-2 p-2 border rounded w-full"
-                  placeholder="שם האירוע"
-                />
-                <input
-                  type="time"
-                  value={newEventDetails.hour}
-                  onChange={(e) => setNewEventDetails({ ...newEventDetails, hour: e.target.value })}
-                  className="mt-2 p-2 border rounded w-full"
-                />
-                <textarea
-                  value={newEventDetails.details}
-                  onChange={(e) => setNewEventDetails({ ...newEventDetails, details: e.target.value })}
-                  className="mt-2 p-2 border rounded w-full"
-                  placeholder="פרטים"
-                />
-                <button onClick={addEvent} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">הוסף אירוע</button>
-              </div>
-            )}
-
-            <div className="mt-4">
-              <h3>אירועים קרובים:</h3>
-              <ul>
-                {events.map((event, index) => (
-                  <li key={index} className="mb-2">
-                    <div>{event.name} - {new Date(`${event.date} ${event.hour}`).toLocaleString('he-IL')}</div>
-                    <button onClick={() => editEvent(event.id, { ...event, name: 'New Name' })}>Edit</button>
-                    <button onClick={() => deleteEvent(event.id)}>Delete</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            <h2 className="text-xl font-semibold mt-4">הוסף אירוע</h2>
+            <input
+              type="date"
+              value={newEventDetails.date}
+              onChange={(e) => setNewEventDetails({ ...newEventDetails, date: e.target.value })}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+            <input
+              type="text"
+              value={newEventDetails.name}
+              onChange={(e) => setNewEventDetails({ ...newEventDetails, name: e.target.value })}
+              className="border border-gray-300 p-2 rounded w-full mt-2"
+              placeholder="שם האירוע"
+            />
+            <input
+              type="time"
+              value={newEventDetails.hour}
+              onChange={(e) => setNewEventDetails({ ...newEventDetails, hour: e.target.value })}
+              className="border border-gray-300 p-2 rounded w-full mt-2"
+            />
+            <textarea
+              value={newEventDetails.details}
+              onChange={(e) => setNewEventDetails({ ...newEventDetails, details: e.target.value })}
+              className="border border-gray-300 p-2 rounded w-full mt-2"
+              placeholder="פרטים נוספים"
+            />
+            <button onClick={addEvent} className="bg-blue-500 text-white py-2 px-4 rounded mt-2">
+              הוסף אירוע
+            </button>
           </div>
         </div>
       </div>
