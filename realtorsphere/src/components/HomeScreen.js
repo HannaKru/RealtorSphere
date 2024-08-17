@@ -20,7 +20,7 @@ const HomeScreen = () => {
   const [editingEventId, setEditingEventId] = useState(null);
   const [userName, setUserName] = useState('');
   const [navigationLinks] = useState([
-    { name: 'נכסים', url: '/' },
+    { name: 'נכסים', url: '/propertyPage' },
     { name: 'ניהול לקוחות', url: '/clients' },
     { name: 'מסמכים', url: '/documents' },
     { name: 'דוא"ל', url: '/email' },
