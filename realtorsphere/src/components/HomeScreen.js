@@ -17,6 +17,7 @@ const HomeScreen = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedEvents, setSelectedEvents] = useState([]);
   const [showEventModal, setShowEventModal] = useState(false);
+  const [editingEventId, setEditingEventId] = useState(null);
   const [userName, setUserName] = useState('');
   const [navigationLinks] = useState([
     { name: 'נכסים', url: '/' },
@@ -52,19 +53,25 @@ const HomeScreen = () => {
       if (response.status === 200) {
         setEvents([...events, response.data.event]);
         setNewEventDetails({ date: '', name: '', hour: '', details: '' });
+        setShowEventModal(false); // Close modal after adding event
       }
     } catch (error) {
       console.error('Error adding event:', error);
     }
   };
 
-  const editEvent = async (eventId, updatedEventDetails) => {
+  const editEvent = async () => {
+    if (!editingEventId) return;
+
     try {
-      const response = await axios.put(`http://localhost:5000/events/${eventId}`, updatedEventDetails, {
+      const response = await axios.put(`http://localhost:5000/events/${editingEventId}`, newEventDetails, {
         withCredentials: true,
       });
       if (response.status === 200) {
-        setEvents(events.map(event => (event.id === eventId ? response.data.event : event)));
+        setEvents(events.map(event => (event.id === editingEventId ? response.data.event : event)));
+        setNewEventDetails({ date: '', name: '', hour: '', details: '' });
+        setEditingEventId(null); // Clear editing state
+        setShowEventModal(false); // Close modal after editing event
       }
     } catch (error) {
       console.error('Error editing event:', error);
@@ -162,6 +169,12 @@ const HomeScreen = () => {
     setShowEventModal(true);
   };
 
+  const openEditModal = event => {
+    setNewEventDetails({ date: event.date, name: event.name, hour: event.hour, details: event.details });
+    setEditingEventId(event.id);
+    setShowEventModal(true);
+  };
+
   const logout = () => {
     localStorage.removeItem('currentUser');
     window.location.href = '/';
@@ -175,7 +188,7 @@ const HomeScreen = () => {
         </div>
         <div className="text-white text-4xl">🔔</div>
         <div className="text-white text-4xl" onClick={logout}>
-          Logout
+          התנתק
         </div>
       </div>
 
@@ -196,132 +209,133 @@ const HomeScreen = () => {
         </div>
 
         <div className="flex flex-grow mt-20 mr-4">
-          <div className="flex flex-col w-1/2 p-4 bg-white rounded shadow-md bg-opacity-80 mr-4">
-            <h2 className="text-xl font-semibold mb-4 text-right">יומן</h2>
-            <div className="flex justify-between items-center mb-2">
-              <button onClick={() => handleMonthChange(-1)}>{'<'}</button>
-              <h2 className="text-xl font-semibold">
-                {new Date(currentYear, currentMonth).toLocaleString('he-IL', {
-                  month: 'long',
-                  year: 'numeric',
-                })}
-              </h2>
-              <button onClick={() => handleMonthChange(1)}>{'>'}</button>
-            </div>
-            <div className="grid grid-cols-7 gap-2">
-              {['ראשון', 'שני', 'שלישי', 'רביעי', 'חמישי', 'שישי', 'שבת'].map(day => (
-                <div key={day} className="text-center font-semibold">
-                  {day}
-                </div>
-              ))}
-              {calendarDays.map((day, index) =>
-                day ? (
-                  <div
-                    key={index}
-                    onClick={() => selectDate(day.day)}
-                    className={`text-center p-2 rounded cursor-pointer ${
-                      day.events.length > 0 ? 'bg-blue-500 text-white' : 'bg-gray-100'
-                    }`}
-                  >
-                    {day.day}
-                  </div>
-                ) : (
-                  <div key={index}></div>
-                )
-              )}
-            </div>
-            <div className="mt-4">
-              <h2 className="text-xl font-semibold mb-4 text-right">אירועים</h2>
-              {selectedDate && (
-                <div>
-                  <h3 className="text-lg font-semibold text-right">{selectedDate.toLocaleDateString('he-IL')}</h3>
-                  <ul>
-                    {selectedEvents.length > 0 ? (
-                      selectedEvents.map(event => (
-                        <li key={event.id} className="mb-2">
-                          <h4 className="font-semibold">{event.name}</h4>
-                          <p>{event.hour}</p>
-                          <p>{event.details}</p>
-                          <button onClick={() => editEvent(event.id, { ...event })}>ערוך</button>
-                          <button onClick={() => deleteEvent(event.id)}>מחק</button>
-                        </li>
-                      ))
-                    ) : (
-                      <p className="text-right">אין אירועים ביום זה</p>
-                    )}
-                  </ul>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col w-1/2 p-4 bg-white rounded shadow-md bg-opacity-80">
-            <h2 className="text-xl font-semibold mb-4 text-right">משימות</h2>
-            <div>
-              <ul className="space-y-2">
-                {todoList.map(task => (
-                  <li key={task.id} className="flex items-center justify-between">
-                    <span>{task.text}</span>
-                    <input
+          <div className="flex flex-col w-1/3 p-4 bg-white rounded shadow-md bg-opacity-80 mr-4">
+            <h2 className="text-xl font-semibold mb-4">רשימת משימות</h2>
+            <ul className="space-y-2">
+              {todoList.map(task => (
+                <li key={task.id} className="flex justify-between items-center">
+                  <span className={`flex-grow ${task.status === 'completed' ? 'line-through' : ''}`}>
+                    {task.text}
+                  </span>
+                  <input
                       type="checkbox"
                       checked={task.status === 'completed'}
                       onChange={() => updateTaskStatus(task.id, task.status === 'completed' ? 'pending' : 'completed')}
-                    />
-                  </li>
-                ))}
-              </ul>
-              <div className="flex items-center mt-4">
-                <input
+                  />
+
+                </li>
+              ))}
+            </ul>
+            <div className="mt-4">
+              <input
                   type="text"
                   value={newTask}
                   onChange={e => setNewTask(e.target.value)}
-                  placeholder="הוסף משימה חדשה"
-                  className="w-full px-3 py-2 border rounded"
-                />
-                <button onClick={addTask} className="ml-2 bg-blue-500 text-white py-2 px-4 rounded">
-                  הוסף
-                </button>
-              </div>
+                  placeholder="New Task"
+                className="border border-gray-300 p-2 rounded w-full"
+              />
+              <button onClick={addTask} className="mt-2 bg-blue-500 text-white py-2 px-4 rounded">
+                הוסף משימה
+              </button>
+            </div>
+          </div>
+
+          <div className="flex flex-col w-1/3 p-4 bg-white rounded shadow-md bg-opacity-80">
+            <h2 className="text-xl font-semibold mb-4">לוח שנה</h2>
+            <div className="flex justify-between mb-4">
+              <button onClick={() => handleMonthChange(-1)}>&lt;</button>
+              <h3 className="text-lg font-bold">{`${new Date(currentYear, currentMonth).toLocaleString('en-US', { month: 'long' })} ${currentYear}`}</h3>
+              <button onClick={() => handleMonthChange(1)}>&gt;</button>
+            </div>
+            <div className="grid grid-cols-7 gap-2">
+              {calendarDays.map((day, index) => (
+                <div
+                  key={index}
+                  className={`border p-2 text-center ${day ? 'cursor-pointer' : 'bg-gray-100'}`}
+                  onClick={() => day && selectDate(day.day)}
+                >
+                  {day && (
+                    <>
+                      <div className="font-bold">{day.day}</div>
+                      <ul>
+                        {day.events.map(event => (
+                          <li key={event.id} className="text-sm">
+                            {event.name}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                  )}
+                </div>
+              ))}
+            </div>
+            <div className="mt-4">
+              <h3 className="text-lg font-bold">
+                  {selectedDate && selectedDate.toDateString()} אירועים ב
+              </h3>
+              <ul>
+                {selectedEvents.map(event => (
+                  <li key={event.id} className="flex items-center justify-between">
+                    <div>
+                      <div className="font-bold">{event.name}</div>
+                      <div className="text-sm">{`${event.hour} - ${event.details}`}</div>
+                    </div>
+                    <div>
+                      <button onClick={() => openEditModal(event)} className="mr-2 text-blue-500">
+                        ערוך
+                      </button>
+                      <button onClick={() => deleteEvent(event.id)} className="text-red-500">
+                        מחק
+                      </button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
             </div>
           </div>
         </div>
       </div>
 
       {showEventModal && (
-        <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
-          <div className="bg-white p-4 rounded">
-            <h3 className="text-lg font-semibold text-right">אירועים</h3>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-white p-6 rounded shadow-lg">
+            <h3 className="text-lg font-semibold mb-4">
+              {editingEventId ? 'Edit Event' : 'Add New Event'}
+            </h3>
             <input
               type="date"
               value={newEventDetails.date}
               onChange={e => setNewEventDetails({ ...newEventDetails, date: e.target.value })}
-              className="block w-full mt-2"
+              className="border border-gray-300 p-2 rounded w-full mb-2"
             />
             <input
               type="text"
               value={newEventDetails.name}
               onChange={e => setNewEventDetails({ ...newEventDetails, name: e.target.value })}
-              placeholder="שם אירוע"
-              className="block w-full mt-2"
+              placeholder="Event Name"
+              className="border border-gray-300 p-2 rounded w-full mb-2"
             />
             <input
               type="time"
               value={newEventDetails.hour}
               onChange={e => setNewEventDetails({ ...newEventDetails, hour: e.target.value })}
-              className="block w-full mt-2"
+              className="border border-gray-300 p-2 rounded w-full mb-2"
             />
             <textarea
               value={newEventDetails.details}
               onChange={e => setNewEventDetails({ ...newEventDetails, details: e.target.value })}
-              placeholder="פרטים נוספים"
-              className="block w-full mt-2"
+              placeholder="Event Details"
+              className="border border-gray-300 p-2 rounded w-full mb-2"
             />
-            <div className="flex justify-end mt-4">
-              <button onClick={() => setShowEventModal(false)} className="bg-gray-300 px-4 py-2 rounded">
-                בטל
+            <div className="flex justify-end">
+              <button onClick={() => setShowEventModal(false)} className="mr-2 bg-gray-500 text-white py-2 px-4 rounded">
+                לבטל
               </button>
-              <button onClick={addEvent} className="bg-blue-500 text-white px-4 py-2 rounded ml-2">
-                שמור
+              <button
+                onClick={editingEventId ? editEvent : addEvent}
+                className="bg-blue-500 text-white py-2 px-4 rounded"
+              >
+                {editingEventId ? 'לשמור שינויים' : 'הוסף אירוע'}
               </button>
             </div>
           </div>
