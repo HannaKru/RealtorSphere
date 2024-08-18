@@ -7,6 +7,8 @@ from firebase_config import initialize_firebase
 from login import login_user
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status, get_events_by_email,add_event, edit_event_by_id, delete_event_by_id
 from forgetPass import check_user_and_send_email
+from Property import get_properties, get_property_by_id
+
 
 app = Flask(__name__)
 #CORS(app)
@@ -149,6 +151,31 @@ def delete_event(event_id):
     delete_event_by_id(event_id)
     return jsonify({"message": "Event deleted"}), 200
 
+
+@app.route('/propertyPage', methods=['GET'])
+def fetch_properties():
+    if 'user_email' not in session:
+        return jsonify({"message": "User not logged in"}), 401
+
+    properties = get_properties()
+    if properties:
+        # Convert the properties object to a list of property values
+        properties_list = list(properties.values())
+        return jsonify(properties_list), 200
+    else:
+        return jsonify({"message": "No properties found"}), 404
+
+
+@app.route('/propertyPage/<property_id>', methods=['GET'])
+def fetch_property_by_id(property_id):
+    if 'user_email' not in session:
+        return jsonify({"message": "User not logged in"}), 401
+
+    property_data = get_property_by_id(property_id)
+    if property_data:
+        return jsonify(property_data), 200
+    else:
+        return jsonify({"message": "Property not found"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

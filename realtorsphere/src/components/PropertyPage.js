@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const PropertyPage = () => {
     const [activeTab, setActiveTab] = useState('all');
@@ -14,9 +14,14 @@ const PropertyPage = () => {
         transactionType: '',
     });
 
-    const properties = [
-        // Populate with property data
-    ];
+    const [properties, setProperties] = useState([]);
+
+    useEffect(() => {
+        fetch('http://localhost:5000/propertyPage')
+            .then(response => response.json())
+            .then(data => setProperties(data))
+            .catch(error => console.error('Error fetching properties:', error));
+    }, []);
 
     const handleSearchChange = (e) => {
         setSearchFilters({ ...searchFilters, [e.target.name]: e.target.value });
@@ -28,6 +33,18 @@ const PropertyPage = () => {
 
     const filteredProperties = properties.filter(property => {
         // Implement filtering logic based on searchFilters and activeTab
+        return (
+            (activeTab === 'all' || property.transactionType === activeTab) &&
+            (searchFilters.ownerName === '' || property.owner.includes(searchFilters.ownerName)) &&
+            (searchFilters.roomNumberFrom === '' || property.rooms >= parseInt(searchFilters.roomNumberFrom)) &&
+            (searchFilters.roomNumberTo === '' || property.rooms <= parseInt(searchFilters.roomNumberTo)) &&
+            (searchFilters.priceFrom === '' || property.price >= parseInt(searchFilters.priceFrom)) &&
+            (searchFilters.priceTo === '' || property.price <= parseInt(searchFilters.priceTo)) &&
+            (searchFilters.city === '' || property.city.includes(searchFilters.city)) &&
+            (searchFilters.propertyType === '' || property.propertyType.includes(searchFilters.propertyType)) &&
+            (searchFilters.address === '' || property.address.includes(searchFilters.address)) &&
+            (searchFilters.transactionType === '' || property.transactionType.includes(searchFilters.transactionType))
+        );
     });
 
     return (
@@ -114,6 +131,10 @@ const PropertyPage = () => {
                     />
                     <button className="col-span-2 md:col-span-1 bg-blue-600 text-white p-2 rounded-md">
                         חיפוש
+                    </button>
+
+                    <button className="col-span-2 md:col-span-1 bg-pink-700 text-white p-2 rounded-md">
+                        הוסף נכס חדש
                     </button>
                 </div>
 
