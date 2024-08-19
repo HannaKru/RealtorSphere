@@ -160,7 +160,7 @@ def fetch_properties():
     properties = get_properties()
     if properties:
         # Convert the properties object to a list of property values
-        properties_list = list(properties.values())
+        properties_list = list(properties.values()) if isinstance(properties, dict) else properties
         return jsonify(properties_list), 200
     else:
         return jsonify({"message": "No properties found"}), 404

@@ -17,10 +17,27 @@ const PropertyPage = () => {
     const [properties, setProperties] = useState([]);
 
     useEffect(() => {
-        fetch('http://localhost:5000/propertyPage')
-            .then(response => response.json())
-            .then(data => setProperties(data))
-            .catch(error => console.error('Error fetching properties:', error));
+        const token = localStorage.getItem('authToken'); // Retrieve the auth token from local storage
+
+
+        fetch('http://localhost:5000/propertyPage', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+            }
+        })
+        .then(response => {
+            if (response.status === 401) {
+                throw new Error('User not logged in');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Fetched properties:', data);
+            setProperties(data);
+        })
+        .catch(error => console.error('Error fetching properties:', error));
     }, []);
 
     const handleSearchChange = (e) => {
@@ -31,21 +48,22 @@ const PropertyPage = () => {
         setActiveTab(tab);
     };
 
-    const filteredProperties = properties.filter(property => {
-        // Implement filtering logic based on searchFilters and activeTab
-        return (
-            (activeTab === 'all' || property.transactionType === activeTab) &&
-            (searchFilters.ownerName === '' || property.owner.includes(searchFilters.ownerName)) &&
-            (searchFilters.roomNumberFrom === '' || property.rooms >= parseInt(searchFilters.roomNumberFrom)) &&
-            (searchFilters.roomNumberTo === '' || property.rooms <= parseInt(searchFilters.roomNumberTo)) &&
-            (searchFilters.priceFrom === '' || property.price >= parseInt(searchFilters.priceFrom)) &&
-            (searchFilters.priceTo === '' || property.price <= parseInt(searchFilters.priceTo)) &&
-            (searchFilters.city === '' || property.city.includes(searchFilters.city)) &&
-            (searchFilters.propertyType === '' || property.propertyType.includes(searchFilters.propertyType)) &&
-            (searchFilters.address === '' || property.address.includes(searchFilters.address)) &&
-            (searchFilters.transactionType === '' || property.transactionType.includes(searchFilters.transactionType))
-        );
-    });
+    const filteredProperties = Array.isArray(properties)
+        ? properties.filter(property => {
+            return (
+                (activeTab === 'all' || property.transactionType === activeTab) &&
+                (searchFilters.ownerName === '' || property.owner.includes(searchFilters.ownerName)) &&
+                (searchFilters.roomNumberFrom === '' || property.rooms >= parseInt(searchFilters.roomNumberFrom)) &&
+                (searchFilters.roomNumberTo === '' || property.rooms <= parseInt(searchFilters.roomNumberTo)) &&
+                (searchFilters.priceFrom === '' || property.price >= parseInt(searchFilters.priceFrom)) &&
+                (searchFilters.priceTo === '' || property.price <= parseInt(searchFilters.priceTo)) &&
+                (searchFilters.city === '' || property.city.includes(searchFilters.city)) &&
+                (searchFilters.propertyType === '' || property.propertyType.includes(searchFilters.propertyType)) &&
+                (searchFilters.address === '' || property.address.includes(searchFilters.address)) &&
+                (searchFilters.transactionType === '' || property.transactionType.includes(searchFilters.transactionType))
+            );
+        })
+        : [];
 
     return (
         <div className="bg-gray-50 min-h-screen rtl">
