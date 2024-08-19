@@ -26,6 +26,8 @@ def send_password_reset_email(email, password):
 
 
 def check_user_and_send_email(email, id_number):
+    if not email or not id_number:
+        return {"message": "נא למלא את כל השדות"}, 400
     users_ref = db_ref.child('Person')
     users = users_ref.get()
 
