@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
+import axios from "axios";
 
 const PropertyPage = () => {
     const [activeTab, setActiveTab] = useState('all');
@@ -16,38 +17,39 @@ const PropertyPage = () => {
 
     const [properties, setProperties] = useState([]);
 
-    useEffect(() => {
-        const token = localStorage.getItem('authToken'); // Retrieve the auth token from local storage
-
-
-        fetch('http://localhost:5000/propertyPage', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}` // Include the token in the Authorization header
+    // Fetch user data from API
+    const fetchUserData = useCallback(async () => {
+        try {
+            console.log('Fetching user data...');
+            const response = await axios.get('http://localhost:5000/propertyPage', { withCredentials: true });
+            console.log('Response:', response);  // Debugging to check the response
+            if (response.status === 200) {
+                setProperties(response.data);
+                console.log('Properties:', response.data);  // Check the fetched properties data
+            } else {
+                console.error('Failed to fetch data, status:', response.status);
             }
-        })
-        .then(response => {
-            if (response.status === 401) {
-                throw new Error('User not logged in');
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Fetched properties:', data);
-            setProperties(data);
-        })
-        .catch(error => console.error('Error fetching properties:', error));
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
     }, []);
 
+    // UseEffect to call fetchUserData when component mounts
+    useEffect(() => {
+        fetchUserData();  // Fetch data when component mounts
+    }, [fetchUserData]);
+
+    // Handle search filter input change
     const handleSearchChange = (e) => {
         setSearchFilters({ ...searchFilters, [e.target.name]: e.target.value });
     };
 
+    // Handle tab change for filtering properties
     const handleTabChange = (tab) => {
         setActiveTab(tab);
     };
 
+    // Filter properties based on search filters and active tab
     const filteredProperties = Array.isArray(properties)
         ? properties.filter(property => {
             return (

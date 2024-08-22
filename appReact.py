@@ -11,12 +11,8 @@ from Property import get_properties, get_property_by_id
 
 
 app = Flask(__name__)
-#CORS(app)
 CORS(app, supports_credentials=True)
-#cors = CORS(app, resources={r"/*": {"origins": "http://localhost:3006"}}, supports_credentials=True)
 app.config['SECRET_KEY'] = secrets.token_hex(32)
-#s = requests.Session()
-
 db_ref = initialize_firebase()
 
 @app.route('/')
@@ -154,6 +150,7 @@ def delete_event(event_id):
 
 @app.route('/propertyPage', methods=['GET'])
 def fetch_properties():
+    print("Current session state:", session)
     if 'user_email' not in session:
         return jsonify({"message": "User not logged in"}), 401
 
