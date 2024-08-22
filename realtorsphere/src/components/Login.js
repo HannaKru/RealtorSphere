@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import './tailwind.css'; // Assuming you're using Tailwind, but you can use regular CSS as well.
+import './tailwind.css';
 
 function Login() {
     const [email, setEmail] = useState('');

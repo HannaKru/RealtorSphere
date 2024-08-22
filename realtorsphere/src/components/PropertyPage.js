@@ -174,25 +174,28 @@ const PropertyPage = () => {
                 {/* Property Table */}
                 <table className="min-w-full bg-white">
                     <thead>
-                        <tr>
-                            {['סטטוס', 'בעלים', 'מס׳ חדרים', 'מחיר', 'גודל במ"ר', 'כתובת', 'עיר', 'סוג נכס'].map(header => (
-                                <th key={header} className="p-2 border-b-2 border-gray-300 text-right text-gray-600">{header}</th>
-                            ))}
-                        </tr>
+                    <tr>
+                        {['סטטוס', 'בעלים', 'מס׳ חדרים', 'מחיר', 'גודל במ"ר', 'כתובת', 'עיר', 'סוג נכס'].map(header => (
+                            <th key={header}
+                                className="p-2 border-b-2 border-gray-300 text-right text-gray-600">{header}</th>
+                        ))}
+                    </tr>
                     </thead>
                     <tbody>
-                        {filteredProperties.map(property => (
+                    {filteredProperties && filteredProperties.map(property => (
+                        property && (
                             <tr key={property.id}>
-                                <td className="p-2 border-b">{property.status}</td>
-                                <td className="p-2 border-b">{property.owner}</td>
-                                <td className="p-2 border-b">{property.rooms}</td>
-                                <td className="p-2 border-b">{property.price}</td>
-                                <td className="p-2 border-b">{property.size}</td>
-                                <td className="p-2 border-b">{property.address}</td>
-                                <td className="p-2 border-b">{property.city}</td>
-                                <td className="p-2 border-b">{property.propertyType}</td>
+                                <td className="p-2 border-b">{property.status || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.owner || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.rooms || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.price || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.size || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.address || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.city || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.propertyType || 'N/A'}</td>
                             </tr>
-                        ))}
+                        )
+                    ))}
                     </tbody>
                 </table>
             </div>
