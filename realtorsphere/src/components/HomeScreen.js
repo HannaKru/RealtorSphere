@@ -21,7 +21,7 @@ const HomeScreen = () => {
   const [userName, setUserName] = useState('');
   const [navigationLinks] = useState([
     { name: 'נכסים', url: '/propertyPage' },
-    { name: 'ניהול לקוחות', url: '/clients' },
+    { name: 'ניהול לקוחות', url: '/clientProfessionalPage' },
     { name: 'מסמכים', url: '/documents' },
     { name: 'דוא"ל', url: '/sendMessage' },
     { name: 'סיכומי פגישות', url: '/meetings' },
