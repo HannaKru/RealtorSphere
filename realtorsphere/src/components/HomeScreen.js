@@ -23,7 +23,7 @@ const HomeScreen = () => {
     { name: 'נכסים', url: '/propertyPage' },
     { name: 'ניהול לקוחות', url: '/clients' },
     { name: 'מסמכים', url: '/documents' },
-    { name: 'דוא"ל', url: '/email' },
+    { name: 'דוא"ל', url: '/sendMessage' },
     { name: 'סיכומי פגישות', url: '/meetings' },
     { name: 'אנשי קשר', url: '/contacts' },
     { name: 'עריכת פרופיל', url: '/edit-profile' },

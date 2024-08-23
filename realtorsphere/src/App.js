@@ -6,6 +6,7 @@ import HomeScreen from './components/HomeScreen';
 import Registration from './components/Registration';
 import ForgotPass from "./components/ForgotPass";
 import PropertyPage from "./components/PropertyPage";
+import SendMessage from "./components/SendMessage";
 function App() {
   return (
       <Router>
@@ -16,6 +17,7 @@ function App() {
                 <Route path="/registration" element={<Registration />} />
                 <Route path="/forgotPass" element={<ForgotPass />} />
                 <Route path="/propertyPage" element={<PropertyPage />} />
+                <Route path="/sendMessage" element={<SendMessage />} />
             </Routes>
         </div>
       </Router>

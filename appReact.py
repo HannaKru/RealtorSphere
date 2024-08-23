@@ -8,12 +8,17 @@ from login import login_user
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status, get_events_by_email,add_event, edit_event_by_id, delete_event_by_id
 from forgetPass import check_user_and_send_email
 from Property import get_properties, get_property_by_id
+from sendMessage import send_email_with_attachment
+from werkzeug.utils import secure_filename
+import os
 
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 app.config['SECRET_KEY'] = secrets.token_hex(32)
 db_ref = initialize_firebase()
+app.config['UPLOAD_FOLDER'] = 'uploads/'  # Define where to save uploaded files
+
 
 @app.route('/')
 def index():
@@ -173,6 +178,41 @@ def fetch_property_by_id(property_id):
         return jsonify(property_data), 200
     else:
         return jsonify({"message": "Property not found"}), 404
+
+
+
+@app.route('/sendMessage', methods=['POST'])
+def send_email():
+    emails = request.form.get('emails')
+    subject = request.form.get('subject')
+    message = request.form.get('message')
+    attachment = request.files.get('attachment')
+    db_file_url = request.form.get('dbFile')
+
+    attachment_path = None
+    if attachment:
+        filename = secure_filename(attachment.filename)
+        attachment_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        attachment.save(attachment_path)
+
+    success = send_email_with_attachment(emails, subject, message, attachment_path, db_file_url)
+
+    if success:
+        return jsonify({"message": "Email sent successfully"}), 200
+    else:
+        return jsonify({"message": "Failed to send email"}), 500
+
+@app.route('/getFiles', methods=['GET'])
+def get_files():
+    files_ref = db_ref.child('files')
+    files = files_ref.get()
+
+    if not files:
+        return jsonify({"files": []}), 200
+
+    files_list = [{"name": file['name'], "url": file['url']} for file in files.values()]
+    return jsonify({"files": files_list}), 200
+
 
 if __name__ == '__main__':
     app.run(debug=True)
