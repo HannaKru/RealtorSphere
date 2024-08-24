@@ -9,6 +9,7 @@ from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_t
 from forgetPass import check_user_and_send_email
 from Property import get_properties, get_property_by_id
 from sendMessage import send_email_with_attachment
+from ClientProfessionalPage import get_persons
 from werkzeug.utils import secure_filename
 import os
 
@@ -213,6 +214,14 @@ def get_files():
     files_list = [{"name": file['name'], "url": file['url']} for file in files.values()]
     return jsonify({"files": files_list}), 200
 
+
+@app.route('/clientProfessionalPage', methods=['GET'])
+def fetch_persons():
+    print("Current session state:", session)  # Debug line
+    persons, error = get_persons()
+    if error:
+        return jsonify({"error": error}), 500
+    return jsonify(persons), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
