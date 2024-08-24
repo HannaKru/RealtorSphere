@@ -5,6 +5,8 @@ db_ref = initialize_firebase()
 
 def get_properties():
     properties_ref = db_ref.child('property')
+    owner_ref = db_ref.child('Ownership')
+    deal = db_ref.child('Deal')
     properties = properties_ref.get()
     return properties
 

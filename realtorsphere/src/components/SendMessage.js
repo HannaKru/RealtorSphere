@@ -61,7 +61,7 @@ const SendMessage = () => {
                 <p className="text-lg">Makes Real Estate Easy</p>
             </header>
 
-            <div className="p-6">
+            <div className="p-6 max-w-4xl mx-auto">
                 {/* Email Addresses */}
                 <div dir="rtl" className="mb-4">
                     <h1 className="text-2xl font-bold mb-4 text-center">אימייל</h1>
