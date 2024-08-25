@@ -9,7 +9,7 @@ from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_t
 from forgetPass import check_user_and_send_email
 from Property import get_properties, get_property_by_id
 from sendMessage import send_email_with_attachment
-from ClientProfessionalPage import get_persons
+from ClientProfessionalPage import get_filtered_persons
 from werkzeug.utils import secure_filename
 import os
 
@@ -160,13 +160,21 @@ def fetch_properties():
     if 'user_email' not in session:
         return jsonify({"message": "User not logged in"}), 401
 
-    properties = get_properties()
+    ownerName = request.args.get('ownerName', '')
+    roomNumber = request.args.get('roomNumber', '')
+    price = request.args.get('price', '')
+    city = request.args.get('city', '')
+    propertyType = request.args.get('propertyType', '')
+    transactionType = request.args.get('transactionType', '')
+
+    properties = get_properties(ownerName=ownerName, roomNumber=roomNumber, price=price, city=city,
+                                propertyType=propertyType, transactionType=transactionType)
+
     if properties:
-        # Convert the properties object to a list of property values
-        properties_list = list(properties.values()) if isinstance(properties, dict) else properties
-        return jsonify(properties_list), 200
+        return jsonify(properties), 200
     else:
         return jsonify({"message": "No properties found"}), 404
+
 
 
 @app.route('/propertyPage/<property_id>', methods=['GET'])
@@ -216,12 +224,18 @@ def get_files():
 
 
 @app.route('/clientProfessionalPage', methods=['GET'])
-def fetch_persons():
-    print("Current session state:", session)  # Debug line
-    persons, error = get_persons()
+def fetch_filtered_persons():
+    name = request.args.get('name', '')
+    city = request.args.get('city', '')
+    person_id = request.args.get('id', '')
+    tab = request.args.get('tab', 'owners')  # Get the current tab (owners or clients)
+
+    persons, error = get_filtered_persons(name=name, city=city, person_id=person_id, tab=tab)
     if error:
         return jsonify({"error": error}), 500
     return jsonify(persons), 200
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

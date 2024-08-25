@@ -9,27 +9,29 @@ const ClientProfessionalPage = () => {
         id: '',
     });
 
-    const [owners, setOwners] = useState([]);
-    const [clients, setClients] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
+
+    const fetchData = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/clientProfessionalPage', {
+                params: {
+                    name: searchFilters.name,
+                    city: searchFilters.city,
+                    id: searchFilters.id,
+                    tab: activeTab,
+                },
+                withCredentials: true
+            });
+
+            setFilteredData(response.data);
+        } catch (error) {
+            console.error('Error fetching data:', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/clientProfessionalPage', { withCredentials: true });
-                const data = response.data;
-
-                const ownersData = data.filter(person => person.Type && person.Type.Owner);
-                const clientsData = data.filter(person => person.Type && person.Type.Client);
-
-                setOwners(ownersData);
-                setClients(clientsData);
-            } catch (error) {
-                console.error('Error fetching data:', error);
-            }
-        };
-
         fetchData();
-    }, []);
+    }, [searchFilters, activeTab]);
 
     const handleSearchChange = (e) => {
         setSearchFilters({ ...searchFilters, [e.target.name]: e.target.value });
@@ -37,19 +39,8 @@ const ClientProfessionalPage = () => {
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
+        fetchData();
     };
-
-    const filteredData = activeTab === 'clients'
-        ? clients.filter(client =>
-            (client.FirstName && client.FirstName.includes(searchFilters.name)) &&
-            (client.LastName && client.LastName.includes(searchFilters.name)) &&
-            (client.city && client.city.includes(searchFilters.city))
-          )
-        : owners.filter(owner =>
-            (owner.FirstName && owner.FirstName.includes(searchFilters.name)) &&
-            (owner.LastName && owner.LastName.includes(searchFilters.name)) &&
-            (owner.city && owner.city.includes(searchFilters.city))
-          );
 
     return (
         <div className="bg-gray-50 min-h-screen rtl">
@@ -88,7 +79,7 @@ const ClientProfessionalPage = () => {
                         />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <button className="bg-blue-600 text-white p-2 rounded-md">
+                        <button onClick={fetchData} className="bg-blue-600 text-white p-2 rounded-md">
                             חיפוש
                         </button>
                         <button className="bg-purple-600 text-white p-2 rounded-md">
@@ -111,36 +102,38 @@ const ClientProfessionalPage = () => {
                 </div>
 
                 {/* Table */}
-                <table className="min-w-full bg-white">
-                    <thead>
-                        <tr>
-                            <th className="p-2 border-b-2 border-gray-300 text-right text-gray-600">ת.ז</th>
-                            <th className="p-2 border-b-2 border-gray-300 text-right text-gray-600">שם</th>
-                            <th className="p-2 border-b-2 border-gray-300 text-right text-gray-600">טלפון</th>
-                            <th className="p-2 border-b-2 border-gray-300 text-right text-gray-600">עיר</th>
-                            <th className="p-2 border-b-2 border-gray-300 text-right text-gray-600">סטטוס</th>
-                            {activeTab === 'clients' && (
-                                <th className="p-2 border-b-2 border-gray-300 text-right text-gray-600">תקציב</th>
-                            )}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filteredData.map((data, index) => (
-                            <tr key={index}>
-                                <td className="p-2 border-b text-right">{data.id}</td>
-                                <td className="p-2 border-b text-right">{data.FirstName} {data.LastName}</td>
-                                <td className="p-2 border-b text-right">{data.Phone}</td>
-                                <td className="p-2 border-b text-right">{data.city || 'N/A'}</td>
-                                <td className="p-2 border-b text-right">
-                                    {activeTab === 'clients' ? data.Type.Client.buyORrent : data.Type.Owner.sellORrent}
-                                </td>
+                <div className="overflow-x-auto">
+                    <table className="min-w-full bg-white text-right" dir="rtl">
+                        <thead>
+                            <tr>
+                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">ת.ז</th>
+                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">שם</th>
+                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">טלפון</th>
+                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">עיר</th>
+                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">סטטוס</th>
                                 {activeTab === 'clients' && (
-                                    <td className="p-2 border-b text-right">{data.Type.Client.budget || 'N/A'}</td>
+                                    <th className="p-2 border-b-2 border-gray-300 text-gray-600">תקציב</th>
                                 )}
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {filteredData.map((data, index) => (
+                                <tr key={index}>
+                                    <td className="p-2 border-b">{data.id}</td>
+                                    <td className="p-2 border-b">{data.FirstName} {data.LastName}</td>
+                                    <td className="p-2 border-b">{data.Phone}</td>
+                                    <td className="p-2 border-b">{data.city || 'N/A'}</td>
+                                    <td className="p-2 border-b">
+                                        {activeTab === 'clients' ? data.Type.Client?.buyORrent || 'N/A' : data.Type.Owner?.sellORrent || 'N/A'}
+                                    </td>
+                                    {activeTab === 'clients' && (
+                                        <td className="p-2 border-b">{data.Type.Client?.budget || 'N/A'}</td>
+                                    )}
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     );
