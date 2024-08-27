@@ -167,14 +167,18 @@ def fetch_properties():
     propertyType = request.args.get('propertyType', '')
     transactionType = request.args.get('transactionType', '')
 
-    properties = get_properties(ownerName=ownerName, roomNumber=roomNumber, price=price, city=city,
-                                propertyType=propertyType, transactionType=transactionType)
+    # Get the user's email from the session
+    email = session.get('user_email', '')
 
+    # Call the function to fetch properties based on the filters and user's email
+    properties = get_properties(ownerName=ownerName, roomNumber=roomNumber, price=price, city=city,
+                                propertyType=propertyType, transactionType=transactionType, email=email)
+
+    print("Filtered Properties:", properties)  # Debugging line
     if properties:
         return jsonify(properties), 200
     else:
         return jsonify({"message": "No properties found"}), 404
-
 
 
 @app.route('/propertyPage/<property_id>', methods=['GET'])

@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import axios from "axios";
 
 const PropertyPage = () => {
-    const [activeTab, setActiveTab] = useState('all');
+    const [activeTab, setActiveTab] = useState('כל הנכסים');
     const [searchFilters, setSearchFilters] = useState({
         ownerName: '',
         roomNumberFrom: '',
@@ -12,7 +12,6 @@ const PropertyPage = () => {
         city: '',
         propertyType: '',
         address: '',
-        transactionType: '',
     });
 
     const [properties, setProperties] = useState([]);
@@ -22,7 +21,8 @@ const PropertyPage = () => {
             const response = await axios.get('http://localhost:5000/propertyPage', {
                 params: {
                     ...searchFilters,
-                    transactionType: activeTab === 'all' ? '' : activeTab,
+                    transactionType: activeTab,
+                    email: sessionStorage.getItem('user_email'),  // Assuming email is stored in sessionStorage
                 },
                 withCredentials: true
             });
@@ -46,6 +46,7 @@ const PropertyPage = () => {
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
+        fetchUserData(); // Update properties when the tab is changed
     };
 
     return (
@@ -55,9 +56,10 @@ const PropertyPage = () => {
                 <p className="text-lg">Makes Real Estate Easy</p>
             </header>
 
-            <div className="p-4 md:p-6">
+            <div className="p-6">
                 {/* Search Filters */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
+                    {/* Input fields */}
                     <input
                         type="text"
                         name="ownerName"
@@ -122,62 +124,52 @@ const PropertyPage = () => {
                         onChange={handleSearchChange}
                         className="p-2 border rounded-md text-right"
                     />
-                    <input
-                        type="text"
-                        name="transactionType"
-                        placeholder="סוג עסקה"
-                        value={searchFilters.transactionType}
-                        onChange={handleSearchChange}
-                        className="p-2 border rounded-md text-right"
-                    />
-                    <button className="col-span-1 sm:col-span-2 md:col-span-1 bg-blue-600 text-white p-2 rounded-md" onClick={fetchUserData}>
+                    <button className="col-span-2 md:col-span-1 bg-blue-600 text-white p-2 rounded-md" onClick={fetchUserData}>
                         חיפוש
                     </button>
 
-                    <button className="col-span-1 sm:col-span-2 md:col-span-1 bg-pink-700 text-white p-2 rounded-md">
+                    <button className="col-span-2 md:col-span-1 bg-pink-700 text-white p-2 rounded-md">
                         הוסף נכס חדש
                     </button>
                 </div>
 
                 {/* Tabs */}
-                <div className="flex flex-wrap justify-around mb-4">
-                    {['all', 'rent', 'sell', 'external', 'archive'].map(tab => (
+                <div className="flex justify-around mb-4">
+                    {['כל הנכסים', 'להשכרה', 'למכירה', 'מקורות חיצוניים', 'ארכיון'].map(tab => (
                         <button
                             key={tab}
-                            className={`p-2 mb-2 rounded-md ${activeTab === tab ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
+                            className={`p-2 rounded-md ${activeTab === tab ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
                             onClick={() => handleTabChange(tab)}
                         >
-                            {tab === 'all' ? 'כל הנכסים' : tab === 'rent' ? 'להשכרה' : tab === 'sell' ? 'למכירה' : tab === 'external' ? 'מקורות חיצוניים' : 'ארכיון'}
+                            {tab}
                         </button>
                     ))}
                 </div>
 
                 {/* Property Table */}
-                <div className="overflow-x-auto">
-                    <table className="min-w-full bg-white text-right">
-                        <thead>
-                            <tr>
-                                {['סטטוס', 'בעלים', 'מס׳ חדרים', 'מחיר', 'גודל במ"ר', 'כתובת', 'עיר', 'סוג נכס'].map(header => (
-                                    <th key={header} className="p-2 border-b-2 border-gray-300 text-gray-600">{header}</th>
-                                ))}
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {properties.map(property => (
-                                <tr key={property.id}>
-                                    <td className="p-2 border-b">{property.status || 'N/A'}</td>
-                                    <td className="p-2 border-b">{property.owner || 'N/A'}</td>
-                                    <td className="p-2 border-b">{property.rooms || 'N/A'}</td>
-                                    <td className="p-2 border-b">{property.price || 'N/A'}</td>
-                                    <td className="p-2 border-b">{property.size || 'N/A'}</td>
-                                    <td className="p-2 border-b">{property.address || 'N/A'}</td>
-                                    <td className="p-2 border-b">{property.city || 'N/A'}</td>
-                                    <td className="p-2 border-b">{property.propertyType || 'N/A'}</td>
-                                </tr>
+                <table className="min-w-full bg-white text-right">
+                    <thead>
+                        <tr>
+                            {['סטטוס', 'בעלים', 'מס׳ חדרים', 'מחיר', 'גודל במ"ר', 'כתובת', 'עיר', 'סוג נכס'].map(header => (
+                                <th key={header} className="p-2 border-b-2 border-gray-300 text-gray-600">{header}</th>
                             ))}
-                        </tbody>
-                    </table>
-                </div>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {properties.map(property => (
+                            <tr key={property.id}>
+                                <td className="p-2 border-b">{property.status || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.owner || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.rooms || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.price || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.size || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.address || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.city || 'N/A'}</td>
+                                <td className="p-2 border-b">{property.propertyType || 'N/A'}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         </div>
     );
