@@ -232,9 +232,10 @@ def fetch_filtered_persons():
     name = request.args.get('name', '')
     city = request.args.get('city', '')
     person_id = request.args.get('id', '')
-    tab = request.args.get('tab', 'owners')  # Get the current tab (owners or clients)
+    tab = request.args.get('tab', 'owners') # Get the current tab (owners or clients)
+    email = session.get('user_email', '')
 
-    persons, error = get_filtered_persons(name=name, city=city, person_id=person_id, tab=tab)
+    persons, error = get_filtered_persons(name=name, city=city, person_id=person_id, tab=tab, email=email )
     if error:
         return jsonify({"error": error}), 500
     return jsonify(persons), 200

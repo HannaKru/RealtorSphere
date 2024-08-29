@@ -2,7 +2,7 @@ from firebase_config import initialize_firebase
 
 db = initialize_firebase()
 
-def get_filtered_persons(name='', city='', person_id='', tab='owners'):
+def get_filtered_persons(name='', city='', person_id='', tab='owners', email = 'email'):
     try:
         persons_ref = db.child('Person')
         persons = persons_ref.get()
@@ -14,9 +14,15 @@ def get_filtered_persons(name='', city='', person_id='', tab='owners'):
         filtered_list = []
         for person_id_key, person_data in persons.items():
             # Filter based on type (owners or clients)
-            if tab == 'owners' and 'Owner' not in person_data.get('Type', {}):
-                continue
-            if tab == 'clients' and 'Client' not in person_data.get('Type', {}):
+            if tab == 'owners':
+                owner_data = person_data.get('Type', {}).get('Owner', {})
+                if not owner_data or owner_data.get('realtor') != email:
+                    continue
+            elif tab == 'clients':
+                client_data = person_data.get('Type', {}).get('Client', {})
+                if not client_data or client_data.get('realtor') != email:
+                    continue
+            else:
                 continue
 
             # Apply search filters
@@ -27,6 +33,7 @@ def get_filtered_persons(name='', city='', person_id='', tab='owners'):
                 continue
             if person_id and person_id != person_id_key:
                 continue
+
 
             filtered_list.append({
                 'id': person_id_key,
