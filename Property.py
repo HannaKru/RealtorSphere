@@ -130,12 +130,16 @@ def get_properties(ownerName='', roomNumber='', price='', city='', propertyType=
                     continue
                 print(f"Processing deal for property ID {prop_id}:", deal_data)
 
+
                 #Extract price and realtor information from the deal
                 deal_price = deal_data['price'][1]['amount'] if 'price' in deal_data and len(
                     deal_data['price']) > 1 else 'N/A'
                 deal_realtor = deal_data.get('realtor', 'Unknown')
 
                 print(f"Deal price: {deal_price}, Realtor: {deal_realtor}")
+
+            if email != deal_data['realtor']:
+                continue
 
             # Apply filters
             if roomNumber and int(roomNumber) != prop_rooms:
