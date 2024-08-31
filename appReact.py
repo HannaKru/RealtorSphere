@@ -9,7 +9,7 @@ from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_t
 from forgetPass import check_user_and_send_email
 from Property import get_properties, get_property_by_id
 from sendMessage import send_email_with_attachment
-from ClientProfessionalPage import get_filtered_persons
+from ClientProfessionalPage import get_filtered_persons, add_person
 from werkzeug.utils import secure_filename
 import os
 
@@ -240,6 +240,13 @@ def fetch_filtered_persons():
         return jsonify({"error": error}), 500
     return jsonify(persons), 200
 
+
+@app.route('/addPerson', methods=['POST'])
+def add_person_route():
+    data = request.json
+    email = session.get('user_email', '')  # Get the realtor's email from the session
+    response, status_code = add_person(data, email)
+    return jsonify(response), status_code
 
 
 if __name__ == '__main__':
