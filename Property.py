@@ -1,7 +1,20 @@
-from firebase_config import initialize_firebase
+from firebase_config import initialize_firebase, get_storage_bucket
+from flask import jsonify
+import os
+from werkzeug.utils import secure_filename
+import datetime
+import json
+
 
 db_ref = initialize_firebase()
 
+
+UPLOAD_FOLDER = 'uploads/'  # Folder to store uploaded images
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Ensure the upload folder exists
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
 def get_properties(ownerName='', roomNumber='', price='', city='', propertyType='', transactionType='', email=''):
     try:
@@ -176,3 +189,87 @@ def get_property_by_id(property_id):
     property_ref = db_ref.child(f'property/{property_id}')
     property_data = property_ref.get()
     return property_data
+
+
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+def add_property(data, file, realtor_email):
+    try:
+        # Extract the necessary information from the form data
+        property_data = {
+            'Steet': data.get('street'),
+            'city': data.get('city'),
+            'house': data.get('house'),
+            'type': {
+                'apartment': {
+                    'type': data.get('propertyType'),
+                    'item:': {
+                        'roomsNum': int(data.get('roomsNum')),
+                        'Pparking': {
+                            'number': data.get('parkingNumber', 0)
+                        },
+                    }
+                }
+            },
+            'size': int(data.get('size', 0)),
+            'status': 'active',
+            'pictures': {
+                'first': ''
+            },
+        }
+
+        rooms = json.loads(data.get('rooms', '[]'))
+        for index, room in enumerate(rooms):
+            room_type = room.get('roomType', '')
+            if room_type:
+                property_data['type']['apartment']['item:'][f'room{index + 1}'] = {
+                    'length': int(room.get('length', 0)),
+                    'width': int(room.get('width', 0)),
+                    room_type: True,
+                }
+
+        # Save the property data to the Firebase database
+        new_property_ref = db_ref.child('property').push(property_data)
+        new_property_id = new_property_ref.key
+
+        # Store the ownership data
+        ownership_data = {
+            'PersonID': data.get('ownerID'),
+            'propertyID': new_property_id,
+            'rentORsell': data.get('rentOrSell', 'rent'),
+            'startDate': data.get('startDate', datetime.datetime.now().strftime('%Y-%m-%d')),
+            'endDate': '',
+        }
+        db_ref.child('Ownership').child(new_property_id).set(ownership_data)
+
+        # Store the deal data
+        deal_data = {
+            'price': {
+                1: {
+                    'amount': int(data.get('price', 0)),
+                    'suggester': data.get('ownerName', 'Unknown')
+                }
+            },
+            'realtor': realtor_email,
+            'startDate': datetime.datetime.now().strftime('%Y-%m-%d'),
+            'endDate': ''
+        }
+        db_ref.child('Deal').child(new_property_id).set(deal_data)
+
+        # Handle file upload if provided
+        if file:
+            bucket = get_storage_bucket()
+            blob = bucket.blob(f"property_images/{new_property_id}_{file.filename}")
+            blob.upload_from_file(file)
+            blob.make_public()  # Make the image publicly accessible
+            db_ref.child('property').child(new_property_id).child('pictures').update({
+                'first': blob.public_url
+            })
+
+        return {"message": "Property added successfully"}, 200
+
+    except Exception as e:
+        print(f"Error adding property to Firebase: {e}")
+        return {"error": "An error occurred while adding the property"}, 500

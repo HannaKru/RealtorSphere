@@ -7,7 +7,7 @@ from firebase_config import initialize_firebase
 from login import login_user
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status, get_events_by_email,add_event, edit_event_by_id, delete_event_by_id
 from forgetPass import check_user_and_send_email
-from Property import get_properties, get_property_by_id
+from Property import get_properties, get_property_by_id, add_property
 from sendMessage import send_email_with_attachment
 from ClientProfessionalPage import get_filtered_persons, add_person
 from werkzeug.utils import secure_filename
@@ -193,6 +193,14 @@ def fetch_property_by_id(property_id):
         return jsonify({"message": "Property not found"}), 404
 
 
+# Route to add property
+@app.route('/addProperty', methods=['POST'])
+def add_property_route():
+    data = request.form.to_dict()
+    file = request.files.get('file')
+    realtor_email = session.get('user_email', '')
+    response, status_code = add_property(data, file, realtor_email)
+    return jsonify(response), status_code
 
 @app.route('/sendMessage', methods=['POST'])
 def send_email():
