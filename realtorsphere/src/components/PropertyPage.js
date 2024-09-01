@@ -20,6 +20,7 @@ const PropertyPage = () => {
         street: '',
         city: '',
         house: '',
+        neighborhood: '',
         propertyType: '',
         roomsNum: '',
         price: '',
@@ -28,6 +29,17 @@ const PropertyPage = () => {
         startDate: '',
         file: null,
         size: '',
+        ac: '',
+        accessibility: false,
+        age: '',
+        bars: false,
+        numberOfFloors: '',
+        security: false,
+        status: 'active', // default value
+        floor: '',
+        apNum: '',
+        bathroomsNum: '',
+        notes: '',
         rooms: [],
         parkingNumber: '',
     });
@@ -292,6 +304,16 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
+                            <label className="block text-right">Neighborhood</label>
+                            <input
+                                type="text"
+                                name="neighborhood"
+                                value={newProperty.neighborhood}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
                             <label className="block text-right">Property Type</label>
                             <input
                                 type="text"
@@ -327,6 +349,130 @@ const PropertyPage = () => {
                                 type="number"
                                 name="size"
                                 value={newProperty.size}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+
+                        {/* Transaction Type Dropdown */}
+                        <div className="mb-4">
+                            <label className="block text-right">For Sale or Rent</label>
+                            <select
+                                name="transactionType"
+                                value={newProperty.transactionType}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            >
+                                <option value="rent">Rent</option>
+                                <option value="sell">Sell</option>
+                            </select>
+                        </div>
+
+                        <div className="mb-4">
+                            <label className="block text-right">Number of Parking Spaces</label>
+                            <input
+                                type="number"
+                                name="parkingNumber"
+                                value={newProperty.parkingNumber}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">AC Units</label>
+                            <input
+                                type="number"
+                                name="ac"
+                                value={newProperty.ac}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Accessibility</label>
+                            <input
+                                type="checkbox"
+                                name="accessibility"
+                                checked={newProperty.accessibility}
+                                onChange={handleNewPropertyChange}
+                                className="mr-2"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Building Age (years)</label>
+                            <input
+                                type="number"
+                                name="age"
+                                value={newProperty.age}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Bars on Windows</label>
+                            <input
+                                type="checkbox"
+                                name="bars"
+                                checked={newProperty.bars}
+                                onChange={handleNewPropertyChange}
+                                className="mr-2"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Number of Floors</label>
+                            <input
+                                type="number"
+                                name="numberOfFloors"
+                                value={newProperty.numberOfFloors}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Security Features</label>
+                            <input
+                                type="checkbox"
+                                name="security"
+                                checked={newProperty.security}
+                                onChange={handleNewPropertyChange}
+                                className="mr-2"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Floor Number</label>
+                            <input
+                                type="number"
+                                name="floor"
+                                value={newProperty.floor}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Apartment Number</label>
+                            <input
+                                type="number"
+                                name="apNum"
+                                value={newProperty.apNum}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Bathroom Number</label>
+                            <input
+                                type="number"
+                                name="bathroomsNum"
+                                value={newProperty.bathroomsNum}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Additional Notes</label>
+                            <textarea
+                                name="notes"
+                                value={newProperty.notes}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
                             />

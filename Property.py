@@ -202,47 +202,49 @@ def add_property(data, file, realtor_email):
             'Steet': data.get('street'),
             'city': data.get('city'),
             'house': data.get('house'),
+            'neighborhood': data.get('neighborhood'),
+            'size': int(data.get('size', 0)),
+            'ac': int(data.get('ac', 0)),
+            'accessibility': data.get('accessibility', False),
+            'age': int(data.get('age', 0)),
+            'bars': data.get('bars', False),
+            'number of floors': int(data.get('numberOfFloors', 1)),
+            'security': data.get('security', False),
+            'status': data.get('status', 'active'),
+            'notes': data.get('notes', ''),
             'type': {
                 'apartment': {
                     'type': data.get('propertyType'),
+                    'floor': int(data.get('floor', 0)),
+                    'apNum': int(data.get('apNum', 0)),
                     'item:': {
-                        'roomsNum': int(data.get('roomsNum')),
                         'Pparking': {
-                            'number': data.get('parkingNumber', 0)
+                            'number': int(data.get('parkingNumber', 0))
                         },
+                        'bathroomsNum': int(data.get('bathroomsNum', 0)),
+                        'roomsNum': int(data.get('roomsNum', 0)),
+                        'rooms': json.loads(data.get('rooms', '[]'))
                     }
                 }
             },
-            'size': int(data.get('size', 0)),
-            'status': 'active',
             'pictures': {
                 'first': ''
-            },
+            }
         }
-
-        rooms = json.loads(data.get('rooms', '[]'))
-        for index, room in enumerate(rooms):
-            room_type = room.get('roomType', '')
-            if room_type:
-                property_data['type']['apartment']['item:'][f'room{index + 1}'] = {
-                    'length': int(room.get('length', 0)),
-                    'width': int(room.get('width', 0)),
-                    room_type: True,
-                }
 
         # Save the property data to the Firebase database
         new_property_ref = db_ref.child('property').push(property_data)
-        new_property_id = new_property_ref.key
+        new_property_key = new_property_ref.key  # Correctly retrieve the key of the new property
 
         # Store the ownership data
         ownership_data = {
             'PersonID': data.get('ownerID'),
-            'propertyID': new_property_id,
-            'rentORsell': data.get('rentOrSell', 'rent'),
+            'propertyID': new_property_key,
+            'rentORsell': data.get('transactionType', 'rent'),
             'startDate': data.get('startDate', datetime.datetime.now().strftime('%Y-%m-%d')),
             'endDate': '',
         }
-        db_ref.child('Ownership').child(new_property_id).set(ownership_data)
+        db_ref.child('Ownership').child(new_property_key).set(ownership_data)
 
         # Store the deal data
         deal_data = {
@@ -256,15 +258,15 @@ def add_property(data, file, realtor_email):
             'startDate': datetime.datetime.now().strftime('%Y-%m-%d'),
             'endDate': ''
         }
-        db_ref.child('Deal').child(new_property_id).set(deal_data)
+        db_ref.child('Deal').child(new_property_key).set(deal_data)
 
         # Handle file upload if provided
         if file:
+            file_path = f"property_images/{new_property_key}_{file.filename}"
             bucket = get_storage_bucket()
-            blob = bucket.blob(f"property_images/{new_property_id}_{file.filename}")
+            blob = bucket.blob(file_path)
             blob.upload_from_file(file)
-            blob.make_public()  # Make the image publicly accessible
-            db_ref.child('property').child(new_property_id).child('pictures').update({
+            db_ref.child('property').child(new_property_key).child('pictures').update({
                 'first': blob.public_url
             })
 

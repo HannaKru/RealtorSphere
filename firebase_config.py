@@ -1,11 +1,11 @@
 # firebase_config.py
 import firebase_admin
-from firebase_admin import credentials, db
+from firebase_admin import credentials, db, storage
 
 cred = credentials.Certificate("static/realtorspheredb-firebase-adminsdk-k43ko-1383b36823.json")
 default_app = firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://realtorspheredb-default-rtdb.firebaseio.com/',
-    'storageBucket': 'gs://realtorspheredb.appspot.com'
+    'storageBucket': 'gs://realtorspheredb.appspot.com/RealtorSphere'
 })
 
 def initialize_firebase():
