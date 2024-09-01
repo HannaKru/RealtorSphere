@@ -21,7 +21,7 @@ const PropertyPage = () => {
         city: '',
         house: '',
         neighborhood: '',
-        propertyType: '',
+        propertyType: 'apartment', // Default to apartment
         roomsNum: '',
         price: '',
         ownerName: '',
@@ -42,6 +42,7 @@ const PropertyPage = () => {
         notes: '',
         rooms: [],
         parkingNumber: '',
+        elevator: false,  // New elevator field
     });
 
     const fetchUserData = useCallback(async () => {
@@ -315,13 +316,18 @@ const PropertyPage = () => {
                         </div>
                         <div className="mb-4">
                             <label className="block text-right">Property Type</label>
-                            <input
-                                type="text"
+                            <select
                                 name="propertyType"
                                 value={newProperty.propertyType}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
-                            />
+                            >
+                                <option value="apartment">Apartment</option>
+                                <option value="duplex apartment">Duplex Apartment</option>
+                                <option value="private home">Private Home</option>
+                                <option value="two-family house">Two-Family House</option>
+                                <option value="penthouse">Penthouse</option>
+                            </select>
                         </div>
                         <div className="mb-4">
                             <label className="block text-right">Rooms Number</label>
@@ -414,6 +420,16 @@ const PropertyPage = () => {
                                 type="checkbox"
                                 name="bars"
                                 checked={newProperty.bars}
+                                onChange={handleNewPropertyChange}
+                                className="mr-2"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Elevator</label>
+                            <input
+                                type="checkbox"
+                                name="elevator"
+                                checked={newProperty.elevator}
                                 onChange={handleNewPropertyChange}
                                 className="mr-2"
                             />

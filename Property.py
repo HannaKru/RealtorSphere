@@ -199,7 +199,7 @@ def add_property(data, file, realtor_email):
     try:
         # Extract the necessary information from the form data
         property_data = {
-            'Steet': data.get('street'),
+            'street': data.get('street'),
             'city': data.get('city'),
             'house': data.get('house'),
             'neighborhood': data.get('neighborhood'),
@@ -208,7 +208,7 @@ def add_property(data, file, realtor_email):
             'accessibility': data.get('accessibility', False),
             'age': int(data.get('age', 0)),
             'bars': data.get('bars', False),
-            'number of floors': int(data.get('numberOfFloors', 1)),
+            'number_of_floors': int(data.get('numberOfFloors', 1)),
             'security': data.get('security', False),
             'status': data.get('status', 'active'),
             'notes': data.get('notes', ''),
@@ -217,6 +217,7 @@ def add_property(data, file, realtor_email):
                     'type': data.get('propertyType'),
                     'floor': int(data.get('floor', 0)),
                     'apNum': int(data.get('apNum', 0)),
+                    'elevator': data.get('elevator', False),  # Handle the elevator field
                     'item:': {
                         'Pparking': {
                             'number': int(data.get('parkingNumber', 0))
@@ -234,7 +235,7 @@ def add_property(data, file, realtor_email):
 
         # Save the property data to the Firebase database
         new_property_ref = db_ref.child('property').push(property_data)
-        new_property_key = new_property_ref.key  # Correctly retrieve the key of the new property
+        new_property_key = new_property_ref.key  # Retrieve the key of the new property
 
         # Store the ownership data
         ownership_data = {
@@ -266,6 +267,7 @@ def add_property(data, file, realtor_email):
             bucket = get_storage_bucket()
             blob = bucket.blob(file_path)
             blob.upload_from_file(file)
+            blob.make_public()  # Make the file publicly accessible
             db_ref.child('property').child(new_property_key).child('pictures').update({
                 'first': blob.public_url
             })
