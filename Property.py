@@ -1,5 +1,4 @@
 from firebase_config import initialize_firebase, get_storage_bucket
-from flask import jsonify
 import os
 from werkzeug.utils import secure_filename
 import datetime
@@ -85,12 +84,6 @@ def get_properties(ownerName='', roomNumber='', price='', city='', propertyType=
             print("size:", prop_size)
             print("status:", prop_status)
 
-            # Match with ownership and deal data
-            #ownership = ownerships.get(prop_id)
-            #if not ownership:
-                #continue
-
-            #print("Ownership:", ownership)
 
             for prop_id, ownership in ownerships_iter:
                 if not ownership:
@@ -109,14 +102,18 @@ def get_properties(ownerName='', roomNumber='', price='', city='', propertyType=
                     break  # Exit the loop once the owner is found
             print("transaction type:", transactionType)
 
-            if transactionType == 'כל הנכסים':
+            # Normalize transactionType
+            if transactionType == 'כל הנכסים' or transactionType == 'all':
                 transactionType = 'all'
-            elif transactionType == 'להשכרה':
+            elif transactionType == 'להשכרה' or transactionType == 'rent':
                 transactionType = 'rent'
-            elif transactionType == 'למכירה':
+            elif transactionType == 'למכירה' or transactionType == 'sell':
                 transactionType = 'sell'
-            else:
+            elif transactionType == 'ארכיון' or transactionType == 'archive':
                 transactionType = 'archive'
+            else:
+                print(f"Unrecognized transactionType: {transactionType}")
+                return []
 
             # Apply transaction type filter
             if transactionType == 'archive' and prop_status != 'archive':
@@ -134,9 +131,6 @@ def get_properties(ownerName='', roomNumber='', price='', city='', propertyType=
             if ownerName and ownerName.lower() not in owner_name.lower():
                 continue
 
-            #deal = deals.get(str(prop_id))
-            #if not deal:
-                #continue
 
             for prop_id, deal_data in deals_iter:
                 if not deal_data:
