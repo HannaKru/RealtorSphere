@@ -172,7 +172,7 @@ def update_person_details(data, realtor_email):
             "email": data.get('email', person_data['email']),
             "Type": person_data['Type']
         }
-
+# note
         if data.get('type') == 'Client':
             updated_data['Type']['Client'] = {
                 "realtor": realtor_email,
