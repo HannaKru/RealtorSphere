@@ -46,24 +46,24 @@ const PropertyPage = () => {
     });
 
     const fetchUserData = useCallback(async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/propertyPage', {
-                params: {
-                    ...searchFilters,
-                    transactionType: activeTab,
-                    email: sessionStorage.getItem('user_email'),
-                },
-                withCredentials: true
-            });
-            if (response.status === 200) {
-                setProperties(response.data);
-            } else {
-                console.error('Failed to fetch data, status:', response.status);
-            }
-        } catch (error) {
-            console.error('Error fetching user data:', error);
+    try {
+        const response = await axios.get('http://localhost:5000/propertyPage', {
+            params: {
+                ...searchFilters,
+                transactionType: activeTab,
+                email: sessionStorage.getItem('user_email'),
+            },
+            withCredentials: true
+        });
+        if (response.status === 200) {
+            setProperties(response.data);
+        } else {
+            console.error('Failed to fetch data, status:', response.status);
         }
-    }, [searchFilters, activeTab]);
+    } catch (error) {
+        console.error('Error fetching user data:', error);
+    }
+}, [searchFilters, activeTab]);
 
     useEffect(() => {
         fetchUserData();

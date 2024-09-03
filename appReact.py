@@ -156,25 +156,25 @@ def delete_event(event_id):
 
 @app.route('/propertyPage', methods=['GET'])
 def fetch_properties():
-    print("Current session state:", session)
     if 'user_email' not in session:
         return jsonify({"message": "User not logged in"}), 401
 
     ownerName = request.args.get('ownerName', '')
-    roomNumber = request.args.get('roomNumber', '')
-    price = request.args.get('price', '')
+    roomNumberFrom = request.args.get('roomNumberFrom', '')
+    roomNumberTo = request.args.get('roomNumberTo', '')
+    priceFrom = request.args.get('priceFrom', '')
+    priceTo = request.args.get('priceTo', '')
     city = request.args.get('city', '')
     propertyType = request.args.get('propertyType', '')
     transactionType = request.args.get('transactionType', '')
+    address = request.args.get('address', '')
 
-    # Get the user's email from the session
-    email = session.get('user_email', '')
+    email = session['user_email']  # Get the realtor's email from the session
 
-    # Call the function to fetch properties based on the filters and user's email
-    properties = get_properties(ownerName=ownerName, roomNumber=roomNumber, price=price, city=city,
-                                propertyType=propertyType, transactionType=transactionType, email=email)
+    properties = get_properties(ownerName=ownerName, roomNumberFrom=roomNumberFrom, roomNumberTo=roomNumberTo,
+                                priceFrom=priceFrom, priceTo=priceTo, city=city, propertyType=propertyType,
+                                transactionType=transactionType, email=email, address=address)
 
-    print("Filtered Properties:", properties)  # Debugging line
     if properties:
         return jsonify(properties), 200
     else:
