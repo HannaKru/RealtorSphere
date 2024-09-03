@@ -8,6 +8,7 @@ import ForgotPass from "./components/ForgotPass";
 import PropertyPage from "./components/PropertyPage";
 import SendMessage from "./components/SendMessage";
 import ClientProfessionalPage from "./components/ClientProfessionalPage";
+import DealsPage from "./components/DealsPage";
 function App() {
   return (
       <Router>
@@ -20,6 +21,7 @@ function App() {
                 <Route path="/propertyPage" element={<PropertyPage />} />
                 <Route path="/sendMessage" element={<SendMessage />} />
                 <Route path="/clientProfessionalPage" element={<ClientProfessionalPage />} />
+                <Route path="/deals" element={<DealsPage />} />
             </Routes>
         </div>
       </Router>

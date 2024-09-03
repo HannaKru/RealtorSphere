@@ -24,7 +24,7 @@ const HomeScreen = () => {
     { name: 'ניהול לקוחות', url: '/clientProfessionalPage' },
     { name: 'מסמכים', url: '/documents' },
     { name: 'דוא"ל', url: '/sendMessage' },
-    { name: 'סיכומי פגישות', url: '/meetings' },
+    { name: 'סיכומי פגישות', url: '/deals' },
     { name: 'אנשי קשר', url: '/contacts' },
     { name: 'עריכת פרופיל', url: '/edit-profile' },
   ]);
