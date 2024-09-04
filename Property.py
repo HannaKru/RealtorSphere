@@ -20,16 +20,16 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
         # Initialize references to Firebase data
         properties_ref = db_ref.child('property')
         ownerships_ref = db_ref.child('Ownership')
-        deals_ref = db_ref.child('Deal')
+
         users_ref = db_ref.child("Person")
 
         # Retrieve data from Firebase
         properties = properties_ref.get()
         ownerships = ownerships_ref.get()
-        deals = deals_ref.get()
+
         all_users = users_ref.get()
 
-        if not properties or not ownerships or not deals or not all_users:
+        if not properties or not ownerships or not all_users:
             return []
 
         filtered_properties = []
@@ -43,7 +43,9 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
             prop_type = prop_data.get('type', {}).get('apartment', {}).get('type', '')
             prop_size = prop_data.get('size', 0)
             prop_status = prop_data.get('status', '')
-            prop_address = f"{prop_data.get('Steet', '')} {str(prop_data.get('house', ''))}"
+            prop_address = f"{prop_data.get('street', '')} {str(prop_data.get('house', ''))}"
+            prop_price = prop_data.get('Price', 0)
+            prop_realtor = prop_data.get('realtor', '')
 
             owner_name = ''
             for ownership_id, ownership in ownerships.items():
@@ -52,23 +54,11 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                     owner_name = f"{all_users.get(str(owner_id), {}).get('FirstName', '')} {all_users.get(str(owner_id), {}).get('LastName', '')}".strip()
                     break
 
-            # Default price and realtor to None
-            deal_price = 0
-            deal_realtor = None
 
-            for deal_id, deal_data in deals.items():
-                if deal_id == prop_id:
-                    deal_price = deal_data.get('price', [None, {}])[1].get('amount', 0)
-                    deal_realtor = deal_data.get('realtor', '')
 
-                    # Filter by realtor email
-                    if deal_realtor != email:
-                        print(f"Skipping property {prop_id} because it's not related to the logged-in realtor.")
-                        continue
 
-                    break  # Exit the loop if the relevant deal is found
 
-            if deal_realtor != email:
+            if prop_realtor != email:
                 continue  # Skip this property if the realtor doesn't match
 
             # Apply other filters
@@ -78,9 +68,9 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 continue
             if roomNumberTo and int(roomNumberTo) < prop_rooms:
                 continue
-            if priceFrom and int(priceFrom) > int(deal_price):
+            if priceFrom and int(priceFrom) > int(prop_price):
                 continue
-            if priceTo and int(priceTo) < int(deal_price):
+            if priceTo and int(priceTo) < int(prop_price):
                 continue
             if city and city.lower() not in prop_city.lower():
                 continue
@@ -94,7 +84,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'id': prop_id,
                 'owner': owner_name,
                 'rooms': prop_rooms,
-                'price': deal_price,
+                'price': prop_price,
                 'size': prop_size,
                 'address': prop_address,
                 'city': prop_city,
@@ -109,7 +99,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
 
     except Exception as e:
         print(f"Error fetching properties from Firebase: {e}")
-        return []
+    return []
 
 
 
@@ -128,6 +118,7 @@ def add_property(data, file, realtor_email):
     try:
         # Extract the necessary information from the form data
         property_data = {
+            'Price': data['price'],
             'street': data.get('street'),
             'city': data.get('city'),
             'house': data.get('house'),
@@ -138,6 +129,7 @@ def add_property(data, file, realtor_email):
             'age': int(data.get('age', 0)),
             'bars': data.get('bars', False),
             'number_of_floors': int(data.get('numberOfFloors', 1)),
+            'realtor': realtor_email,
             'security': data.get('security', False),
             'status': data.get('status', 'active'),
             'notes': data.get('notes', ''),
@@ -176,19 +168,7 @@ def add_property(data, file, realtor_email):
         }
         db_ref.child('Ownership').child(new_property_key).set(ownership_data)
 
-        # Store the deal data
-        deal_data = {
-            'price': {
-                1: {
-                    'amount': int(data.get('price', 0)),
-                    'suggester': data.get('ownerName', 'Unknown')
-                }
-            },
-            'realtor': realtor_email,
-            'startDate': datetime.datetime.now().strftime('%Y-%m-%d'),
-            'endDate': ''
-        }
-        db_ref.child('Deal').child(new_property_key).set(deal_data)
+
 
         # Handle file upload if provided
         if file:
