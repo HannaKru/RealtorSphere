@@ -13,11 +13,10 @@ const PropertyPage = () => {
         propertyType: '',
         address: '',
     });
-
+    const [allProperties, setAllProperties] = useState([]); // Store all properties
+    const [filteredProperties, setFilteredProperties] = useState([]); // Store filtered properties
     const [properties, setProperties] = useState([]);
     const [isPopupOpen, setIsPopupOpen] = useState(false); // For controlling the popup window
-    const [noResultsMessage, setNoResultsMessage] = useState(''); // Message for no results
-    const [isNoResultsPopupVisible, setIsNoResultsPopupVisible] = useState(false); // Control popup visibility
     const [newProperty, setNewProperty] = useState({
         street: '',
         city: '',
@@ -96,10 +95,27 @@ const PropertyPage = () => {
         }
     }, [searchFilters, activeTab]);
 
+    // Filter properties based on the active tab
+    const filterPropertiesByTab = (tab) => {
+    if (tab === 'למכירה') {
+    return properties.filter(property => property.transactionType === 'sell' && property.status === 'active');
+    } else if (tab === 'להשכרה') {
+    return properties.filter(property => property.transactionType === 'rent' && property.status === 'active');
+    } else if (tab === 'ארכיון') {
+    return properties.filter(property => property.status === 'inactive');
+    }
+    return properties; // Show all properties for כל הנכסים
+    };
+
     // Load all properties when the page loads
     useEffect(() => {
         fetchAllProperties();
     }, [fetchAllProperties]);
+
+    useEffect(() => {
+        const filtered = filterPropertiesByTab(activeTab);
+        setFilteredProperties(filtered);
+    }, [properties, activeTab]);
 
 
 
@@ -110,7 +126,9 @@ const PropertyPage = () => {
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
-        fetchFilteredProperties();
+        const filtered = filterPropertiesByTab(tab);
+        setFilteredProperties(filtered);
+        //fetchFilteredProperties();
     };
 
     const handleSearchClick = () => {
@@ -186,10 +204,6 @@ const PropertyPage = () => {
         }
     };
 
-    // Define the close function for the no results popup
-    const closeNoResultsPopup = () => {
-        setIsNoResultsPopupVisible(false);
-    };
 
     return (
         <div className="bg-gray-50 min-h-screen rtl">
@@ -279,7 +293,7 @@ const PropertyPage = () => {
 
                 {/* Tabs */}
                 <div className="flex justify-around mb-4">
-                    {['כל הנכסים', 'להשכרה', 'למכירה', 'מקורות חיצוניים', 'ארכיון'].map(tab => (
+                    {['כל הנכסים', 'להשכרה', 'למכירה', 'ארכיון'].map(tab => (
                         <button
                             key={tab}
                             className={`p-2 rounded-md ${activeTab === tab ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
@@ -300,7 +314,7 @@ const PropertyPage = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {properties.map(property => (
+                        {filteredProperties.map((property, index) => (
                             <tr key={property.id}>
                                 <td className="p-2 border-b">{property.status || 'N/A'}</td>
                                 <td className="p-2 border-b">{property.owner || 'N/A'}</td>
