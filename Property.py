@@ -38,6 +38,8 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
             if not prop_data:
                 continue
 
+
+
             prop_rooms = prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('roomsNum', 0)
             prop_city = prop_data.get('city', '')
             prop_type = prop_data.get('type', {}).get('apartment', {}).get('type', '')
@@ -60,8 +62,8 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
 
             if prop_realtor != email:
                 continue  # Skip this property if the realtor doesn't match
-
-            # Apply other filters
+            if city and city.lower() not in prop_data.get('city', '').lower():
+                continue
             if ownerName and ownerName.lower() not in owner_name.lower():
                 continue
             if roomNumberFrom and int(roomNumberFrom) > prop_rooms:

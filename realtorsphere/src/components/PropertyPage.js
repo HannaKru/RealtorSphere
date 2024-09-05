@@ -16,6 +16,8 @@ const PropertyPage = () => {
 
     const [properties, setProperties] = useState([]);
     const [isPopupOpen, setIsPopupOpen] = useState(false); // For controlling the popup window
+    const [noResultsMessage, setNoResultsMessage] = useState(''); // Message for no results
+    const [isNoResultsPopupVisible, setIsNoResultsPopupVisible] = useState(false); // Control popup visibility
     const [newProperty, setNewProperty] = useState({
         street: '',
         city: '',
@@ -45,29 +47,62 @@ const PropertyPage = () => {
         elevator: false,  // New elevator field
     });
 
-    const fetchUserData = useCallback(async () => {
-    try {
-        const response = await axios.get('http://localhost:5000/propertyPage', {
-            params: {
-                ...searchFilters,
-                transactionType: activeTab,
-                email: sessionStorage.getItem('user_email'),
-            },
-            withCredentials: true
-        });
-        if (response.status === 200) {
-            setProperties(response.data);
-        } else {
-            console.error('Failed to fetch data, status:', response.status);
-        }
-    } catch (error) {
-        console.error('Error fetching user data:', error);
-    }
-}, [searchFilters, activeTab]);
+     // Fetches all properties for the logged-in realtor when the component loads
+    const fetchAllProperties = useCallback(async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/propertyPage', {
+                params: {
+                    email: sessionStorage.getItem('user_email'),
+                },
+                withCredentials: true,
+            });
 
+            if (response.status === 200) {
+                setProperties(response.data);
+            } else {
+                console.error('Failed to fetch data, status:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    }, []);
+
+    // Fetches properties based on search filters
+    const fetchFilteredProperties = useCallback(async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/propertyPage', {
+                params: {
+                    ...searchFilters,
+                    transactionType: activeTab,
+                    email: sessionStorage.getItem('user_email'),
+                },
+                withCredentials: true
+            });
+
+            if (response.status === 200) {
+                const fetchedProperties = response.data;
+
+                if (Array.isArray(fetchedProperties) && fetchedProperties.length === 0) {
+                    alert('אין רשומה מתאימה');  // Use alert for no results message
+                } else {
+                    setProperties(fetchedProperties); // Set properties if found
+                }
+            } else {
+                console.error('Failed to fetch data, status:', response.status);
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+            alert('אין רשומה מתאימה');
+        }
+    }, [searchFilters, activeTab]);
+
+    // Load all properties when the page loads
     useEffect(() => {
-        fetchUserData();
-    }, [fetchUserData]);
+        fetchAllProperties();
+    }, [fetchAllProperties]);
+
+
+
 
     const handleSearchChange = (e) => {
         setSearchFilters({ ...searchFilters, [e.target.name]: e.target.value });
@@ -75,7 +110,11 @@ const PropertyPage = () => {
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
-        fetchUserData();
+        fetchFilteredProperties();
+    };
+
+    const handleSearchClick = () => {
+        fetchFilteredProperties(); // Apply search when the search button is clicked
     };
 
     const handleNewPropertyChange = (e) => {
@@ -138,13 +177,18 @@ const PropertyPage = () => {
 
             if (response.status === 200) {
                 setIsPopupOpen(false); // Close the popup after saving
-                fetchUserData(); // Refresh the data
+                fetchAllProperties(); // Refresh the data
             } else {
                 console.error('Failed to save new property:', response.status);
             }
         } catch (error) {
             console.error('Error adding new property:', error);
         }
+    };
+
+    // Define the close function for the no results popup
+    const closeNoResultsPopup = () => {
+        setIsNoResultsPopupVisible(false);
     };
 
     return (
@@ -221,11 +265,14 @@ const PropertyPage = () => {
                         onChange={handleSearchChange}
                         className="p-2 border rounded-md text-right"
                     />
-                    <button className="col-span-2 md:col-span-1 bg-blue-600 text-white p-2 rounded-md" onClick={fetchUserData}>
+                    <button className="col-span-2 md:col-span-1 bg-blue-600 text-white p-2 rounded-md"
+                            onClick={handleSearchClick}>
                         חיפוש
                     </button>
 
-                    <button className="col-span-2 md:col-span-1 bg-pink-700 text-white p-2 rounded-md" onClick={() => setIsPopupOpen(true)}>
+
+                    <button className="col-span-2 md:col-span-1 bg-pink-700 text-white p-2 rounded-md"
+                            onClick={() => setIsPopupOpen(true)}>
                         הוסף נכס חדש
                     </button>
                 </div>
@@ -593,6 +640,7 @@ const PropertyPage = () => {
                     </div>
                 </div>
             )}
+
         </div>
     );
 };
