@@ -87,6 +87,8 @@ def add_person(data, email):
                 "minRooms": data.get('minRooms', '').strip(),
                 "maxSize": data.get('maxSize', '').strip(),
                 "minSize": data.get('minSize', '').strip(),
+                "propertyType": data.get('propertyType', '').strip(),
+                "searchCity": data.get('cities', []),
             }
 
         # Push the new person to Firebase with the given ID
