@@ -10,6 +10,7 @@ from forgetPass import check_user_and_send_email
 from Property import get_properties, get_property_by_id, add_property
 from sendMessage import send_email_with_attachment
 from ClientProfessionalPage import get_filtered_persons, add_person, get_person_details, update_person_details
+from Deals import get_deals
 from werkzeug.utils import secure_filename
 import os
 
@@ -275,6 +276,31 @@ def edit_person_route():
 
     response, status_code = update_person_details(data, email)
     return jsonify(response), status_code
+
+@app.route('/deals', methods=['GET'])
+def deals():
+    print("Current session state:", session)
+    # Check if the user is logged in
+    if 'user_email' not in session:
+        return jsonify({"message": "User not logged in"}), 401
+
+    email = session['user_email']  # Get the realtor's email
+
+    # Fetch the first name of the logged-in realtor
+    first_name = get_user_by_email(email)
+    if not first_name:
+        return jsonify({"message": "Failed to get user details"}), 500
+
+    # Fetch deals from the database filtered by the realtor's email
+    deals, error = get_deals(email=email)
+    if error:
+        return jsonify({"message": "Error fetching deals", "error": error}), 500
+
+    # Return both the first name of the realtor and the list of deals
+    return jsonify({
+        "first_name": first_name,
+        "deals": deals
+    }), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
