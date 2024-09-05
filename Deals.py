@@ -44,3 +44,74 @@ def get_deals(email):
     except Exception as e:
         print(f"Error fetching deals: {e}")
         return None, str(e)
+
+
+def get_deal_details(deal_id):
+    try:
+        # Fetch the deal details from Firebase
+        deal_ref = db_ref.child('Deal').child(deal_id)
+        deal_data = deal_ref.get()
+
+        if not deal_data:
+            return None, "Deal not found"
+
+        # Get client and owner details
+        client_id = deal_data.get('ClientId', '')
+        owner_id = deal_data.get('OwnerId', '')
+
+        client_data = db_ref.child('Person').child(client_id).get()
+        owner_data = db_ref.child('Person').child(owner_id).get()
+
+        if not client_data or not owner_data:
+            return None, "Client or Owner not found"
+
+        client_name = f"{client_data.get('FirstName', '')} {client_data.get('LastName', '')}"
+        owner_name = f"{owner_data.get('FirstName', '')} {owner_data.get('LastName', '')}"
+
+        # Structure the deal details
+        deal_info = {
+            'id': deal_id,
+            'owner': owner_name,
+            'client': client_name,
+            'property': deal_data.get('propertyId', 'N/A'),
+            'price': deal_data.get('price', []),  # Ensure price is always an array
+        }
+
+        return deal_info, None
+
+    except Exception as e:
+        print(f"Error fetching deal details: {e}")
+        return None, str(e)
+
+
+def new_price(data, deal_id, email):
+    try:
+        amount = data.get('amount')
+        suggester = data.get('suggester')
+
+        if not amount or not suggester:
+            return {"error": "Missing price data"}, 400
+
+        # Fetch the deal
+        deal_ref = db_ref.child('Deal').child(deal_id)
+        deal_data = deal_ref.get()
+
+        if not deal_data:
+            return {"error": "Deal not found"}, 404
+
+        # Append the new price to the existing price list
+        price_list = deal_data.get('price', [])
+        new_price_data = {
+            "amount": amount,
+            "suggester": suggester
+        }
+        price_list.append(new_price_data)
+
+        # Update the deal with the new price list
+        deal_ref.update({"price": price_list})
+
+        return {"message": "Price suggestion added successfully"}, 200
+
+    except Exception as e:
+        print(f"Error adding new price: {e}")
+        return {"error": "Failed to add price"}, 500

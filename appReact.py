@@ -10,7 +10,7 @@ from forgetPass import check_user_and_send_email
 from Property import get_properties, get_property_by_id, add_property
 from sendMessage import send_email_with_attachment
 from ClientProfessionalPage import get_filtered_persons, add_person, get_person_details, update_person_details
-from Deals import get_deals
+from Deals import get_deals, get_deal_details, new_price
 from werkzeug.utils import secure_filename
 import os
 
@@ -302,5 +302,29 @@ def deals():
         "deals": deals
     }), 200
 
+
+@app.route('/dealDetails/<deal_id>', methods=['GET'])
+def get_detail_deal(deal_id):
+    print("Fetching details for person ID:", deal_id)
+    deal_details, error = get_deal_details(deal_id)
+
+    if deal_details:
+        return jsonify(deal_details), 200
+    else:
+        return jsonify({"message": error}), 404
+
+
+@app.route('/dealPrice/<deal_id>', methods=['POST'])
+def update_deal_price(deal_id):
+    try:
+        data = request.json
+        email = session.get('user_email', '')
+
+        # Call the function that will handle adding the new price suggestion
+        response, status_code = new_price(data, deal_id, email)
+        return jsonify(response), status_code
+    except Exception as e:
+        print(f"Error updating deal price: {e}")
+        return jsonify({"error": "Failed to update price"}), 500
 if __name__ == '__main__':
     app.run(debug=True)
