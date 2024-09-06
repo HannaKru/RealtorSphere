@@ -165,7 +165,7 @@ const DealsPage = () => {
                                 placeholder="הכנס סכום"
                                 value={newPrice}
                                 onChange={(e) => setNewPrice(e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full text-black p-2 border rounded-md"
                             />
                         </div>
 
@@ -174,7 +174,7 @@ const DealsPage = () => {
                             <select
                                 value={suggester}
                                 onChange={(e) => setSuggester(e.target.value)}
-                                className="w-full p-2 border rounded-md"
+                                className="w-full text-black p-2 border rounded-md"
                             >
                                 <option value="owner">בעלים</option>
                                 <option value="client">לקוח</option>
@@ -182,10 +182,10 @@ const DealsPage = () => {
                         </div>
 
                         <div className="flex justify-end">
-                            <button className="bg-green-500 text-white p-2 rounded-md mr-2" onClick={handleAddPriceSuggestion}>
+                            <button className="bg-green-500 text-black p-2 rounded-md mr-2" onClick={handleAddPriceSuggestion}>
                                 הוסף מחיר
                             </button>
-                            <button className="bg-gray-300 p-2 rounded-md" onClick={handleClosePopup}>
+                            <button className="bg-gray-300 text-black p-2 rounded-md" onClick={handleClosePopup}>
                                 סגור
                             </button>
                         </div>
