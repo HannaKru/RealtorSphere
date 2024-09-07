@@ -13,6 +13,7 @@ const PropertyPage = () => {
         propertyType: '',
         address: '',
     });
+
     const [allProperties, setAllProperties] = useState([]); // Store all properties
     const [filteredProperties, setFilteredProperties] = useState([]); // Store filtered properties
     const [properties, setProperties] = useState([]);
@@ -214,118 +215,118 @@ const PropertyPage = () => {
 
             <div className="p-6">
                 {/* Search Filters */}
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                    <input
-                        type="text"
-                        name="ownerName"
-                        placeholder="שם בעלים"
-                        value={searchFilters.ownerName}
-                        onChange={handleSearchChange}
-                        className="p-2 border rounded-md text-right"
-                    />
-                    <input
-                        type="number"
-                        name="roomNumberFrom"
-                        placeholder="מס׳ חדרים (מ-)"
-                        value={searchFilters.roomNumberFrom}
-                        onChange={handleSearchChange}
-                        className="p-2 border rounded-md text-right"
-                    />
-                    <input
-                        type="number"
-                        name="roomNumberTo"
-                        placeholder="מס׳ חדרים (עד-)"
-                        value={searchFilters.roomNumberTo}
-                        onChange={handleSearchChange}
-                        className="p-2 border rounded-md text-right"
-                    />
-                    <input
-                        type="number"
-                        name="priceFrom"
-                        placeholder="מחיר (מ-)"
-                        value={searchFilters.priceFrom}
-                        onChange={handleSearchChange}
-                        className="p-2 border rounded-md text-right"
-                    />
-                    <input
-                        type="number"
-                        name="priceTo"
-                        placeholder="מחיר (עד-)"
-                        value={searchFilters.priceTo}
-                        onChange={handleSearchChange}
-                        className="p-2 border rounded-md text-right"
-                    />
-                    <input
-                        type="text"
-                        name="city"
-                        placeholder="עיר"
-                        value={searchFilters.city}
-                        onChange={handleSearchChange}
-                        className="p-2 border rounded-md text-right"
-                    />
-                    <input
-                        type="text"
-                        name="propertyType"
-                        placeholder="סוג נכס"
-                        value={searchFilters.propertyType}
-                        onChange={handleSearchChange}
-                        className="p-2 border rounded-md text-right"
-                    />
-                    <input
-                        type="text"
-                        name="address"
-                        placeholder="כתובת"
-                        value={searchFilters.address}
-                        onChange={handleSearchChange}
-                        className="p-2 border rounded-md text-right"
-                    />
-                    <button className="col-span-2 md:col-span-1 bg-blue-600 text-white p-2 rounded-md"
-                            onClick={handleSearchClick}>
-                        חיפוש
-                    </button>
+                <form onSubmit={e => e.preventDefault()} className="search-form">
+                    <div className="form-row">
+                        <input
+                            type="text"
+                            name="address"
+                            placeholder="כתובת"
+                            value={searchFilters.address}
+                            onChange={handleSearchChange}
+                            className="p-2 border rounded-md text-right"
+                        />
+                        <input
+                            type="text"
+                            name="propertyType"
+                            placeholder="סוג נכס"
+                            value={searchFilters.propertyType}
+                            onChange={handleSearchChange}
+                            className="p-2 border rounded-md text-right"
+                        />
+                        <input
+                            type="text"
+                            name="city"
+                            placeholder="עיר"
+                            value={searchFilters.city}
+                            onChange={handleSearchChange}
+                            className="p-2 border rounded-md text-right"
+                        />
+                        <div className="input-group">
+                            <input
+                                type="number"
+                                name="priceTo"
+                                placeholder="מחיר (עד)"
+                                value={searchFilters.priceTo}
+                                onChange={handleSearchChange}
+                                className="p-2 border rounded-md text-right"
+                            />
+                            <input
+                                type="number"
+                                name="priceFrom"
+                                placeholder="מחיר (מ)"
+                                value={searchFilters.priceFrom}
+                                onChange={handleSearchChange}
+                                className="p-2 border rounded-md text-right"
+                            />
+                        </div>
+                        <div className="input-group">
+                            <input
+                                type="number"
+                                name="roomNumberTo"
+                                placeholder="חדרים (עד)"
+                                value={searchFilters.roomNumberTo}
+                                onChange={handleSearchChange}
+                                className="p-2 border rounded-md text-right"
+                            />
+                            <input
+                                type="number"
+                                name="roomNumberFrom"
+                                placeholder="חדרים (מ)"
+                                value={searchFilters.roomNumberFrom}
+                                onChange={handleSearchChange}
+                                className="p-2 border rounded-md text-right"
+                            />
+                        </div>
+                        <input
+                            type="text"
+                            name="ownerName"
+                            placeholder="שם בעלים"
+                            value={searchFilters.ownerName}
+                            onChange={handleSearchChange}
+                            className="p-2 border rounded-md text-right"
+                        />
+                    </div>
 
-
-                    <button className="col-span-2 md:col-span-1 bg-pink-700 text-white p-2 rounded-md"
-                            onClick={() => setIsPopupOpen(true)}>
-                        הוסף נכס חדש
-                    </button>
-                </div>
-
-                {/* Tabs */}
-                <div className="flex justify-around mb-4">
-                    {['כל הנכסים', 'להשכרה', 'למכירה', 'ארכיון'].map(tab => (
+                    <div className="form-row">
                         <button
-                            key={tab}
-                            className={`p-2 rounded-md ${activeTab === tab ? 'bg-blue-600 text-white' : 'bg-gray-200'}`}
-                            onClick={() => handleTabChange(tab)}
+                            type="button"
+                            className="bg-blue-600 text-white p-2 rounded-md"
+                            onClick={handleSearchClick}
                         >
-                            {tab}
+                            חיפוש
                         </button>
-                    ))}
-                </div>
+                        <button
+                            type="button"
+                            className="bg-pink-700 text-white p-2 rounded-md"
+                            onClick={() => setIsPopupOpen(true)}
+                        >
+                            הוסף נכס חדש
+                        </button>
+                    </div>
+                </form>
 
                 {/* Property Table */}
                 <table className="min-w-full bg-white text-right">
                     <thead>
-                        <tr>
-                            {['סטטוס', 'בעלים', 'מס׳ חדרים', 'מחיר', 'גודל במ"ר', 'כתובת', 'עיר', 'סוג נכס'].map(header => (
-                                <th key={header} className="p-2 border-b-2 border-gray-300 text-gray-600">{header}</th>
-                            ))}
-                        </tr>
+                    <tr>
+                        {['סטטוס', 'בעלים', 'מס׳ חדרים', 'מחיר', 'גודל במ"ר', 'כתובת', 'עיר', 'סוג נכס'].map(header => (
+                            <th key={header} className="p-2 border-b-2 border-gray-300 text-gray-600">{header}</th>
+                        ))}
+                    </tr>
                     </thead>
                     <tbody>
-                        {filteredProperties.map((property, index) => (
-                            <tr key={property.id}>
-                                <td className="p-2 border-b">{property.status || 'N/A'}</td>
-                                <td className="p-2 border-b">{property.owner || 'N/A'}</td>
-                                <td className="p-2 border-b">{property.rooms || 'N/A'}</td>
-                                <td className="p-2 border-b">{property.price || 'N/A'}</td>
-                                <td className="p-2 border-b">{property.size || 'N/A'}</td>
-                                <td className="p-2 border-b">{property.address || 'N/A'}</td>
-                                <td className="p-2 border-b">{property.city || 'N/A'}</td>
-                                <td className="p-2 border-b">{property.propertyType || 'N/A'}</td>
-                            </tr>
-                        ))}
+                    {filteredProperties.map((property, index) => (
+                        <tr key={property.id}>
+                            <td className="p-2 border-b">{property.status || 'N/A'}</td>
+                            <td className="p-2 border-b">{property.owner || 'N/A'}</td>
+                            <td className="p-2 border-b">{property.rooms || 'N/A'}</td>
+                            <td className="p-2 border-b">{property.price || 'N/A'}</td>
+                            <td className="p-2 border-b">{property.size || 'N/A'}</td>
+                            <td className="p-2 border-b">{property.address || 'N/A'}</td>
+                            <td className="p-2 border-b">{property.city || 'N/A'}</td>
+                            <td className="p-2 border-b">{property.propertyType || 'N/A'}</td>
+                        </tr>
+                    ))}
                     </tbody>
                 </table>
             </div>
@@ -336,7 +337,7 @@ const PropertyPage = () => {
                     <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-full overflow-y-auto">
                         <h2 className="text-2xl mb-4">Add New Property</h2>
                         <div className="mb-4">
-                            <label className="block text-right">Street</label>
+                            <label className="block text-right">רחוב</label>
                             <input
                                 type="text"
                                 name="street"
@@ -346,7 +347,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">City</label>
+                            <label className="block text-right">עיר</label>
                             <input
                                 type="text"
                                 name="city"
@@ -356,7 +357,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">House Number</label>
+                            <label className="block text-right">מס' בית</label>
                             <input
                                 type="text"
                                 name="house"
@@ -366,7 +367,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Neighborhood</label>
+                            <label className="block text-right">שכונה</label>
                             <input
                                 type="text"
                                 name="neighborhood"
@@ -376,22 +377,22 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Property Type</label>
+                            <label className="block text-right">סוג הנכס</label>
                             <select
                                 name="propertyType"
                                 value={newProperty.propertyType}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
                             >
-                                <option value="apartment">Apartment</option>
-                                <option value="duplex apartment">Duplex Apartment</option>
-                                <option value="private home">Private Home</option>
-                                <option value="two-family house">Two-Family House</option>
-                                <option value="penthouse">Penthouse</option>
+                                <option value="apartment">דירה</option>
+                                <option value="duplex apartment">דירת דופלקס</option>
+                                <option value="private home">בית פרטי</option>
+                                <option value="two-family house">בית דו-משפחתי</option>
+                                <option value="penthouse">פנטהאוס</option>
                             </select>
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Rooms Number</label>
+                            <label className="block text-right">מס' חדרים</label>
                             <input
                                 type="number"
                                 name="roomsNum"
@@ -401,7 +402,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Price</label>
+                            <label className="block text-right">מחיר</label>
                             <input
                                 type="number"
                                 name="price"
@@ -411,7 +412,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Size (sqm)</label>
+                            <label className="block text-right">גודל (במטרים מרובעים)</label>
                             <input
                                 type="number"
                                 name="size"
@@ -423,20 +424,20 @@ const PropertyPage = () => {
 
                         {/* Transaction Type Dropdown */}
                         <div className="mb-4">
-                            <label className="block text-right">For Sale or Rent</label>
+                            <label className="block text-right">למכירה או להשכרה?</label>
                             <select
                                 name="transactionType"
                                 value={newProperty.transactionType}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
                             >
-                                <option value="rent">Rent</option>
-                                <option value="sell">Sell</option>
+                                <option value="rent">השכרה</option>
+                                <option value="sell">מכירה</option>
                             </select>
                         </div>
 
                         <div className="mb-4">
-                            <label className="block text-right">Number of Parking Spaces</label>
+                            <label className="block text-right">מס' חניות</label>
                             <input
                                 type="number"
                                 name="parkingNumber"
@@ -446,7 +447,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">AC Units</label>
+                            <label className="block text-right">מס' מזגנים</label>
                             <input
                                 type="number"
                                 name="ac"
@@ -456,7 +457,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Accessibility</label>
+                            <label className="block text-right">גישה לנכים</label>
                             <input
                                 type="checkbox"
                                 name="accessibility"
@@ -466,7 +467,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Building Age (years)</label>
+                            <label className="block text-right">גיל המבנה</label>
                             <input
                                 type="number"
                                 name="age"
@@ -476,7 +477,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Bars on Windows</label>
+                            <label className="block text-right">סורגים על חלונות</label>
                             <input
                                 type="checkbox"
                                 name="bars"
@@ -486,7 +487,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Elevator</label>
+                            <label className="block text-right">מעלית</label>
                             <input
                                 type="checkbox"
                                 name="elevator"
@@ -496,7 +497,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Number of Floors</label>
+                            <label className="block text-right">מס' קומות בנכס</label>
                             <input
                                 type="number"
                                 name="numberOfFloors"
@@ -506,7 +507,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Security Features</label>
+                            <label className="block text-right">אבטחה</label>
                             <input
                                 type="checkbox"
                                 name="security"
@@ -516,7 +517,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Floor Number</label>
+                            <label className="block text-right">קומת הנכס</label>
                             <input
                                 type="number"
                                 name="floor"
@@ -526,7 +527,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Apartment Number</label>
+                            <label className="block text-right">מס' דירה</label>
                             <input
                                 type="number"
                                 name="apNum"
@@ -536,7 +537,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Bathroom Number</label>
+                            <label className="block text-right">מס' חדרי שירותים</label>
                             <input
                                 type="number"
                                 name="bathroomsNum"
@@ -546,7 +547,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Additional Notes</label>
+                            <label className="block text-right">הערות נוספות</label>
                             <textarea
                                 name="notes"
                                 value={newProperty.notes}
@@ -560,7 +561,7 @@ const PropertyPage = () => {
                             <div key={index} className="mb-4 border p-2 rounded-md">
                                 <h3 className="text-lg mb-2">Room {index + 1}</h3>
                                 <div className="mb-4">
-                                    <label className="block text-right">Length (m)</label>
+                                    <label className="block text-right">אורך (מ')</label>
                                     <input
                                         type="number"
                                         name="length"
@@ -570,7 +571,7 @@ const PropertyPage = () => {
                                     />
                                 </div>
                                 <div className="mb-4">
-                                    <label className="block text-right">Width (m)</label>
+                                    <label className="block text-right">רוחב (מ')</label>
                                     <input
                                         type="number"
                                         name="width"
@@ -580,31 +581,31 @@ const PropertyPage = () => {
                                     />
                                 </div>
                                 <div className="mb-4">
-                                    <label className="block text-right">Room Type</label>
+                                    <label className="block text-right">סוג החדר:</label>
                                     <select
                                         name="roomType"
                                         value={room.roomType}
                                         onChange={(e) => handleRoomChange(index, e)}
                                         className="w-full p-2 border rounded-md"
                                     >
-                                        <option value="">Select Room Type</option>
-                                        <option value="bedroom">Bedroom</option>
-                                        <option value="livingroom">Living Room</option>
-                                        <option value="bathroom">Bathroom</option>
-                                        <option value="balcony">Balcony</option>
-                                        <option value="garden">Garden</option>
-                                        <option value="saferoom">Safe Room</option>
-                                        <option value="storage">Storage</option>
+                                        <option value="">בחר את סוג החדר: </option>
+                                        <option value="bedroom">חדר שינה</option>
+                                        <option value="livingroom">סלון</option>
+                                        <option value="bathroom">שירותים</option>
+                                        <option value="balcony">מרפסת</option>
+                                        <option value="garden">גינה</option>
+                                        <option value="saferoom">ממ"ד</option>
+                                        <option value="storage">מחסן</option>
                                     </select>
                                 </div>
                             </div>
                         ))}
                         <button onClick={addRoom} className="bg-green-500 text-white p-2 rounded-md mb-4">
-                            Add Another Room
+                            הוספת חדר נוסף
                         </button>
 
                         <div className="mb-4">
-                            <label className="block text-right">Owner Name</label>
+                            <label className="block text-right">שם הבעלים</label>
                             <input
                                 type="text"
                                 name="ownerName"
@@ -614,7 +615,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Owner ID</label>
+                            <label className="block text-right">ת"ז הבעלים</label>
                             <input
                                 type="text"
                                 name="ownerID"
@@ -624,7 +625,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Start Date</label>
+                            <label className="block text-right">תאריך תחילת העסקה</label>
                             <input
                                 type="date"
                                 name="startDate"
@@ -634,7 +635,7 @@ const PropertyPage = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">Picture</label>
+                            <label className="block text-right">תמונות</label>
                             <input
                                 type="file"
                                 name="file"
@@ -645,10 +646,10 @@ const PropertyPage = () => {
                         <div className="flex justify-end">
                             <button onClick={() => setIsPopupOpen(false)}
                                     className="bg-gray-300 p-2 rounded-md mr-2">
-                                Cancel
+                                בטל
                             </button>
                             <button onClick={handleAddProperty} className="bg-blue-600 text-white p-2 rounded-md">
-                                Save
+                                שמור
                             </button>
                         </div>
                     </div>
