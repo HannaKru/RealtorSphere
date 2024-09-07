@@ -338,8 +338,14 @@ const PropertyPage = () => {
             {/* Popup Window for Adding New Property */}
             {isPopupOpen && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
-                    <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-full overflow-y-auto">
-                        <h2 className="text-2xl mb-4">Add New Property</h2>
+                    <div className="bg-white p-6 rounded-lg relative w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+                        <button
+                            onClick={() => setIsPopupOpen(false)}
+                            className="absolute top-2 left-2 text-gray-600 hover:text-gray-800"
+                        >
+                            ✕
+                        </button>
+                        <h2 className="text-2xl mb-4">הוספת נכס חדש</h2>
                         <div className="mb-4">
                             <label className="block text-right">רחוב</label>
                             <input
@@ -348,6 +354,7 @@ const PropertyPage = () => {
                                 value={newProperty.street}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -358,6 +365,7 @@ const PropertyPage = () => {
                                 value={newProperty.city}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -368,6 +376,7 @@ const PropertyPage = () => {
                                 value={newProperty.house}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -378,6 +387,7 @@ const PropertyPage = () => {
                                 value={newProperty.neighborhood}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -387,6 +397,7 @@ const PropertyPage = () => {
                                 value={newProperty.propertyType}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             >
                                 <option value="apartment">דירה</option>
                                 <option value="duplex apartment">דירת דופלקס</option>
@@ -403,6 +414,7 @@ const PropertyPage = () => {
                                 value={newProperty.roomsNum}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -413,6 +425,7 @@ const PropertyPage = () => {
                                 value={newProperty.price}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -423,6 +436,7 @@ const PropertyPage = () => {
                                 value={newProperty.size}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
 
@@ -434,6 +448,7 @@ const PropertyPage = () => {
                                 value={newProperty.transactionType}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             >
                                 <option value="rent">השכרה</option>
                                 <option value="sell">מכירה</option>
@@ -448,6 +463,7 @@ const PropertyPage = () => {
                                 value={newProperty.parkingNumber}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -458,6 +474,7 @@ const PropertyPage = () => {
                                 value={newProperty.ac}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -478,6 +495,7 @@ const PropertyPage = () => {
                                 value={newProperty.age}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -508,6 +526,7 @@ const PropertyPage = () => {
                                 value={newProperty.numberOfFloors}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -528,6 +547,7 @@ const PropertyPage = () => {
                                 value={newProperty.floor}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -538,6 +558,7 @@ const PropertyPage = () => {
                                 value={newProperty.apNum}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -548,6 +569,7 @@ const PropertyPage = () => {
                                 value={newProperty.bathroomsNum}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -557,6 +579,7 @@ const PropertyPage = () => {
                                 value={newProperty.notes}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
 
@@ -572,6 +595,7 @@ const PropertyPage = () => {
                                         value={room.length}
                                         onChange={(e) => handleRoomChange(index, e)}
                                         className="w-full p-2 border rounded-md"
+                                        dir="rtl"
                                     />
                                 </div>
                                 <div className="mb-4">
@@ -582,6 +606,7 @@ const PropertyPage = () => {
                                         value={room.width}
                                         onChange={(e) => handleRoomChange(index, e)}
                                         className="w-full p-2 border rounded-md"
+                                        dir="rtl"
                                     />
                                 </div>
                                 <div className="mb-4">
@@ -592,7 +617,7 @@ const PropertyPage = () => {
                                         onChange={(e) => handleRoomChange(index, e)}
                                         className="w-full p-2 border rounded-md"
                                     >
-                                        <option value="">בחר את סוג החדר: </option>
+                                        <option value="">בחר את סוג החדר:</option>
                                         <option value="bedroom">חדר שינה</option>
                                         <option value="livingroom">סלון</option>
                                         <option value="bathroom">שירותים</option>
@@ -616,6 +641,7 @@ const PropertyPage = () => {
                                 value={newProperty.ownerName}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
@@ -626,6 +652,7 @@ const PropertyPage = () => {
                                 value={newProperty.ownerID}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
+                                dir="rtl"
                             />
                         </div>
                         <div className="mb-4">
