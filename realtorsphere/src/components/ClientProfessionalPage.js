@@ -5,23 +5,18 @@ const ClientProfessionalPage = () => {
     const [activeTab, setActiveTab] = useState('owners');
     const [searchFilters, setSearchFilters] = useState({
         name: '',
-        city: '',
         id: '',
     });
     const [filteredData, setFilteredData] = useState([]);
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [isNewPersonPopupOpen, setIsNewPersonPopupOpen] = useState(false);
     const [selectedPerson, setSelectedPerson] = useState(null);
-    const [availableProperties, setAvailableProperties] = useState([]);
-
-    // Property types for the new person
-    const propertyTypes = ["Apartment", "Duplex Apartment", "Private Home", "Two-Family", "House Penthouse"];
     const [newPerson, setNewPerson] = useState({
+        id: '',
         firstName: '',
         lastName: '',
         phone: '',
         email: '',
-        id: '',
         type: 'Client',
         budget: '',
         buyORrent: 'rent',
@@ -32,14 +27,14 @@ const ClientProfessionalPage = () => {
         propertyType: '',
         cities: [],
     });
-    const [newCity, setNewCity] = useState(""); // For managing city input
+    const [newCity, setNewCity] = useState(''); // For managing city input
+    const propertyTypes = ["Apartment", "Duplex Apartment", "Private Home", "Two-Family", "House Penthouse"];
 
     const fetchData = async () => {
         try {
             const response = await axios.get('http://localhost:5000/clientProfessionalPage', {
                 params: {
                     name: searchFilters.name,
-                    city: searchFilters.city,
                     id: searchFilters.id,
                     tab: activeTab,
                 },
@@ -48,17 +43,6 @@ const ClientProfessionalPage = () => {
             setFilteredData(response.data);
         } catch (error) {
             console.error('Error fetching data:', error);
-        }
-    };
-
-    const fetchAvailableProperties = async () => {
-        try {
-            const response = await axios.get('http://localhost:5000/properties', {
-                withCredentials: true
-            });
-            setAvailableProperties(response.data);
-        } catch (error) {
-            console.error('Error fetching properties:', error);
         }
     };
 
@@ -81,31 +65,32 @@ const ClientProfessionalPage = () => {
                 withCredentials: true
             });
             setSelectedPerson(response.data);
-            await fetchAvailableProperties(); // Fetch properties when viewing details
             setIsPopupOpen(true);
         } catch (error) {
             console.error('Error fetching person details:', error);
         }
     };
 
+     const handleRemovePerson = async (personId) => {
+        try {
+            const response = await axios.delete(`http://localhost:5000/removePerson/${personId}`, {
+                withCredentials: true
+            });
+            if (response.status === 200) {
+                alert('Person removed successfully');
+                fetchData(); // Refresh the data
+            } else {
+                console.error('Failed to remove person:', response.status);
+            }
+        } catch (error) {
+            console.error('Error removing person:', error);
+        }
+    };
+
+
     const closePopup = () => {
         setIsPopupOpen(false);
         setSelectedPerson(null);
-    };
-
-    const handleEditPerson = async () => {
-        try {
-            const response = await axios.post('http://localhost:5000/editPerson', selectedPerson, { withCredentials: true });
-            if (response.status === 200) {
-                alert('Person updated successfully');
-                setIsPopupOpen(false);
-                fetchData(); // Refresh the data
-            } else {
-                console.error('Failed to update person:', response.status);
-            }
-        } catch (error) {
-            console.error('Error updating person:', error);
-        }
     };
 
     const handleNewPersonChange = (e) => {
@@ -135,7 +120,6 @@ const ClientProfessionalPage = () => {
 
     const handleAddPerson = async () => {
         try {
-            // Send the data to the backend
             const response = await axios.post('http://localhost:5000/addPerson', newPerson, {
                 withCredentials: true,
             });
@@ -161,20 +145,12 @@ const ClientProfessionalPage = () => {
             <div className="p-6">
                 {/* Search Filters */}
                 <div className="flex flex-col justify-center items-center mb-6">
-                    <div className="grid grid-cols-3 gap-4 mb-4">
+                    <div className="grid grid-cols-2 gap-4 mb-4">
                         <input
                             type="text"
                             name="name"
                             placeholder="שם"
                             value={searchFilters.name}
-                            onChange={handleSearchChange}
-                            className="p-2 border rounded-md text-right"
-                        />
-                        <input
-                            type="text"
-                            name="city"
-                            placeholder="עיר"
-                            value={searchFilters.city}
                             onChange={handleSearchChange}
                             className="p-2 border rounded-md text-right"
                         />
@@ -218,7 +194,6 @@ const ClientProfessionalPage = () => {
                                 <th className="p-2 border-b-2 border-gray-300 text-gray-600">ת.ז</th>
                                 <th className="p-2 border-b-2 border-gray-300 text-gray-600">שם</th>
                                 <th className="p-2 border-b-2 border-gray-300 text-gray-600">טלפון</th>
-                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">עיר</th>
                                 <th className="p-2 border-b-2 border-gray-300 text-gray-600">סטטוס</th>
                                 <th className="p-2 border-b-2 border-gray-300 text-gray-600">לצפייה</th>
                             </tr>
@@ -229,13 +204,19 @@ const ClientProfessionalPage = () => {
                                     <td className="p-2 border-b">{data.id}</td>
                                     <td className="p-2 border-b">{data.FirstName} {data.LastName}</td>
                                     <td className="p-2 border-b">{data.Phone}</td>
-                                    <td className="p-2 border-b">{data.city || 'N/A'}</td>
                                     <td className="p-2 border-b">
                                         {activeTab === 'clients' ? data.Type.Client?.buyORrent || 'N/A' : data.Type.Owner ? 'Owner' : 'N/A'}
                                     </td>
                                     <td className="p-2 border-b">
-                                        <button className="bg-blue-500 text-white p-2 rounded-md" onClick={() => handleViewDetails(data.id)}>
+                                        <button className="bg-blue-500 text-white p-2 rounded-md"
+                                                onClick={() => handleViewDetails(data.id)}>
                                             צפייה
+                                        </button>
+                                    </td>
+                                    <td className="p-2 border-b">
+                                        <button className="bg-red-500 text-white p-2 rounded-md"
+                                                onClick={() => handleRemovePerson(data.id)}>
+                                            הסר
                                         </button>
                                     </td>
                                 </tr>
@@ -243,191 +224,233 @@ const ClientProfessionalPage = () => {
                         </tbody>
                     </table>
                 </div>
+            </div>
 
-                {/* Popup Window for Adding New Person */}
-                {isNewPersonPopupOpen && (
-                    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-                        <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-screen overflow-y-auto">
-                            <h2 className="text-2xl mb-4">Add New Person</h2>
-                            <div className="mb-4">
-                                <label className="block text-right">First Name</label>
-                                <input
-                                    type="text"
-                                    name="firstName"
-                                    value={newPerson.firstName}
-                                    onChange={handleNewPersonChange}
-                                    className="w-full p-2 border rounded-md"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-right">Last Name</label>
-                                <input
-                                    type="text"
-                                    name="lastName"
-                                    value={newPerson.lastName}
-                                    onChange={handleNewPersonChange}
-                                    className="w-full p-2 border rounded-md"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-right">Phone</label>
-                                <input
-                                    type="text"
-                                    name="phone"
-                                    value={newPerson.phone}
-                                    onChange={handleNewPersonChange}
-                                    className="w-full p-2 border rounded-md"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-right">Email</label>
-                                <input
-                                    type="email"
-                                    name="email"
-                                    value={newPerson.email}
-                                    onChange={handleNewPersonChange}
-                                    className="w-full p-2 border rounded-md"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-right">ID</label>
-                                <input
-                                    type="text"
-                                    name="id"
-                                    value={newPerson.id}
-                                    onChange={handleNewPersonChange}
-                                    className="w-full p-2 border rounded-md"
-                                />
-                            </div>
-                            <div className="mb-4">
-                                <label className="block text-right">Type</label>
-                                <select
-                                    name="type"
-                                    value={newPerson.type}
-                                    onChange={handleNewPersonChange}
-                                    className="w-full p-2 border rounded-md"
-                                >
-                                    <option value="Owner">Owner</option>
-                                    <option value="Client">Client</option>
-                                </select>
-                            </div>
-                            {/* Conditional fields for clients */}
-                            {newPerson.type === 'Client' && (
-                                <>
-                                    <div className="mb-4">
-                                        <label className="block text-right">Budget</label>
+            {/* Popup Window for Viewing Person Details */}
+            {isPopupOpen && selectedPerson && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-md shadow-lg w-96">
+                        <h2 className="text-2xl mb-4">Details of {selectedPerson.FirstName} {selectedPerson.LastName}</h2>
+                        <p><strong>Phone:</strong> {selectedPerson.Phone}</p>
+                        <p><strong>Email:</strong> {selectedPerson.email}</p>
+
+                        {/* Render additional data if client */}
+                        {selectedPerson.Type.Client && (
+                            <>
+                                <p><strong>Budget:</strong> {selectedPerson.Type.Client.budget}</p>
+                                <p><strong>Rent or Buy:</strong> {selectedPerson.Type.Client.buyORrent}</p>
+                                <p><strong>Properties Liked:</strong></p>
+                                <ul>
+                                    {selectedPerson.PropertiesLiked.map((property, index) => (
+                                        <li key={index}>{property.address}</li>
+                                    ))}
+                                </ul>
+                            </>
+                        )}
+
+                        {/* Render additional data if owner */}
+                        {selectedPerson.Type.Owner && (
+                            <>
+                                <p><strong>Properties Owned:</strong></p>
+                                <ul>
+                                    {selectedPerson.PropertiesOwned.map((property, index) => (
+                                        <li key={index}>{property.address}</li>
+                                    ))}
+                                </ul>
+                            </>
+                        )}
+
+                        <button className="bg-gray-300 p-2 rounded-md mt-4" onClick={closePopup}>
+                            Close
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* Popup Window for Adding New Person */}
+            {isNewPersonPopupOpen && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-screen overflow-y-auto">
+                        <h2 className="text-2xl mb-4">Add New Person</h2>
+                        <div className="mb-4">
+                            <label className="block text-right">ID</label>
+                            <input
+                                type="text"
+                                name="id"
+                                value={newPerson.id}
+                                onChange={handleNewPersonChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">First Name</label>
+                            <input
+                                type="text"
+                                name="firstName"
+                                value={newPerson.firstName}
+                                onChange={handleNewPersonChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Last Name</label>
+                            <input
+                                type="text"
+                                name="lastName"
+                                value={newPerson.lastName}
+                                onChange={handleNewPersonChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Phone</label>
+                            <input
+                                type="text"
+                                name="phone"
+                                value={newPerson.phone}
+                                onChange={handleNewPersonChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Email</label>
+                            <input
+                                type="email"
+                                name="email"
+                                value={newPerson.email}
+                                onChange={handleNewPersonChange}
+                                className="w-full p-2 border rounded-md"
+                            />
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-right">Type</label>
+                            <select
+                                name="type"
+                                value={newPerson.type}
+                                onChange={handleNewPersonChange}
+                                className="w-full p-2 border rounded-md"
+                            >
+                                <option value="Owner">Owner</option>
+                                <option value="Client">Client</option>
+                            </select>
+                        </div>
+
+                        {/* Conditional fields for clients */}
+                        {newPerson.type === 'Client' && (
+                            <>
+                                <div className="mb-4">
+                                    <label className="block text-right">Budget</label>
+                                    <input
+                                        type="number"
+                                        name="budget"
+                                        value={newPerson.budget}
+                                        onChange={handleNewPersonChange}
+                                        className="w-full p-2 border rounded-md"
+                                    />
+                                </div>
+                                <div className="mb-4">
+                                    <label className="block text-right">Rent or Buy</label>
+                                    <select
+                                        name="buyORrent"
+                                        value={newPerson.buyORrent}
+                                        onChange={handleNewPersonChange}
+                                        className="w-full p-2 border rounded-md"
+                                    >
+                                        <option value="rent">Rent</option>
+                                        <option value="buy">Buy</option>
+                                    </select>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label className="block text-right">Min Rooms</label>
                                         <input
                                             type="number"
-                                            name="budget"
-                                            value={newPerson.budget}
+                                            name="minRooms"
+                                            value={newPerson.minRooms}
                                             onChange={handleNewPersonChange}
                                             className="w-full p-2 border rounded-md"
                                         />
                                     </div>
-                                    <div className="mb-4">
-                                        <label className="block text-right">Rent or Buy</label>
-                                        <select
-                                            name="buyORrent"
-                                            value={newPerson.buyORrent}
-                                            onChange={handleNewPersonChange}
-                                            className="w-full p-2 border rounded-md"
-                                        >
-                                            <option value="rent">Rent</option>
-                                            <option value="buy">Buy</option>
-                                        </select>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <label className="block text-right">Min Rooms</label>
-                                            <input
-                                                type="number"
-                                                name="minRooms"
-                                                value={newPerson.minRooms}
-                                                onChange={handleNewPersonChange}
-                                                className="w-full p-2 border rounded-md"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-right">Max Rooms</label>
-                                            <input
-                                                type="number"
-                                                name="maxRooms"
-                                                value={newPerson.maxRooms}
-                                                onChange={handleNewPersonChange}
-                                                className="w-full p-2 border rounded-md"
-                                            />
-                                        </div>
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-4 mb-4">
-                                        <div>
-                                            <label className="block text-right">Min Size (sqm)</label>
-                                            <input
-                                                type="number"
-                                                name="minSize"
-                                                value={newPerson.minSize}
-                                                onChange={handleNewPersonChange}
-                                                className="w-full p-2 border rounded-md"
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-right">Max Size (sqm)</label>
-                                            <input
-                                                type="number"
-                                                name="maxSize"
-                                                value={newPerson.maxSize}
-                                                onChange={handleNewPersonChange}
-                                                className="w-full p-2 border rounded-md"
-                                            />
-                                        </div>
-                                    </div>
-                                    <p><strong>Property Type:</strong></p>
-                                    <select
-                                        name="propertyType"
-                                        value={newPerson.propertyType}
-                                        onChange={handleNewPersonChange}
-                                        className="w-full p-2 border rounded-md mb-4"
-                                    >
-                                        <option value="">Select Property Type</option>
-                                        {propertyTypes.map((type, index) => (
-                                            <option key={index} value={type}>
-                                                {type}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <h3 className="text-xl mb-4">Cities Considered</h3>
-                                    <ul>
-                                        {(newPerson.cities || []).map((city, index) => (
-                                            <li key={index} className="flex justify-between">
-                                                {city}
-                                                <button onClick={() => removeCity(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                    <div className="flex">
+                                    <div>
+                                        <label className="block text-right">Max Rooms</label>
                                         <input
-                                            type="text"
-                                            placeholder="Add City"
-                                            value={newCity}
-                                            onChange={(e) => setNewCity(e.target.value)}
-                                            className="w-full p-2 border rounded-md mb-4"
+                                            type="number"
+                                            name="maxRooms"
+                                            value={newPerson.maxRooms}
+                                            onChange={handleNewPersonChange}
+                                            className="w-full p-2 border rounded-md"
                                         />
-                                        <button onClick={addCity} className="bg-green-500 text-white p-2 rounded-md ml-2">Add</button>
                                     </div>
-                                </>
-                            )}
-                            <div className="flex justify-end">
-                                <button onClick={() => setIsNewPersonPopupOpen(false)}
-                                        className="bg-gray-300 p-2 rounded-md mr-2">
-                                    Cancel
-                                </button>
-                                <button onClick={handleAddPerson} className="bg-blue-600 text-white p-2 rounded-md">
-                                    Save
-                                </button>
-                            </div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label className="block text-right">Min Size (sqm)</label>
+                                        <input
+                                            type="number"
+                                            name="minSize"
+                                            value={newPerson.minSize}
+                                            onChange={handleNewPersonChange}
+                                            className="w-full p-2 border rounded-md"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-right">Max Size (sqm)</label>
+                                        <input
+                                            type="number"
+                                            name="maxSize"
+                                            value={newPerson.maxSize}
+                                            onChange={handleNewPersonChange}
+                                            className="w-full p-2 border rounded-md"
+                                        />
+                                    </div>
+                                </div>
+                                <p><strong>Property Type:</strong></p>
+                                <select
+                                    name="propertyType"
+                                    value={newPerson.propertyType}
+                                    onChange={handleNewPersonChange}
+                                    className="w-full p-2 border rounded-md mb-4"
+                                >
+                                    <option value="">Select Property Type</option>
+                                    {propertyTypes.map((type, index) => (
+                                        <option key={index} value={type}>
+                                            {type}
+                                        </option>
+                                    ))}
+                                </select>
+                                <h3 className="text-xl mb-4">Cities Considered</h3>
+                                <ul>
+                                    {(newPerson.cities || []).map((city, index) => (
+                                        <li key={index} className="flex justify-between">
+                                            {city}
+                                            <button onClick={() => removeCity(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="flex">
+                                    <input
+                                        type="text"
+                                        placeholder="Add City"
+                                        value={newCity}
+                                        onChange={(e) => setNewCity(e.target.value)}
+                                        className="w-full p-2 border rounded-md mb-4"
+                                    />
+                                    <button onClick={addCity} className="bg-green-500 text-white p-2 rounded-md ml-2">Add</button>
+                                </div>
+                            </>
+                        )}
+                        <div className="flex justify-end">
+                            <button onClick={() => setIsNewPersonPopupOpen(false)}
+                                    className="bg-gray-300 p-2 rounded-md mr-2">
+                                Cancel
+                            </button>
+                            <button onClick={handleAddPerson} className="bg-blue-600 text-white p-2 rounded-md">
+                                Save
+                            </button>
                         </div>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 };

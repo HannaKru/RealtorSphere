@@ -9,7 +9,7 @@ from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_t
 from forgetPass import check_user_and_send_email
 from Property import get_properties, get_property_by_id, add_property
 from sendMessage import send_email_with_attachment
-from ClientProfessionalPage import get_filtered_persons, add_person, get_person_details, update_person_details
+from ClientProfessionalPage import get_filtered_persons, add_person, get_person_details, update_person_details, remove_person
 from Deals import get_deals, get_deal_details, new_price
 from werkzeug.utils import secure_filename
 import os
@@ -275,6 +275,12 @@ def edit_person_route():
     email = session.get('user_email', '')  # Get the realtor's email from the session
 
     response, status_code = update_person_details(data, email)
+    return jsonify(response), status_code
+
+
+@app.route('/removePerson/<person_id>', methods=['DELETE'])
+def remove_person_route(person_id):
+    response, status_code = remove_person(person_id)
     return jsonify(response), status_code
 
 @app.route('/deals', methods=['GET'])

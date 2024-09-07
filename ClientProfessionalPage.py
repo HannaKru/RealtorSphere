@@ -60,8 +60,9 @@ def add_person(data, email):
 
         # Check if the ID already exists
         existing_person_snapshot = db.child("Person").child(person_id).get()
-        if existing_person_snapshot and existing_person_snapshot.val():
-            return {"error": "Person with this ID already exists"}, 400
+        if existing_person_snapshot:  # `existing_person_snapshot` is already a dict
+            if existing_person_snapshot is not None:
+                return {"error": "Person with this ID already exists"}, 400
 
         # Prepare person data
         person_data = {
@@ -75,7 +76,7 @@ def add_person(data, email):
         if person_type == "Owner":
             person_data["Type"]["Owner"] = {
                 "realtor": email,
-                "sellORrent": data.get('sellORrent', '').strip(),
+                #"sellORrent": data.get('sellORrent', '').strip(),
             }
         elif person_type == "Client":
             person_data["Type"]["Client"] = {
@@ -101,11 +102,11 @@ def add_person(data, email):
         return {"error": "An error occurred while adding the person"}, 500
 
 
-
+# Get details of a person by their ID
 def get_person_details(person_id):
     try:
         person_ref = db.child('Person').child(person_id)
-        person_data = person_ref.get()  # Removed .val() since get() already returns the data
+        person_data = person_ref.get()
 
         if not person_data:
             return None, "Person not found"
@@ -113,7 +114,6 @@ def get_person_details(person_id):
         properties_owned = []
         properties_liked = []
 
-        # Fetch ownership data for the owner
         if 'Owner' in person_data.get('Type', {}):
             ownerships_ref = db.child('Ownership')
             ownerships = ownerships_ref.order_by_child('PersonID').equal_to(person_id).get()
@@ -128,7 +128,6 @@ def get_person_details(person_id):
                             'address': f"{property_data.get('Steet', '')} {property_data.get('house', '')}, {property_data.get('city', '')}"
                         })
 
-        # Fetch preferred properties for the client
         if 'Client' in person_data.get('Type', {}):
             properties_list = person_data['Type']['Client'].get('PropertiesList', [])
             for property_id in properties_list:
@@ -156,13 +155,13 @@ def get_person_details(person_id):
         print(f"Error fetching person details from Firebase: {e}")
         return None, f"An error occurred while fetching person details: {str(e)}"
 
-
+# Update person details
 def update_person_details(data, realtor_email):
     person_id = data.get('id')
 
     try:
         person_ref = db.child('Person').child(person_id)
-        person_data = person_ref.get()  # Removed .val() since get() already returns the data
+        person_data = person_ref.get()
 
         if not person_data:
             return {"message": "Person not found"}, 404
@@ -174,7 +173,7 @@ def update_person_details(data, realtor_email):
             "email": data.get('email', person_data['email']),
             "Type": person_data['Type']
         }
-# note
+
         if data.get('type') == 'Client':
             updated_data['Type']['Client'] = {
                 "realtor": realtor_email,
@@ -199,3 +198,13 @@ def update_person_details(data, realtor_email):
         print(f"Error updating person in Firebase: {e}")
         return {"message": "An error occurred while updating the person"}, 500
 
+def remove_person(person_id):
+    try:
+        person_ref = db.child('Person').child(person_id)
+        person_ref.delete()  # Remove the person from the database
+
+        return {"message": "Person removed successfully"}, 200
+
+    except Exception as e:
+        print(f"Error removing person from Firebase: {e}")
+        return {"error": "An error occurred while removing the person"}, 500
