@@ -205,6 +205,11 @@ const PropertyPage = () => {
         }
     };
 
+    const handleSubmit = (e) => {
+  e.preventDefault(); // Prevent the default form submission
+  handleSearchClick(); // Call the existing search function
+};
+
 
     return (
         <div className="bg-gray-50 min-h-screen rtl">
@@ -215,7 +220,7 @@ const PropertyPage = () => {
 
             <div className="p-6">
                 {/* Search Filters */}
-                <form onSubmit={e => e.preventDefault()} className="search-form">
+                <form onSubmit={handleSubmit} className="search-form">
                     <div className="form-row">
                         <input
                             type="text"
@@ -289,9 +294,8 @@ const PropertyPage = () => {
 
                     <div className="form-row">
                         <button
-                            type="button"
+                            type="submit"
                             className="bg-blue-600 text-white p-2 rounded-md"
-                            onClick={handleSearchClick}
                         >
                             חיפוש
                         </button>
