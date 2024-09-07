@@ -269,12 +269,15 @@ def fetch_person_details(person_id):
         return jsonify({"message": error}), 404
 
 
+
 @app.route('/editPerson', methods=['POST'])
 def edit_person_route():
     data = request.json
     email = session.get('user_email', '')  # Get the realtor's email from the session
 
+    print(f"Received data: {data}")  # Log received data
     response, status_code = update_person_details(data, email)
+    print(f"Update response: {response}")  # Log response
     return jsonify(response), status_code
 
 

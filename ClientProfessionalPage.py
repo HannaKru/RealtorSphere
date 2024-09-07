@@ -159,44 +159,63 @@ def get_person_details(person_id):
 def update_person_details(data, realtor_email):
     person_id = data.get('id')
 
+    if not person_id:
+        return {"message": "Person ID is required"}, 400
+
     try:
-        person_ref = db.child('Person').child(person_id)
-        person_data = person_ref.get()
+        # Get a reference to the person's data
+        person_ref = db.child('Person').child(person_id)  # Adjust based on your Firebase setup
+        person_data = person_ref.get()  # No need for .val(), get() already returns the data
 
-        if not person_data:
-            return {"message": "Person not found"}, 404
+        #if not person_data.val():  # If data doesn't exist
+            #return {"message": "Person not found"}, 404
 
+        #person_data = person_data.val()  # Get the dictionary data
+
+        # Create updated data object by merging existing and new values
         updated_data = {
-            "FirstName": data.get('firstName', person_data['FirstName']),
-            "LastName": data.get('lastName', person_data['LastName']),
-            "Phone": data.get('phone', person_data['Phone']),
-            "email": data.get('email', person_data['email']),
-            "Type": person_data['Type']
+            "FirstName": data.get('FirstName', person_data.get('FirstName')),
+            "LastName": data.get('LastName', person_data.get('LastName')),
+            "Phone": data.get('Phone', person_data.get('Phone')),
+            "email": data.get('email', person_data.get('email')),
+            "Type": person_data.get('Type', {})
         }
 
-        if data.get('type') == 'Client':
-            updated_data['Type']['Client'] = {
-                "realtor": realtor_email,
-                "PropertiesList": data.get('PropertiesList', person_data['Type']['Client'].get('PropertiesList', [])),
-                "budget": data.get('budget', person_data['Type']['Client'].get('budget')),
-                "buyORrent": data.get('buyORrent', person_data['Type']['Client'].get('buyORrent')),
-                "maxRooms": data.get('maxRooms', person_data['Type']['Client'].get('maxRooms')),
-                "minRooms": data.get('minRooms', person_data['Type']['Client'].get('minRooms')),
-                "maxSize": data.get('maxSize', person_data['Type']['Client'].get('maxSize')),
-                "minSize": data.get('minSize', person_data['Type']['Client'].get('minSize'))
-            }
+        # Update PropertiesLiked and PropertiesOwned if present in the data
+        if 'PropertiesLiked' in data:
+            updated_data['PropertiesLiked'] = data['PropertiesLiked']
+        if 'PropertiesOwned' in data:
+            updated_data['PropertiesOwned'] = data['PropertiesOwned']
 
-        if data.get('type') == 'Owner':
+        # Handle Owner and Client types
+        person_type = data.get('Type', {})
+        if 'Owner' in person_type:
             updated_data['Type']['Owner'] = {
                 "realtor": realtor_email,
+                "sellORrent": person_type['Owner'].get('sellORrent', 'rent')
+            }
+        elif 'Client' in person_type:
+            updated_data['Type']['Client'] = {
+                "realtor": realtor_email,
+                "PropertiesList": person_type['Client'].get('PropertiesList', ''),
+                "budget": person_type['Client'].get('budget'),
+                "buyORrent": person_type['Client'].get('buyORrent'),
+                "maxRooms": person_type['Client'].get('maxRooms'),
+                "minRooms": person_type['Client'].get('minRooms'),
+                "maxSize": person_type['Client'].get('maxSize'),
+                "minSize": person_type['Client'].get('minSize'),
+                "propertyType": person_type['Client'].get('propertyType'),
+                "searchCity": person_type['Client'].get('searchCity', [])
             }
 
+        # Update the data in Firebase
         person_ref.update(updated_data)
-        return {"message": "Person updated successfully"}, 200
+
+        return {"message": "Person updated successfully", "updated_data": updated_data}, 200
 
     except Exception as e:
-        print(f"Error updating person in Firebase: {e}")
-        return {"message": "An error occurred while updating the person"}, 500
+        print(f"Error updating person in Firebase: {str(e)}")
+        return {"message": f"An error occurred while updating the person: {str(e)}"}, 500
 
 def remove_person(person_id):
     try:
