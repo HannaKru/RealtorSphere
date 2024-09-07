@@ -48,6 +48,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
             prop_address = f"{prop_data.get('street', '')} {str(prop_data.get('house', ''))}"
             prop_price = prop_data.get('Price', 0)
             prop_realtor = prop_data.get('realtor', '')
+            prop_neighborhood = prop_data.get('neighborhood', '')
 
             owner_name = ''
             for ownership_id, ownership in ownerships.items():
@@ -90,6 +91,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'size': prop_size,
                 'address': prop_address,
                 'city': prop_city,
+                'neighborhood': prop_neighborhood,
                 'propertyType': prop_type,
                 'transactionType': ownership.get('rentORsell', ''),
                 'status': prop_status

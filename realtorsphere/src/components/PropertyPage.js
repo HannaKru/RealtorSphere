@@ -19,6 +19,8 @@ const PropertyPage = () => {
     const [properties, setProperties] = useState([]);
     const [isPopupOpen, setIsPopupOpen] = useState(false); // For controlling the popup window
     const [selectedProperty, setSelectedProperty] = useState(null); // State to track selected property details
+    const [isDetailsPopupOpen, setIsDetailsPopupOpen] = useState(false); // For controlling the property details popup
+
 
     const [newProperty, setNewProperty] = useState({
         street: '',
@@ -211,10 +213,14 @@ const PropertyPage = () => {
         handleSearchClick(); // Call the existing search function
     };
 
-     // Handle property row click to show details in a popup
-    const handlePropertyClick = (property) => {
+
+
+
+
+    // Handle row click to show details in a popup
+    const handleRowClick = (property) => {
         setSelectedProperty(property); // Set the selected property
-        setIsPopupOpen(true); // Open the popup
+        setIsDetailsPopupOpen(true); // Open the details popup
     };
 
 
@@ -347,7 +353,11 @@ const PropertyPage = () => {
                     </thead>
                     <tbody>
                     {filteredProperties.map((property, index) => (
-                        <tr key={property.id}>
+                        <tr
+                            key={property.id}
+                            onClick={() => handleRowClick(property)}  // Make the row clickable
+                            className="cursor-pointer hover:bg-gray-100"
+                        >
                             <td className="p-2 border-b">{property.status || 'N/A'}</td>
                             <td className="p-2 border-b">{property.owner || 'N/A'}</td>
                             <td className="p-2 border-b">{property.rooms || 'N/A'}</td>
@@ -715,19 +725,45 @@ const PropertyPage = () => {
                 </div>
             )}
 
-            {/*<div className="tabs flex justify-around p-4 bg-blue-200">*/}
-            {/*    {['כל הנכסים', 'למכירה', 'להשכרה', 'ארכיון'].map(tab => (*/}
-            {/*        <button*/}
-            {/*            key={tab}*/}
-            {/*            className={`tab-button px-4 py-2 rounded-md ${*/}
-            {/*                activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'*/}
-            {/*            }`}*/}
-            {/*            onClick={() => handleTabChange(tab)}*/}
-            {/*        >*/}
-            {/*            {tab}*/}
-            {/*        </button>*/}
-            {/*    ))}*/}
-            {/*</div>*/}
+            {isDetailsPopupOpen && selectedProperty && (
+    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
+        <div className="bg-white p-6 rounded-lg relative w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+            <button onClick={() => setIsDetailsPopupOpen(false)} className="absolute top-2 left-2 text-gray-600 hover:text-gray-800">✕</button>
+            <h2 className="text-2xl mb-4">פרטי נכס</h2>
+
+            {/* Property Details */}
+            <div className="mb-4">
+                <p><strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}</p>
+                <p><strong>שכונה:</strong> {selectedProperty.neighborhood || 'N/A'}</p>
+                <p><strong>גודל:</strong> {selectedProperty.size} מ"ר</p>
+                <p><strong>מספר חדרים:</strong> {selectedProperty.rooms}</p>
+                <p><strong>מחיר:</strong> ₪ {selectedProperty.price}</p>
+                <p><strong>מספר חניות:</strong> {selectedProperty.parkingNumber || 'N/A'}</p>
+                <p><strong>מספר חדרי שירותים:</strong> {selectedProperty.bathroomsNum || 'N/A'}</p>
+                <p><strong>מספר מזגנים:</strong> {selectedProperty.ac || 'N/A'}</p>
+                <p><strong>גיל המבנה:</strong> {selectedProperty.age || 'N/A'}</p>
+                <p><strong>גישה לנכים:</strong> {selectedProperty.accessibility ? 'כן' : 'לא'}</p>
+                <p><strong>מעלית:</strong> {selectedProperty.elevator ? 'כן' : 'לא'}</p>
+                <p><strong>סורגים:</strong> {selectedProperty.bars ? 'כן' : 'לא'}</p>
+                <p><strong>אבטחה:</strong> {selectedProperty.security ? 'כן' : 'לא'}</p>
+                <p><strong>סטטוס:</strong> {selectedProperty.status}</p>
+                <p><strong>הערות:</strong> {selectedProperty.notes || 'אין'}</p>
+            </div>
+
+            {/* Images */}
+            <div className="mb-4">
+            <h3 className="text-xl">תמונות נכס</h3>
+                {selectedProperty.pictures && selectedProperty.pictures.first ? (
+                    <img src={selectedProperty.pictures.first} alt="Property" className="w-full h-auto" />
+                ) : (
+                    <p>אין תמונה לנכס זה</p>
+                )}
+            </div>
+        </div>
+    </div>
+)}
+
+
 
 
         </div>
