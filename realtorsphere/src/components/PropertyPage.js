@@ -18,6 +18,8 @@ const PropertyPage = () => {
     const [filteredProperties, setFilteredProperties] = useState([]); // Store filtered properties
     const [properties, setProperties] = useState([]);
     const [isPopupOpen, setIsPopupOpen] = useState(false); // For controlling the popup window
+    const [selectedProperty, setSelectedProperty] = useState(null); // State to track selected property details
+
     const [newProperty, setNewProperty] = useState({
         street: '',
         city: '',
@@ -127,9 +129,8 @@ const PropertyPage = () => {
 
     const handleTabChange = (tab) => {
         setActiveTab(tab);
-        const filtered = filterPropertiesByTab(tab);
-        setFilteredProperties(filtered);
-        //fetchFilteredProperties();
+        const filteredProps = filterPropertiesByTab(tab);
+        setFilteredProperties(filteredProps);
     };
 
     const handleSearchClick = () => {
@@ -206,9 +207,17 @@ const PropertyPage = () => {
     };
 
     const handleSubmit = (e) => {
-  e.preventDefault(); // Prevent the default form submission
-  handleSearchClick(); // Call the existing search function
-};
+        e.preventDefault(); // Prevent the default form submission
+        handleSearchClick(); // Call the existing search function
+    };
+
+     // Handle property row click to show details in a popup
+    const handlePropertyClick = (property) => {
+        setSelectedProperty(property); // Set the selected property
+        setIsPopupOpen(true); // Open the popup
+    };
+
+
 
 
     return (
@@ -219,6 +228,9 @@ const PropertyPage = () => {
             </header>
 
             <div className="p-6">
+
+
+
                 {/* Search Filters */}
                 <form onSubmit={handleSubmit} className="search-form">
                     <div className="form-row">
@@ -309,6 +321,21 @@ const PropertyPage = () => {
                     </div>
                 </form>
 
+                {/* Tabs Section */}
+                <div className="tabs flex justify-around p-4 ">
+                {['כל הנכסים', 'למכירה', 'להשכרה', 'ארכיון'].map(tab => (
+                    <button
+                        key={tab}
+                        className={`tab-button px-4 py-2 rounded-md ${
+                            activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'
+                        }`}
+                        onClick={() => handleTabChange(tab)}
+                    >
+                        {tab}
+                    </button>
+                ))}
+            </div>
+
                 {/* Property Table */}
                 <table className="min-w-full bg-white text-right">
                     <thead>
@@ -334,6 +361,7 @@ const PropertyPage = () => {
                     </tbody>
                 </table>
             </div>
+
 
             {/* Popup Window for Adding New Property */}
             {isPopupOpen && (
@@ -686,6 +714,21 @@ const PropertyPage = () => {
                     </div>
                 </div>
             )}
+
+            {/*<div className="tabs flex justify-around p-4 bg-blue-200">*/}
+            {/*    {['כל הנכסים', 'למכירה', 'להשכרה', 'ארכיון'].map(tab => (*/}
+            {/*        <button*/}
+            {/*            key={tab}*/}
+            {/*            className={`tab-button px-4 py-2 rounded-md ${*/}
+            {/*                activeTab === tab ? 'bg-blue-600 text-white' : 'bg-white text-blue-600'*/}
+            {/*            }`}*/}
+            {/*            onClick={() => handleTabChange(tab)}*/}
+            {/*        >*/}
+            {/*            {tab}*/}
+            {/*        </button>*/}
+            {/*    ))}*/}
+            {/*</div>*/}
+
 
         </div>
     );
