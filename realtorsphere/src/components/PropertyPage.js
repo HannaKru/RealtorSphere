@@ -219,9 +219,37 @@ const PropertyPage = () => {
 
     // Handle row click to show details in a popup
     const handleRowClick = (property) => {
-        setSelectedProperty(property); // Set the selected property
-        setIsDetailsPopupOpen(true); // Open the details popup
-    };
+  setSelectedProperty({
+    price: property.price || 'N/A',
+    street: property.street || '',
+    house: property.house || '',
+    city: property.city || 'N/A',
+    address: property.address || `${property.street || ''} ${property.house || ''}`.trim(),
+
+    neighborhood: property.neighborhood || 'N/A',
+    size: property.size || 'N/A',
+    ac: property.ac || 'N/A',
+    accessibility: property.accessibility === "true" ? 'כן' : 'לא',
+    age: property.age || 'N/A',
+    bars: property.bars ? 'כן' : 'לא',
+    number_of_floors: property['number of floors'] || 'N/A',
+    realtor: property.realtor || 'N/A',
+    security: property.security ? 'כן' : 'לא',
+    status: property.status || 'N/A',
+    notes: property.notes || 'אין',
+    pictures: property.pictures?.first || 'אין תמונות לנכס זה',
+    type: property.type?.apartment?.type || 'N/A',
+    floor: property.type?.apartment?.floor || 'N/A',
+    apNum: property.type?.apartment?.apNum || 'N/A',
+    elevator: property.elevator === "true" ? 'כן' : 'לא',
+    parkingNumber: property.parkingNumber || 'N/A',
+    bathroomsNum: property.bathroomsNum || 'N/A',
+    roomsNum: property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A',
+    rooms: property.type?.apartment?.item?.rooms || [],
+
+  });
+  setIsDetailsPopupOpen(true);
+};
 
 
 
@@ -353,19 +381,21 @@ const PropertyPage = () => {
                     </thead>
                     <tbody>
                     {filteredProperties.map((property, index) => (
-                        <tr
-                            key={property.id}
-                            onClick={() => handleRowClick(property)}  // Make the row clickable
-                            className="cursor-pointer hover:bg-gray-100"
-                        >
-                            <td className="p-2 border-b">{property.status || 'N/A'}</td>
-                            <td className="p-2 border-b">{property.owner || 'N/A'}</td>
-                            <td className="p-2 border-b">{property.rooms || 'N/A'}</td>
-                            <td className="p-2 border-b">{property.price || 'N/A'}</td>
-                            <td className="p-2 border-b">{property.size || 'N/A'}</td>
-                            <td className="p-2 border-b">{property.address || 'N/A'}</td>
-                            <td className="p-2 border-b">{property.city || 'N/A'}</td>
-                            <td className="p-2 border-b">{property.propertyType || 'N/A'}</td>
+                        // <tr
+                        //     key={property.id}
+                        //     onClick={() => handleRowClick(property)}  // Make the row clickable
+                        //     className="cursor-pointer hover:bg-gray-100"
+                        // >
+                        <tr key={property.id} onClick={() => handleRowClick(property)}>
+
+                            <td>{property.status || 'N/A'}</td>
+                            <td>{property.owner || 'N/A'}</td>
+                            <td>{property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A'}</td>
+                            <td>{property.price  || 'N/A'}</td>
+                            <td>{property.size || 'N/A'}</td>
+                            <td>{property.address || 'N/A'}</td>
+                            <td>{property.city || 'N/A'}</td>
+                            <td>{property.propertyType || 'N/A'}</td>
                         </tr>
                     ))}
                     </tbody>
@@ -385,7 +415,7 @@ const PropertyPage = () => {
                         </button>
                         <h2 className="text-2xl mb-4">הוספת נכס חדש</h2>
                         <div className="mb-4">
-                            <label className="block text-right">רחוב</label>
+                        <label className="block text-right">רחוב</label>
                             <input
                                 type="text"
                                 name="street"
@@ -733,17 +763,18 @@ const PropertyPage = () => {
 
             {/* Property Details */}
             <div className="mb-4">
-                <p><strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}</p>
+                <p><strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}
+                </p>
                 <p><strong>שכונה:</strong> {selectedProperty.neighborhood || 'N/A'}</p>
                 <p><strong>גודל:</strong> {selectedProperty.size} מ"ר</p>
-                <p><strong>מספר חדרים:</strong> {selectedProperty.rooms}</p>
+                <p><strong>מספר חדרים:</strong> {selectedProperty.roomsNum}</p>
                 <p><strong>מחיר:</strong> ₪ {selectedProperty.price}</p>
-                <p><strong>מספר חניות:</strong> {selectedProperty.parkingNumber || 'N/A'}</p>
-                <p><strong>מספר חדרי שירותים:</strong> {selectedProperty.bathroomsNum || 'N/A'}</p>
-                <p><strong>מספר מזגנים:</strong> {selectedProperty.ac || 'N/A'}</p>
-                <p><strong>גיל המבנה:</strong> {selectedProperty.age || 'N/A'}</p>
-                <p><strong>גישה לנכים:</strong> {selectedProperty.accessibility ? 'כן' : 'לא'}</p>
-                <p><strong>מעלית:</strong> {selectedProperty.elevator ? 'כן' : 'לא'}</p>
+                <p><strong>מספר חניות:</strong> {selectedProperty.parkingNumber}</p>
+                <p><strong>מספר חדרי שירותים:</strong> {selectedProperty.bathroomsNum}</p>
+                <p><strong>מספר מזגנים:</strong> {selectedProperty.ac}</p>
+                <p><strong>גיל המבנה:</strong> {selectedProperty.age}</p>
+                <p><strong>גישה לנכים:</strong> {selectedProperty.accessibility}</p>
+                <p><strong>מעלית:</strong> {selectedProperty.elevator}</p>
                 <p><strong>סורגים:</strong> {selectedProperty.bars ? 'כן' : 'לא'}</p>
                 <p><strong>אבטחה:</strong> {selectedProperty.security ? 'כן' : 'לא'}</p>
                 <p><strong>סטטוס:</strong> {selectedProperty.status}</p>
@@ -759,6 +790,21 @@ const PropertyPage = () => {
                     <p>אין תמונה לנכס זה</p>
                 )}
             </div>
+            <h3 className="text-xl mt-4">חדרים:</h3>
+            {selectedProperty.rooms.length > 0 ? (
+            selectedProperty.rooms.map((room, index) => (
+            <div key={index}>
+                <p>חדר {index + 1}:</p>
+                <p>סוג: {room.roomType}</p>
+                <p>מידות: {room.length || room.lengh}x{room.width} מטר</p>
+            </div>
+            ))
+            ) : (
+                <p>אין חדרים</p>
+            )}
+
+
+
         </div>
     </div>
 )}

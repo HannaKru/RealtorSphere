@@ -41,14 +41,24 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
 
 
             prop_rooms = prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('roomsNum', 0)
+
+            prop_price = prop_data.get('Price', 0)
             prop_city = prop_data.get('city', '')
             prop_type = prop_data.get('type', {}).get('apartment', {}).get('type', '')
             prop_size = prop_data.get('size', 0)
             prop_status = prop_data.get('status', '')
-            prop_address = f"{prop_data.get('street', '')} {str(prop_data.get('house', ''))}"
             prop_price = prop_data.get('Price', 0)
             prop_realtor = prop_data.get('realtor', '')
             prop_neighborhood = prop_data.get('neighborhood', '')
+            prop_street = prop_data.get('street', '')
+            prop_house = prop_data.get('house', '')
+            prop_address = f"{prop_street} {prop_house}".strip()
+            prop_parking = prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('Pparking', {}).get('number', 'N/A')
+            prop_bathrooms = prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('bathroomsNum', 'N/A')
+            prop_ac = prop_data.get('ac', 'N/A')
+            prop_age = prop_data.get('age', 'N/A')
+            prop_accessibility = prop_data.get('accessibility', False)
+            prop_elevator = prop_data.get('type', {}).get('apartment', {}).get('elevator', 'false') == 'true'
 
             owner_name = ''
             for ownership_id, ownership in ownerships.items():
@@ -89,12 +99,21 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'rooms': prop_rooms,
                 'price': prop_price,
                 'size': prop_size,
-                'address': prop_address,
                 'city': prop_city,
                 'neighborhood': prop_neighborhood,
                 'propertyType': prop_type,
                 'transactionType': ownership.get('rentORsell', ''),
-                'status': prop_status
+                'status': prop_status,
+                'street': prop_street,
+                'house': prop_house,
+                'address': prop_address,
+                'parkingNumber': prop_parking,
+                'bathroomsNum': prop_bathrooms,
+                'ac': prop_ac,
+                'age': prop_age,
+                'accessibility': prop_accessibility,
+                'elevator': prop_elevator
+
             })
 
         print("Filtered Properties:", filtered_properties)
