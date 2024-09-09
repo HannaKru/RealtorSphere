@@ -123,7 +123,8 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'elevator': prop_elevator,
                 'bars': prop_bars,
                 'security': prop_security,
-                'notes' :prop_notes
+                'notes' :prop_notes,
+                'pictures': prop_data.get('pictures', {}).get('first', '')
 
             })
 

@@ -219,7 +219,13 @@ const PropertyPage = () => {
 
     // Handle row click to show details in a popup
     const handleRowClick = (property) => {
-        console.log('Bars value:', property.bars);  // Log the bars value for debugging
+        console.log('Property data:', property);  // This will help you see what you actually get in the property object
+
+    if (!property) {
+        console.error('No property data available');
+        return;  // Exit the function if there is no property data
+    }
+
 
   setSelectedProperty({
     price: property.price || 'N/A',
@@ -239,7 +245,7 @@ const PropertyPage = () => {
     security: (property.security === 'true' || property.security === true) ? 'כן' : 'לא',
     status: property.status || 'N/A',
     notes: property.notes || 'אין',
-    pictures: property.pictures?.first || 'אין תמונות לנכס זה',
+    pictures: property.pictures || '',
     type: property.type?.apartment?.type || 'N/A',
     floor: property.type?.apartment?.floor || 'N/A',
     apNum: property.type?.apartment?.apNum || 'N/A',
@@ -760,7 +766,9 @@ const PropertyPage = () => {
             {isDetailsPopupOpen && selectedProperty && (
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
         <div className="bg-white p-6 rounded-lg relative w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <button onClick={() => setIsDetailsPopupOpen(false)} className="absolute top-2 left-2 text-gray-600 hover:text-gray-800">✕</button>
+            <button onClick={() => setIsDetailsPopupOpen(false)}
+                    className="absolute top-2 left-2 text-gray-600 hover:text-gray-800">✕
+            </button>
             <h2 className="text-2xl mb-4">פרטי נכס</h2>
 
             {/* Property Details */}
@@ -785,34 +793,30 @@ const PropertyPage = () => {
                 <p><strong>הערות:</strong> {selectedProperty.notes || 'אין'}</p>
             </div>
 
-             {/* Images */}
-            {selectedProperty.pictures && selectedProperty.pictures.first ? (
-                <div className="property-image">
-                    <img src={selectedProperty.pictures.first} alt="Property" style={{ maxWidth: '100%', height: 'auto' }} />
-                </div>
+            {/* Images */}
+            {selectedProperty.pictures ? (
+                <img src={selectedProperty.pictures} alt="Property" />
             ) : (
                 <p>אין תמונות לנכס זה</p>
             )}
             <h3 className="text-xl mt-4">חדרים:</h3>
             {selectedProperty.rooms.length > 0 ? (
-            selectedProperty.rooms.map((room, index) => (
-            <div key={index}>
-                <p>חדר {index + 1}:</p>
-                <p>סוג: {room.roomType}</p>
-                <p>מידות: {room.length || room.lengh}x{room.width} מטר</p>
-            </div>
-            ))
+                selectedProperty.rooms.map((room, index) => (
+                    <div key={index}>
+                        <p>חדר {index + 1}:</p>
+                        <p>סוג: {room.roomType}</p>
+                        <p>מידות: {room.length || room.lengh}x{room.width} מטר</p>
+                    </div>
+                ))
             ) : (
                 <p>אין חדרים</p>
             )}
 
 
-
-        </div>)
+        </div>
+        )
     </div>)
-}
-
-
+            }
 
 
         </div>
