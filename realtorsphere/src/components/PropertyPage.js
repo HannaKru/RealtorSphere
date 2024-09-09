@@ -219,6 +219,8 @@ const PropertyPage = () => {
 
     // Handle row click to show details in a popup
     const handleRowClick = (property) => {
+        console.log('Bars value:', property.bars);  // Log the bars value for debugging
+
   setSelectedProperty({
     price: property.price || 'N/A',
     street: property.street || '',
@@ -231,10 +233,10 @@ const PropertyPage = () => {
     ac: property.ac || 'N/A',
     accessibility: property.accessibility === "true" ? 'כן' : 'לא',
     age: property.age || 'N/A',
-    bars: property.bars ? 'כן' : 'לא',
+    bars: (property.bars === 'true' || property.bars === true) ? 'כן' : 'לא',
     number_of_floors: property['number of floors'] || 'N/A',
     realtor: property.realtor || 'N/A',
-    security: property.security ? 'כן' : 'לא',
+    security: (property.security === 'true' || property.security === true) ? 'כן' : 'לא',
     status: property.status || 'N/A',
     notes: property.notes || 'אין',
     pictures: property.pictures?.first || 'אין תמונות לנכס זה',
@@ -775,21 +777,22 @@ const PropertyPage = () => {
                 <p><strong>גיל המבנה:</strong> {selectedProperty.age}</p>
                 <p><strong>גישה לנכים:</strong> {selectedProperty.accessibility}</p>
                 <p><strong>מעלית:</strong> {selectedProperty.elevator}</p>
-                <p><strong>סורגים:</strong> {selectedProperty.bars ? 'כן' : 'לא'}</p>
-                <p><strong>אבטחה:</strong> {selectedProperty.security ? 'כן' : 'לא'}</p>
-                <p><strong>סטטוס:</strong> {selectedProperty.status}</p>
+                <p><strong>סורגים:</strong> {selectedProperty.bars}</p>
+                <p><strong>אבטחה:</strong> {selectedProperty.security}</p>
+                <div className="mb-4" dir="rtl">
+                    <p><strong>סטטוס:</strong> {selectedProperty.status || 'N/A'}</p>
+                </div>
                 <p><strong>הערות:</strong> {selectedProperty.notes || 'אין'}</p>
             </div>
 
-            {/* Images */}
-            <div className="mb-4">
-            <h3 className="text-xl">תמונות נכס</h3>
-                {selectedProperty.pictures && selectedProperty.pictures.first ? (
-                    <img src={selectedProperty.pictures.first} alt="Property" className="w-full h-auto" />
-                ) : (
-                    <p>אין תמונה לנכס זה</p>
-                )}
-            </div>
+             {/* Images */}
+            {selectedProperty.pictures && selectedProperty.pictures.first ? (
+                <div className="property-image">
+                    <img src={selectedProperty.pictures.first} alt="Property" style={{ maxWidth: '100%', height: 'auto' }} />
+                </div>
+            ) : (
+                <p>אין תמונות לנכס זה</p>
+            )}
             <h3 className="text-xl mt-4">חדרים:</h3>
             {selectedProperty.rooms.length > 0 ? (
             selectedProperty.rooms.map((room, index) => (
@@ -805,9 +808,9 @@ const PropertyPage = () => {
 
 
 
-        </div>
-    </div>
-)}
+        </div>)
+    </div>)
+}
 
 
 

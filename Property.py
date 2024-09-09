@@ -11,6 +11,7 @@ db_ref = initialize_firebase()
 UPLOAD_FOLDER = 'uploads/'  # Folder to store uploaded images
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
+
 # Ensure the upload folder exists
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -58,7 +59,14 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
             prop_ac = prop_data.get('ac', 'N/A')
             prop_age = prop_data.get('age', 'N/A')
             prop_accessibility = prop_data.get('accessibility', False)
-            prop_elevator = prop_data.get('type', {}).get('apartment', {}).get('elevator', 'false') == 'true'
+            elevator_value = prop_data.get('type', {}).get('apartment', {}).get('elevator', 'false')
+            prop_elevator = 'true' if elevator_value == True or elevator_value == 'true' else 'false'
+            prop_bars = 'true' if prop_data.get('bars') == True or prop_data.get('bars') == 'true' else 'false'
+            prop_security = 'true' if prop_data.get('security') == True or prop_data.get('security') == 'true' else 'false'
+            prop_notes = prop_data.get('notes', 'אין')
+
+
+
 
             owner_name = ''
             for ownership_id, ownership in ownerships.items():
@@ -112,7 +120,10 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'ac': prop_ac,
                 'age': prop_age,
                 'accessibility': prop_accessibility,
-                'elevator': prop_elevator
+                'elevator': prop_elevator,
+                'bars': prop_bars,
+                'security': prop_security,
+                'notes' :prop_notes
 
             })
 
