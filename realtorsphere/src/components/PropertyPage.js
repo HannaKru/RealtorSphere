@@ -14,7 +14,7 @@ const PropertyPage = () => {
         propertyType: '',
         address: '',
     });
-
+    const [externalProperties, setExternalProperties] = useState([]);
     const [allProperties, setAllProperties] = useState([]); // Store all properties
     const [filteredProperties, setFilteredProperties] = useState([]); // Store filtered properties
     const [properties, setProperties] = useState([]);
@@ -284,7 +284,10 @@ const PropertyPage = () => {
     parkingNumber: property.parkingNumber !== undefined ? property.parkingNumber : 'N/A',
     bathroomsNum: property.bathroomsNum !== undefined ? property.bathroomsNum : 'N/A',
     roomsNum: property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A',
-    roomSpecifications: property.roomSpecifications || []
+    roomSpecifications: property.roomSpecifications || [],
+     transactionType: property.transactionType || 'N/A'
+
+
 
   });
   setIsDetailsPopupOpen(true);
@@ -410,7 +413,7 @@ const PropertyPage = () => {
 
                 {/* Tabs Section */}
                 <div className="tabs flex justify-around p-4 ">
-                {['כל הנכסים', 'למכירה', 'להשכרה', 'ארכיון'].map(tab => (
+                {['כל הנכסים', 'למכירה', 'להשכרה', 'ארכיון','מקורות חיצוניים'].map(tab => (
                     <button
                         key={tab}
                         className={`tab-button px-4 py-2 rounded-md ${
@@ -424,35 +427,57 @@ const PropertyPage = () => {
             </div>
 
                 {/* Property Table */}
-                <table className="min-w-full bg-white text-right">
-                    <thead>
-                    <tr>
-                        {['סטטוס', 'בעלים', 'מס׳ חדרים', 'מחיר', 'גודל במ"ר', 'כתובת', 'עיר', 'סוג נכס'].map(header => (
-                            <th key={header} className="p-2 border-b-2 border-gray-300 text-gray-600">{header}</th>
-                        ))}
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {filteredProperties.map((property, index) => (
-                        // <tr
-                        //     key={property.id}
-                        //     onClick={() => handleRowClick(property)}  // Make the row clickable
-                        //     className="cursor-pointer hover:bg-gray-100"
-                        // >
-                        <tr key={property.id} onClick={() => handleRowClick(property)}>
+                {/* Property Table */}
+{activeTab !== 'מקורות חיצוניים' && (
+    <table className="min-w-full bg-white text-right">
+        <thead>
+            <tr>
+                {['סטטוס', 'בעלים', 'מס׳ חדרים', 'מחיר', 'גודל במ"ר', 'כתובת', 'עיר', 'סוג נכס'].map(header => (
+                    <th key={header} className="p-2 border-b-2 border-gray-300 text-gray-600">{header}</th>
+                ))}
+            </tr>
+        </thead>
+        <tbody>
+            {filteredProperties.map((property, index) => (
+                <tr key={property.id} onClick={() => handleRowClick(property)}>
+                    <td>{property.status || 'N/A'}</td>
+                    <td>{property.owner || 'N/A'}</td>
+                    <td>{property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A'}</td>
+                    <td>{property.price  || 'N/A'}</td>
+                    <td>{property.size || 'N/A'}</td>
+                    <td>{property.address || 'N/A'}</td>
+                    <td>{property.city || 'N/A'}</td>
+                    <td>{property.propertyType || 'N/A'}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+)}
 
-                            <td>{property.status || 'N/A'}</td>
-                            <td>{property.owner || 'N/A'}</td>
-                            <td>{property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A'}</td>
-                            <td>{property.price  || 'N/A'}</td>
-                            <td>{property.size || 'N/A'}</td>
-                            <td>{property.address || 'N/A'}</td>
-                            <td>{property.city || 'N/A'}</td>
-                            <td>{property.propertyType || 'N/A'}</td>
-                        </tr>
-                    ))}
-                    </tbody>
-                </table>
+{/* External Sources Table */}
+{activeTab === 'מקורות חיצוניים' && (
+    <table className="min-w-full bg-white text-right">
+        <thead>
+            <tr>
+                {['קישור', 'חדרים', 'עיר', 'מחיר', 'סוג נכס'].map(header => (
+                    <th key={header} className="p-2 border-b-2 border-gray-300 text-gray-600">{header}</th>
+                ))}
+            </tr>
+        </thead>
+        <tbody>
+            {externalProperties.map((property, index) => (
+                <tr key={index} className="cursor-pointer hover:bg-gray-100">
+                    <td><a href={property.link} target="_blank" rel="noopener noreferrer" className="text-blue-600">קישור</a></td>
+                    <td>{property.rooms}</td>
+                    <td>{property.city}</td>
+                    <td>{property.price}</td>
+                    <td>{property.type}</td>
+                </tr>
+            ))}
+        </tbody>
+    </table>
+)}
+
             </div>
 
 
@@ -832,6 +857,7 @@ const PropertyPage = () => {
                 <p><strong>מעלית:</strong> {selectedProperty.elevator}</p>
                 <p><strong>סורגים:</strong> {selectedProperty.bars}</p>
                 <p><strong>אבטחה:</strong> {selectedProperty.security}</p>
+                <p><strong>סוג עסקה:</strong> {selectedProperty.transactionType === 'sell' ? 'למכירה' : 'להשכרה'}</p>
                 <div className="mb-4" dir="rtl">
                     <p><strong>סטטוס:</strong> {selectedProperty.status || 'N/A'}</p>
                 </div>
