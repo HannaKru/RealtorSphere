@@ -11,8 +11,8 @@ const ClientProfessionalPage = () => {
     const [isPopupOpen, setIsPopupOpen] = useState(false);
     const [isNewPersonPopupOpen, setIsNewPersonPopupOpen] = useState(false);
     const [selectedPerson, setSelectedPerson] = useState(null);
-    const [newCity, setNewCity] = useState(''); // For managing city input
-    const [newLikedProperty, setNewLikedProperty] = useState(''); // For managing liked properties input
+    const [newCity, setNewCity] = useState('');
+    const [availableProperties, setAvailableProperties] = useState([]); // For managing available properties
     const propertyTypes = ["Apartment", "Duplex Apartment", "Private Home", "Two-Family", "House Penthouse"];
 
     const [newPerson, setNewPerson] = useState({
@@ -119,18 +119,30 @@ const ClientProfessionalPage = () => {
 
     const handleAddCity = () => {
         if (newCity.trim() !== "") {
-            setNewPerson((prevState) => ({
-                ...prevState,
-                cities: [...prevState.cities, newCity.trim()],
+            setSelectedPerson((prevPerson) => ({
+                ...prevPerson,
+                Type: {
+                    ...prevPerson.Type,
+                    Client: {
+                        ...prevPerson.Type.Client,
+                        cities: [...prevPerson.Type.Client.cities, newCity.trim()],
+                    },
+                },
             }));
-            setNewCity(''); // Reset input
+            setNewCity('');
         }
     };
 
     const handleRemoveCity = (city) => {
-        setNewPerson((prevState) => ({
-            ...prevState,
-            cities: prevState.cities.filter((c) => c !== city),
+        setSelectedPerson((prevPerson) => ({
+            ...prevPerson,
+            Type: {
+                ...prevPerson.Type,
+                Client: {
+                    ...prevPerson.Type.Client,
+                    cities: prevPerson.Type.Client.cities.filter((c) => c !== city),
+                },
+            },
         }));
     };
 
@@ -149,6 +161,49 @@ const ClientProfessionalPage = () => {
         } catch (error) {
             console.error('Error adding new person:', error);
         }
+    };
+
+    const handleInputChange = (e) => {
+        const { name, value } = e.target;
+        setSelectedPerson((prevPerson) => ({
+            ...prevPerson,
+            [name]: value,
+        }));
+    };
+
+    const handleClientChange = (e) => {
+        const { name, value } = e.target;
+        setSelectedPerson((prevPerson) => ({
+            ...prevPerson,
+            Type: {
+                ...prevPerson.Type,
+                Client: {
+                    ...prevPerson.Type.Client,
+                    [name]: value,
+                },
+            },
+        }));
+    };
+
+    const removeCity = (city) => {
+        setSelectedPerson((prevPerson) => ({
+            ...prevPerson,
+            Type: {
+                ...prevPerson.Type,
+                Client: {
+                    ...prevPerson.Type.Client,
+                    cities: prevPerson.Type.Client.cities.filter((c) => c !== city),
+                },
+            },
+        }));
+    };
+
+    const handleAddProperty = (propertyId) => {
+        // Logic for adding property
+    };
+
+    const handleRemoveProperty = (propertyId) => {
+        // Logic for removing property
     };
 
     return (
@@ -212,6 +267,7 @@ const ClientProfessionalPage = () => {
                                 <th className="p-2 border-b-2 border-gray-300 text-gray-600">טלפון</th>
                                 <th className="p-2 border-b-2 border-gray-300 text-gray-600">סטטוס</th>
                                 <th className="p-2 border-b-2 border-gray-300 text-gray-600">לצפייה</th>
+                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">הסר</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -242,59 +298,95 @@ const ClientProfessionalPage = () => {
                 </div>
             </div>
 
-            {/* Popup Window for Viewing Person Details */}
+            {/* Popup Window for Viewing and Editing Details */}
             {isPopupOpen && selectedPerson && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-                    <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-screen overflow-y-auto relative">
-                        <button
-                            className="absolute top-2 right-2 text-red-500 hover:text-red-700"
-                            onClick={closePopup}
-                        >
-                            ×
-                        </button>
-                        <h2 className="text-2xl mb-4 text-center">Details of {selectedPerson.FirstName} {selectedPerson.LastName}</h2>
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
+                    <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-full overflow-y-auto">
+                        <h2 className="text-2xl mb-4">Details for {selectedPerson.FirstName} {selectedPerson.LastName}</h2>
+                        <p><strong>Phone:</strong> <input type="text" name="Phone" value={selectedPerson.Phone} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
+                        <p><strong>Email:</strong> <input type="text" name="email" value={selectedPerson.email} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
 
-                        {/* Editable Fields */}
-                        <div className="mb-4">
-                            <label className="block">First Name</label>
-                            <input
-                                type="text"
-                                value={selectedPerson.FirstName}
-                                onChange={(e) => setSelectedPerson({ ...selectedPerson, FirstName: e.target.value })}
-                                className="w-full p-2 border rounded-md"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block">Last Name</label>
-                            <input
-                                type="text"
-                                value={selectedPerson.LastName}
-                                onChange={(e) => setSelectedPerson({ ...selectedPerson, LastName: e.target.value })}
-                                className="w-full p-2 border rounded-md"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block">Phone</label>
-                            <input
-                                type="text"
-                                value={selectedPerson.Phone}
-                                onChange={(e) => setSelectedPerson({ ...selectedPerson, Phone: e.target.value })}
-                                className="w-full p-2 border rounded-md"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block">Email</label>
-                            <input
-                                type="text"
-                                value={selectedPerson.email}
-                                onChange={(e) => setSelectedPerson({ ...selectedPerson, email: e.target.value })}
-                                className="w-full p-2 border rounded-md"
-                            />
-                        </div>
+                        {selectedPerson.Type.Client && (
+                            <>
+                                <h3 className="text-xl mt-4">Client Preferences</h3>
+                                <p><strong>Budget:</strong> <input type="text" name="budget" value={selectedPerson.Type.Client.budget} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
+                                <p><strong>Rooms:</strong> <input type="text" name="minRooms" value={selectedPerson.Type.Client.minRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxRooms" value={selectedPerson.Type.Client.maxRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
+                                <p><strong>Size:</strong> <input type="text" name="minSize" value={selectedPerson.Type.Client.minSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxSize" value={selectedPerson.Type.Client.maxSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> sqm</p>
 
-                        <button className="bg-blue-500 text-white p-2 rounded-md mt-4 w-full" onClick={handleEditPerson}>
-                            Save Changes
-                        </button>
+                                <p><strong>Property Type:</strong></p>
+                                <select
+                                    name="propertyType"
+                                    value={selectedPerson.Type.Client.propertyType || ''}
+                                    onChange={handleClientChange}
+                                    className="w-full p-2 border rounded-md"
+                                >
+                                    <option value="">Select Property Type</option>
+                                    {propertyTypes.map((type, index) => (
+                                        <option key={index} value={type}>
+                                            {type}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <h3 className="text-xl mt-4">Preferred Cities</h3>
+                                <ul>
+                                    {(selectedPerson.Type.Client.cities || []).map((city, index) => (
+                                        <li key={index} className="flex justify-between">
+                                            {city}
+                                            <button onClick={() => removeCity(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
+                                        </li>
+                                    ))}
+                                </ul>
+                                <div className="flex">
+                                    <input
+                                        type="text"
+                                        placeholder="Add City"
+                                        value={newCity}
+                                        onChange={(e) => setNewCity(e.target.value)}
+                                        className="w-full p-2 border rounded-md"
+                                    />
+                                    <button onClick={handleAddCity} className="bg-green-500 text-white p-2 rounded-md ml-2">Add</button>
+                                </div>
+
+                                <h3 className="text-xl mt-4">Properties Liked</h3>
+                                <ul>
+                                    {(selectedPerson.PropertiesLiked || []).map((property, index) => (
+                                        <li key={index}>
+                                            {property.id} - {property.address}
+                                            <button onClick={() => handleRemoveProperty(property.id)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
+                                        </li>
+                                    ))}
+                                </ul>
+
+                                <h3 className="text-xl mt-4">Add Property</h3>
+                                <select onChange={(e) => handleAddProperty(e.target.value)} className="w-full p-2 border rounded-md">
+                                    <option value="">Select Property</option>
+                                    {availableProperties.map((property) => (
+                                        <option key={property.id} value={property.id}>
+                                            {property.id} - {property.Steet} {property.house}, {property.city}
+                                        </option>
+                                    ))}
+                                </select>
+                            </>
+                        )}
+
+                        {selectedPerson.Type.Owner && (
+                            <>
+                                <h3 className="text-xl mt-4">Owned Properties</h3>
+                                <ul>
+                                    {(selectedPerson.PropertiesOwned || []).map((property, index) => (
+                                        <li key={index}>
+                                            {property.address}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </>
+                        )}
+
+                        <div className="flex justify-end">
+                            <button className="bg-blue-500 text-white p-2 rounded-md mr-2" onClick={handleEditPerson}>Save Changes</button>
+                            <button className="bg-gray-300 p-2 rounded-md" onClick={closePopup}>Close</button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -355,7 +447,7 @@ const ClientProfessionalPage = () => {
                         <div className="mb-4">
                             <label className="block">Email</label>
                             <input
-                                type="text"
+                                type="email"
                                 name="email"
                                 value={newPerson.email}
                                 onChange={handleNewPersonChange}

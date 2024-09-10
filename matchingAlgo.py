@@ -31,6 +31,8 @@ def match_Algo(data, email):
     properties_ref = db.child('properties').order_by_child('realtor').equal_to(email)
     properties = properties_ref.get()
 
+    ownerships_ref = db.child('Ownership')
+    ownerships = ownerships_ref.get()
     personID = data.get('person_id')
     counter = 0
     # Example list of all possible property types
@@ -49,13 +51,15 @@ def match_Algo(data, email):
     min_size = float(person_data.get('Type', {}).get('Client', {}).get('minSize', 0))
     max_size = float(person_data.get('Type', {}).get('Client', {}).get('maxSize', 0))
     property_type = person_data.get('Type', {}).get('Client', {}).get('propertyType', "")
+    rentOrbuy = person_data.get('Type', {}).get('Client', {}).get('rentOrbuy', "")
 
     avgRooms = (min_rooms + max_rooms)/2
     arg_size = (min_size + max_size)/2
 
     property_type_vector = [1 if property_type == p_type else 0 for p_type in property_types]
+    transactionTypeVector = [1 if rentOrbuy == p_type else 0 for p_type in rentOrbuy]
 
-    client_array = np.array([budget, avgRooms, arg_size]  + property_type_vector)
+    client_array = np.array([budget, avgRooms, arg_size]  + property_type_vector + transactionTypeVector)
 
     filtered_properties = []
     # Loop through each property
@@ -122,7 +126,7 @@ def match_Algo(data, email):
     # Select the top 3 matches
     top_matches = similarities[:3]
 
-    # Output the top 3 properties hooo hellp
+    # Output the top 3 properties
     for match in top_matches:
         property_data = match['property_data']
         similarity_score = match['similarity']

@@ -181,11 +181,11 @@ def update_person_details(data, realtor_email):
             "Type": person_data.get('Type', {})
         }
 
-        # Update PropertiesLiked and PropertiesOwned if present in the data
+        # Update PropertiesLiked if present in the data
         if 'PropertiesLiked' in data:
             updated_data['PropertiesLiked'] = data['PropertiesLiked']
-        if 'PropertiesOwned' in data:
-            updated_data['PropertiesOwned'] = data['PropertiesOwned']
+        #if 'PropertiesOwned' in data:
+           # updated_data['PropertiesOwned'] = data['PropertiesOwned']
 
         # Handle Owner and Client types
         person_type = data.get('Type', {})
