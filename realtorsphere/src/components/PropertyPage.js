@@ -18,7 +18,34 @@ const PropertyPage = () => {
     const [filteredProperties, setFilteredProperties] = useState([]); // Store filtered properties
     const [properties, setProperties] = useState([]);
     const [isPopupOpen, setIsPopupOpen] = useState(false); // For controlling the popup window
-    const [selectedProperty, setSelectedProperty] = useState(null); // State to track selected property details
+    const [selectedProperty, setSelectedProperty] = useState({
+    pictures: '',
+    price: 'N/A',
+    street: '',
+    house: '',
+    city: 'N/A',
+    address: '',
+    neighborhood: 'N/A',
+    size: 'N/A',
+    ac: 'N/A',
+    accessibility: 'לא',
+    age: 'N/A',
+    bars: 'לא',
+    numberOfFloors: 'N/A',
+    realtor: 'N/A',
+    security: 'לא',
+    status: 'N/A',
+    notes: 'אין',
+    type: 'N/A',
+    floor: 'N/A',
+    apNum: 'N/A',
+    elevator: 'לא',
+    parkingNumber: 'N/A',
+    bathroomsNum: 'N/A',
+    roomsNum: 'N/A',
+    rooms: [],
+
+    });
     const [isDetailsPopupOpen, setIsDetailsPopupOpen] = useState(false); // For controlling the property details popup
 
 
@@ -217,14 +244,17 @@ const PropertyPage = () => {
 
 
 
+
     // Handle row click to show details in a popup
     const handleRowClick = (property) => {
-        console.log('Property data:', property);  // This will help you see what you actually get in the property object
+        console.log('Property data:', property);  // Log to see what you get in the property object
 
     if (!property) {
         console.error('No property data available');
         return;  // Exit the function if there is no property data
     }
+    console.log('Property Pictures URL:', property.pictures);  // Now safe to log
+
 
 
   setSelectedProperty({
@@ -236,7 +266,7 @@ const PropertyPage = () => {
 
     neighborhood: property.neighborhood || 'N/A',
     size: property.size || 'N/A',
-    ac: property.ac || 'N/A',
+    ac: property.ac !==undefined ? property.ac: 'N/A',
     accessibility: property.accessibility === "true" ? 'כן' : 'לא',
     age: property.age || 'N/A',
     bars: (property.bars === 'true' || property.bars === true) ? 'כן' : 'לא',
@@ -250,10 +280,10 @@ const PropertyPage = () => {
     floor: property.type?.apartment?.floor || 'N/A',
     apNum: property.type?.apartment?.apNum || 'N/A',
     elevator: property.elevator === "true" ? 'כן' : 'לא',
-    parkingNumber: property.parkingNumber || 'N/A',
-    bathroomsNum: property.bathroomsNum || 'N/A',
+    parkingNumber: property.parkingNumber !== undefined ? property.parkingNumber : 'N/A',
+    bathroomsNum: property.bathroomsNum !== undefined ? property.bathroomsNum : 'N/A',
     roomsNum: property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A',
-    rooms: property.type?.apartment?.item?.rooms || [],
+    rooms: property.rooms || [],
 
   });
   setIsDetailsPopupOpen(true);
@@ -794,18 +824,19 @@ const PropertyPage = () => {
             </div>
 
             {/* Images */}
-            {selectedProperty.pictures ? (
+            {selectedProperty && selectedProperty.pictures && selectedProperty.pictures.trim() ? (
                 <img src={selectedProperty.pictures} alt="Property" />
             ) : (
                 <p>אין תמונות לנכס זה</p>
             )}
+            {/* Room Details */}
             <h3 className="text-xl mt-4">חדרים:</h3>
             {selectedProperty.rooms.length > 0 ? (
                 selectedProperty.rooms.map((room, index) => (
-                    <div key={index}>
+                    <div key={index} className="mb-4">
                         <p>חדר {index + 1}:</p>
                         <p>סוג: {room.roomType}</p>
-                        <p>מידות: {room.length || room.lengh}x{room.width} מטר</p>
+                        <p>מידות: {room.length}x{room.width} מטר</p>
                     </div>
                 ))
             ) : (
