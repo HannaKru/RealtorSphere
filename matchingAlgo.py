@@ -59,6 +59,7 @@ def match_Algo(data, email):
 
     filtered_properties = []
     # Loop through each property
+    '''
     for property in properties.each():
         property_data = property.val()
 
@@ -80,13 +81,13 @@ def match_Algo(data, email):
             })
             property_type_vector = [1 if property_type == p_type else 0 for p_type in property_types]
             property_array = np.array([size, rooms_num]  + property_type_vector)
-
+'''
     #prepering the data
 
     #using the algorithms
-    similarity = cosine_similarity()
+    #similarity = cosine_similarity()
 
-    recommendations = np.argsort(similarity[0])[::-1]  # Rank properties by similarity to the client
+    #recommendations = np.argsort(similarity[0])[::-1]  # Rank properties by similarity to the client
 
     similarities = []
     for property in properties.each():
@@ -107,7 +108,7 @@ def match_Algo(data, email):
             property_vector = np.array([size, rooms_num] + property_type_vector)
 
             # Calculate cosine similarity between client and property
-            similarity = cosine_similarity([client_vector], [property_vector])[0][0]
+            similarity = cosine_similarity([client_array], [property_vector])[0][0]
 
             # Store the similarity and the property data
             similarities.append({
