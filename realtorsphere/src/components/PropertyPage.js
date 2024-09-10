@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import axios from "axios";
 
+
 const PropertyPage = () => {
     const [activeTab, setActiveTab] = useState('כל הנכסים');
     const [searchFilters, setSearchFilters] = useState({
@@ -251,9 +252,9 @@ const PropertyPage = () => {
 
     if (!property) {
         console.error('No property data available');
-        return;  // Exit the function if there is no property data
+        return;
     }
-    console.log('Property Pictures URL:', property.pictures);  // Now safe to log
+    console.log('Room Specifications:', property.roomSpecifications);  // Check if room specifications are present
 
 
 
@@ -283,16 +284,30 @@ const PropertyPage = () => {
     parkingNumber: property.parkingNumber !== undefined ? property.parkingNumber : 'N/A',
     bathroomsNum: property.bathroomsNum !== undefined ? property.bathroomsNum : 'N/A',
     roomsNum: property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A',
-    rooms: property.rooms || [],
+    roomSpecifications: property.roomSpecifications || []
 
   });
   setIsDetailsPopupOpen(true);
 };
 
+    const roomTypeDictionary = {
+  bedroom: "חדר שינה",
+  livingroom: "סלון",
+  bathroom: "שירותים",
+  balcony: "מרפסת",
+  garden: "גינה",
+  saferoom: "ממ\"ד",
+  storage: "מחסן"
+};
+
+
 
 
 
     return (
+
+
+
         <div className="bg-gray-50 min-h-screen rtl">
             <header className="bg-blue-900 p-4 text-white text-center">
                 <h1 className="text-4xl">RealtorSphere</h1>
@@ -825,23 +840,29 @@ const PropertyPage = () => {
 
             {/* Images */}
             {selectedProperty && selectedProperty.pictures && selectedProperty.pictures.trim() ? (
-                <img src={selectedProperty.pictures} alt="Property" />
+                <img src={selectedProperty.pictures} alt="Property"/>
             ) : (
                 <p>אין תמונות לנכס זה</p>
             )}
-            {/* Room Details */}
-            <h3 className="text-xl mt-4">חדרים:</h3>
-            {selectedProperty.rooms.length > 0 ? (
-                selectedProperty.rooms.map((room, index) => (
-                    <div key={index} className="mb-4">
-                        <p>חדר {index + 1}:</p>
-                        <p>סוג: {room.roomType}</p>
-                        <p>מידות: {room.length}x{room.width} מטר</p>
-                    </div>
-                ))
-            ) : (
-                <p>אין חדרים</p>
-            )}
+            {/*room specifications*/}
+            <div className="mb-4" dir="rtl">
+                <h3 className="text-xl mt-4 underline"><strong>חדרים :</strong></h3> {/* Colon placed on the left */}
+
+                {selectedProperty.roomSpecifications && selectedProperty.roomSpecifications.length > 0 ? (
+                    selectedProperty.roomSpecifications.map((room, index) => (
+                        <div key={index} className="mb-4">
+                            <p>
+                                <strong>חדר {index + 1} :</strong> {/* Colon placed on the left */}
+                            </p>
+                            <p><strong>סוג: {roomTypeDictionary[room.roomType] || room.roomType}</strong></p>
+                            <p><strong>מידות :</strong> {room.length}x{room.width} מטר
+                            </p> {/* Colon placed on the left */}
+                        </div>
+                    ))
+                ) : (
+                    <p>אין חדרים</p>
+                )}
+            </div>
 
 
         </div>

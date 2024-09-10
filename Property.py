@@ -64,6 +64,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
             prop_bars = 'true' if prop_data.get('bars') == True or prop_data.get('bars') == 'true' else 'false'
             prop_security = 'true' if prop_data.get('security') == True or prop_data.get('security') == 'true' else 'false'
             prop_notes = prop_data.get('notes', 'אין')
+            prop_room_specifications = prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('rooms', [])
 
 
 
@@ -124,7 +125,8 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'bars': prop_bars,
                 'security': prop_security,
                 'notes' :prop_notes,
-                'pictures': prop_data.get('pictures', {}).get('first', '')
+                'pictures': prop_data.get('pictures', {}).get('first', ''),
+                'roomSpecifications': prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('rooms', [])
 
             })
 
