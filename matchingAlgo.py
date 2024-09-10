@@ -122,7 +122,7 @@ def match_Algo(data, email):
     # Select the top 3 matches
     top_matches = similarities[:3]
 
-    # Output the top 3 properties
+    # Output the top 3 properties hooo
     for match in top_matches:
         property_data = match['property_data']
         similarity_score = match['similarity']
