@@ -287,14 +287,14 @@ const addImageInput = () => {
     accessibility: property.accessibility === "true" ? 'כן' : 'לא',
     age: property.age || 'N/A',
     bars: (property.bars === 'true' || property.bars === true) ? 'כן' : 'לא',
-    number_of_floors: property['number of floors'] || 'N/A',
+    number_of_floors: property.number_of_floors || 'N/A',
     realtor: property.realtor || 'N/A',
     security: (property.security === 'true' || property.security === true) ? 'כן' : 'לא',
     status: property.status || 'N/A',
     notes: property.notes || 'אין',
     pictures: property.pictures || {},
     type: property.type?.apartment?.type || 'N/A',
-    floor: property.type?.apartment?.floor || 'N/A',
+    floor: property.floor || 'N/A',
     apNum: property.type?.apartment?.apNum || 'N/A',
     elevator: property.elevator === "true" ? 'כן' : 'לא',
     parkingNumber: property.parkingNumber !== undefined ? property.parkingNumber : 'N/A',
@@ -865,39 +865,43 @@ const addImageInput = () => {
             <h2 className="text-2xl mb-4">פרטי נכס</h2>
 
             {/* Property Details */}
-            <div className="mb-4">
-                <p><strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}
-                </p>
-                <p><strong>שכונה:</strong> {selectedProperty.neighborhood || 'N/A'}</p>
-                <p><strong>גודל:</strong> {selectedProperty.size} מ"ר</p>
-                <p><strong>מספר חדרים:</strong> {selectedProperty.roomsNum}</p>
-                <p><strong>מחיר:</strong> ₪ {selectedProperty.price}</p>
-                <p><strong>מספר חניות:</strong> {selectedProperty.parkingNumber}</p>
-                <p><strong>מספר חדרי שירותים:</strong> {selectedProperty.bathroomsNum}</p>
-                <p><strong>מספר מזגנים:</strong> {selectedProperty.ac}</p>
-                <p><strong>גיל המבנה:</strong> {selectedProperty.age}</p>
-                <p><strong>גישה לנכים:</strong> {selectedProperty.accessibility}</p>
-                <p><strong>מעלית:</strong> {selectedProperty.elevator}</p>
-                <p><strong>סורגים:</strong> {selectedProperty.bars}</p>
-                <p><strong>אבטחה:</strong> {selectedProperty.security}</p>
-                <p><strong>סוג עסקה:</strong> {selectedProperty.transactionType === 'sell' ? 'למכירה' : 'להשכרה'}</p>
-                <div className="mb-4" dir="rtl">
-                    <p><strong>סטטוס:</strong> {selectedProperty.status || 'N/A'}</p>
-                </div>
-                <p><strong>הערות:</strong> {selectedProperty.notes || 'אין'}</p>
-            </div>
+                        <div className="mb-4">
+                            <p>
+                                <strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}
+                            </p>
+                            <p><strong>שכונה:</strong> {selectedProperty.neighborhood || 'N/A'}</p>
+                            <p><strong>גודל:</strong> {selectedProperty.size} מ"ר</p>
+                            <p><strong>מספר חדרים:</strong> {selectedProperty.roomsNum}</p>
+                            <p><strong>מחיר:</strong> ₪ {selectedProperty.price}</p>
+                            <p><strong>מספר חניות:</strong> {selectedProperty.parkingNumber}</p>
+                            <p><strong>מספר חדרי שירותים:</strong> {selectedProperty.bathroomsNum}</p>
+                            <p><strong>מספר מזגנים:</strong> {selectedProperty.ac}</p>
+                            <p><strong>גיל המבנה:</strong> {selectedProperty.age}</p>
+                            <p><strong>גישה לנכים:</strong> {selectedProperty.accessibility}</p>
+                            <p><strong>מעלית:</strong> {selectedProperty.elevator}</p>
+                            <p><strong>סורגים:</strong> {selectedProperty.bars}</p>
+                            <p><strong>אבטחה:</strong> {selectedProperty.security}</p>
+                            <p><strong>מספר קומות בנכס:</strong> {selectedProperty.number_of_floors || 'N/A'}</p>
+                            <p><strong>קומת הנכס:</strong> {selectedProperty.floor || 'N/A'}</p>
+                            <p><strong>סוג
+                                עסקה:</strong> {selectedProperty.transactionType === 'sell' ? 'למכירה' : 'להשכרה'}</p>
+                            <div className="mb-4" dir="rtl">
+                                <p><strong>סטטוס:</strong> {selectedProperty.status || 'N/A'}</p>
+                            </div>
+                            <p><strong>הערות:</strong> {selectedProperty.notes || 'אין'}</p>
+                        </div>
 
-            {/* Display pictures */}
-            <div className="mb-4">
-                <h3 className="text-xl underline"><strong>תמונות:</strong></h3>
+                        {/* Display pictures vertically */}
+                        <div className="mb-4" dir="rtl">
+                            <h3 className="text-xl underline"><strong>תמונות:</strong></h3>
                 {Object.keys(selectedProperty.pictures).length > 0 ? (
-                    <div className="flex flex-wrap gap-4">
+                    <div className="flex flex-col gap-4">  {/* flex-col for vertical stacking */}
                         {Object.entries(selectedProperty.pictures).map(([key, url]) => (
                             <img
                                 key={key}
                                 src={url}
                                 alt={`Property Image ${key}`}
-                                className="w-32 h-32 object-cover rounded-md"
+                                className="w-full h-auto object-cover rounded-md"  
                             />
                         ))}
                     </div>
@@ -905,6 +909,7 @@ const addImageInput = () => {
                     <p>אין תמונות לנכס זה</p>
                 )}
             </div>
+
             {/*room specifications*/}
             <div className="mb-4" dir="rtl">
                 <h3 className="text-xl mt-4 underline"><strong>חדרים :</strong></h3> {/* Colon placed on the left */}

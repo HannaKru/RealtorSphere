@@ -67,6 +67,8 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
             prop_notes = prop_data.get('notes', 'אין')
             prop_room_specifications = prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('rooms', [])
             pictures = prop_data.get('pictures', {})
+            prop_floor = prop_data.get('type', {}).get('apartment', {}).get('floor', 'N/A')
+            prop_number_of_floors = prop_data.get('number_of_floors', 'N/A')
 
 
 
@@ -127,7 +129,9 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'security': prop_security,
                 'notes' :prop_notes,
                 'pictures': pictures,
-                'roomSpecifications': prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('rooms', [])
+                'roomSpecifications': prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('rooms', []),
+                'number_of_floors': prop_number_of_floors,
+                'floor': prop_floor
 
             })
 
