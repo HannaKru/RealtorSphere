@@ -119,29 +119,29 @@ const ClientProfessionalPage = () => {
     };
 
     const handleAddCity = () => {
-        if (newCity.trim() !== "") {
-            setSelectedPerson((prevPerson) => ({
-                ...prevPerson,
-                Type: {
-                    ...prevPerson?.Type,
-                    Client: {
-                        ...prevPerson?.Type?.Client,
-                        cities: [...(prevPerson?.Type?.Client?.cities || []), newCity.trim()],
+    if (newCity.trim() !== "") {
+        setSelectedPerson((prevPerson) => ({
+            ...prevPerson,
+            Type: {
+                ...prevPerson.Type,
+                Client: {
+                    ...prevPerson.Type.Client,
+                    searchCity: [...(prevPerson?.Type?.Client?.searchCity || []), newCity.trim()],
                     },
                 },
             }));
-            setNewCity('');
+        setNewCity(''); // Clear input after adding
         }
     };
 
     const handleRemoveCity = (city) => {
-        setSelectedPerson((prevPerson) => ({
-            ...prevPerson,
-            Type: {
-                ...prevPerson?.Type,
-                Client: {
-                    ...prevPerson?.Type?.Client,
-                    cities: (prevPerson?.Type?.Client?.cities || []).filter((c) => c !== city),
+    setSelectedPerson((prevPerson) => ({
+        ...prevPerson,
+        Type: {
+            ...prevPerson.Type,
+            Client: {
+                ...prevPerson.Type.Client,
+                searchCity: prevPerson.Type.Client.searchCity.filter((c) => c !== city),
                 },
             },
         }));
@@ -177,23 +177,10 @@ const ClientProfessionalPage = () => {
         setSelectedPerson((prevPerson) => ({
             ...prevPerson,
             Type: {
-                ...prevPerson?.Type,
+                ...prevPerson.Type,
                 Client: {
-                    ...prevPerson?.Type?.Client,
+                    ...prevPerson.Type.Client,
                     [name]: value,
-                },
-            },
-        }));
-    };
-
-    const removeCity = (city) => {
-        setSelectedPerson((prevPerson) => ({
-            ...prevPerson,
-            Type: {
-                ...prevPerson?.Type,
-                Client: {
-                    ...prevPerson?.Type?.Client,
-                    cities: (prevPerson?.Type?.Client?.cities || []).filter((c) => c !== city),
                 },
             },
         }));
@@ -201,16 +188,19 @@ const ClientProfessionalPage = () => {
 
     const handleAddProperty = (propertyInput) => {
         if (propertyInput.trim() !== "") {
-            setSelectedPerson((prevPerson) => ({
+            setSelectedPerson(prevPerson => ({
                 ...prevPerson,
-                PropertiesLiked: [...(prevPerson?.PropertiesLiked || []), { id: propertyInput, address: propertyInput }]
+                PropertiesLiked: [...prevPerson.PropertiesLiked, { id: propertyInput, address: propertyInput }]
             }));
             setNewProperty(''); // Clear the input after adding
         }
     };
 
     const handleRemoveProperty = (propertyId) => {
-        // Logic for removing property
+        setSelectedPerson(prevPerson => ({
+            ...prevPerson,
+            PropertiesLiked: prevPerson.PropertiesLiked.filter(property => property.id !== propertyId)
+        }));
     };
 
     return (
@@ -337,10 +327,12 @@ const ClientProfessionalPage = () => {
 
                                 <h3 className="text-xl mt-4">Preferred Cities</h3>
                                 <ul>
-                                    {(selectedPerson?.Type?.Client?.cities || []).map((city, index) => (
+                                    {(selectedPerson?.Type?.Client?.searchCity || []).map((city, index) => (
                                         <li key={index} className="flex justify-between">
                                             {city}
-                                            <button onClick={() => removeCity(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
+                                            <button onClick={() => handleRemoveCity(city)}
+                                                    className="bg-red-500 text-white p-1 rounded-md ml-2">Remove
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>
