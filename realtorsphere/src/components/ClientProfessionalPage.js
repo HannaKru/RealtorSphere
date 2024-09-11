@@ -12,6 +12,7 @@ const ClientProfessionalPage = () => {
     const [isNewPersonPopupOpen, setIsNewPersonPopupOpen] = useState(false);
     const [selectedPerson, setSelectedPerson] = useState(null);
     const [newCity, setNewCity] = useState('');
+    const [newProperty, setNewProperty] = useState(''); // For managing the new property input
     const [availableProperties, setAvailableProperties] = useState([]); // For managing available properties
     const propertyTypes = ["Apartment", "Duplex Apartment", "Private Home", "Two-Family", "House Penthouse"];
 
@@ -122,10 +123,10 @@ const ClientProfessionalPage = () => {
             setSelectedPerson((prevPerson) => ({
                 ...prevPerson,
                 Type: {
-                    ...prevPerson.Type,
+                    ...prevPerson?.Type,
                     Client: {
-                        ...prevPerson.Type.Client,
-                        cities: [...prevPerson.Type.Client.cities, newCity.trim()],
+                        ...prevPerson?.Type?.Client,
+                        cities: [...(prevPerson?.Type?.Client?.cities || []), newCity.trim()],
                     },
                 },
             }));
@@ -137,10 +138,10 @@ const ClientProfessionalPage = () => {
         setSelectedPerson((prevPerson) => ({
             ...prevPerson,
             Type: {
-                ...prevPerson.Type,
+                ...prevPerson?.Type,
                 Client: {
-                    ...prevPerson.Type.Client,
-                    cities: prevPerson.Type.Client.cities.filter((c) => c !== city),
+                    ...prevPerson?.Type?.Client,
+                    cities: (prevPerson?.Type?.Client?.cities || []).filter((c) => c !== city),
                 },
             },
         }));
@@ -176,9 +177,9 @@ const ClientProfessionalPage = () => {
         setSelectedPerson((prevPerson) => ({
             ...prevPerson,
             Type: {
-                ...prevPerson.Type,
+                ...prevPerson?.Type,
                 Client: {
-                    ...prevPerson.Type.Client,
+                    ...prevPerson?.Type?.Client,
                     [name]: value,
                 },
             },
@@ -189,17 +190,23 @@ const ClientProfessionalPage = () => {
         setSelectedPerson((prevPerson) => ({
             ...prevPerson,
             Type: {
-                ...prevPerson.Type,
+                ...prevPerson?.Type,
                 Client: {
-                    ...prevPerson.Type.Client,
-                    cities: prevPerson.Type.Client.cities.filter((c) => c !== city),
+                    ...prevPerson?.Type?.Client,
+                    cities: (prevPerson?.Type?.Client?.cities || []).filter((c) => c !== city),
                 },
             },
         }));
     };
 
-    const handleAddProperty = (propertyId) => {
-        // Logic for adding property
+    const handleAddProperty = (propertyInput) => {
+        if (propertyInput.trim() !== "") {
+            setSelectedPerson((prevPerson) => ({
+                ...prevPerson,
+                PropertiesLiked: [...(prevPerson?.PropertiesLiked || []), { id: propertyInput, address: propertyInput }]
+            }));
+            setNewProperty(''); // Clear the input after adding
+        }
     };
 
     const handleRemoveProperty = (propertyId) => {
@@ -306,17 +313,17 @@ const ClientProfessionalPage = () => {
                         <p><strong>Phone:</strong> <input type="text" name="Phone" value={selectedPerson.Phone} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
                         <p><strong>Email:</strong> <input type="text" name="email" value={selectedPerson.email} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
 
-                        {selectedPerson.Type.Client && (
+                        {selectedPerson?.Type?.Client && (
                             <>
                                 <h3 className="text-xl mt-4">Client Preferences</h3>
-                                <p><strong>Budget:</strong> <input type="text" name="budget" value={selectedPerson.Type.Client.budget} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
-                                <p><strong>Rooms:</strong> <input type="text" name="minRooms" value={selectedPerson.Type.Client.minRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxRooms" value={selectedPerson.Type.Client.maxRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
-                                <p><strong>Size:</strong> <input type="text" name="minSize" value={selectedPerson.Type.Client.minSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxSize" value={selectedPerson.Type.Client.maxSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> sqm</p>
+                                <p><strong>Budget:</strong> <input type="text" name="budget" value={selectedPerson?.Type?.Client?.budget} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
+                                <p><strong>Rooms:</strong> <input type="text" name="minRooms" value={selectedPerson?.Type?.Client?.minRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxRooms" value={selectedPerson?.Type?.Client?.maxRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
+                                <p><strong>Size:</strong> <input type="text" name="minSize" value={selectedPerson?.Type?.Client?.minSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxSize" value={selectedPerson?.Type?.Client?.maxSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> sqm</p>
 
                                 <p><strong>Property Type:</strong></p>
                                 <select
                                     name="propertyType"
-                                    value={selectedPerson.Type.Client.propertyType || ''}
+                                    value={selectedPerson?.Type?.Client?.propertyType || ''}
                                     onChange={handleClientChange}
                                     className="w-full p-2 border rounded-md"
                                 >
@@ -330,7 +337,7 @@ const ClientProfessionalPage = () => {
 
                                 <h3 className="text-xl mt-4">Preferred Cities</h3>
                                 <ul>
-                                    {(selectedPerson.Type.Client.cities || []).map((city, index) => (
+                                    {(selectedPerson?.Type?.Client?.cities || []).map((city, index) => (
                                         <li key={index} className="flex justify-between">
                                             {city}
                                             <button onClick={() => removeCity(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
@@ -350,7 +357,7 @@ const ClientProfessionalPage = () => {
 
                                 <h3 className="text-xl mt-4">Properties Liked</h3>
                                 <ul>
-                                    {(selectedPerson.PropertiesLiked || []).map((property, index) => (
+                                    {(selectedPerson?.PropertiesLiked || []).map((property, index) => (
                                         <li key={index}>
                                             {property.id} - {property.address}
                                             <button onClick={() => handleRemoveProperty(property.id)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
@@ -359,22 +366,27 @@ const ClientProfessionalPage = () => {
                                 </ul>
 
                                 <h3 className="text-xl mt-4">Add Property</h3>
-                                <select onChange={(e) => handleAddProperty(e.target.value)} className="w-full p-2 border rounded-md">
-                                    <option value="">Select Property</option>
-                                    {availableProperties.map((property) => (
-                                        <option key={property.id} value={property.id}>
-                                            {property.id} - {property.Steet} {property.house}, {property.city}
-                                        </option>
-                                    ))}
-                                </select>
+                                <input
+                                    type="text"
+                                    placeholder="Enter Property Address or ID"
+                                    value={newProperty}
+                                    onChange={(e) => setNewProperty(e.target.value)}
+                                    className="w-full p-2 border rounded-md"
+                                />
+                                <button
+                                    onClick={() => handleAddProperty(newProperty)}
+                                    className="bg-green-500 text-white p-2 rounded-md ml-2 mt-2"
+                                >
+                                    Add
+                                </button>
                             </>
                         )}
 
-                        {selectedPerson.Type.Owner && (
+                        {selectedPerson?.Type?.Owner && (
                             <>
                                 <h3 className="text-xl mt-4">Owned Properties</h3>
                                 <ul>
-                                    {(selectedPerson.PropertiesOwned || []).map((property, index) => (
+                                    {(selectedPerson?.PropertiesOwned || []).map((property, index) => (
                                         <li key={index}>
                                             {property.address}
                                         </li>
