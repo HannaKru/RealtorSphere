@@ -196,13 +196,20 @@ const PropertyPage = () => {
             rooms: [...prevState.rooms, { length: '', width: '', roomType: '' }]
         }));
     };
+    const [imageInputs, setImageInputs] = useState([{ id: 1, file: null }]); // Array to store image inputs
+    const handleFileChange = (index, e) => {
+    const files = e.target.files[0]; // Only handle one file per input field
+    setImageInputs(prevInputs => {
+        const newInputs = [...prevInputs];
+        newInputs[index].file = files;
+        return newInputs;
+    });
+};
 
-    const handleFileChange = (e) => {
-        setNewProperty(prevState => ({
-            ...prevState,
-            file: e.target.files[0]
-        }));
-    };
+    // Add more image input fields when "הוספת תמונה נוספת" is clicked
+const addImageInput = () => {
+    setImageInputs(prevInputs => [...prevInputs, { id: prevInputs.length + 1, file: null }]);
+};
 
     const handleAddProperty = async () => {
         try {
@@ -210,13 +217,23 @@ const PropertyPage = () => {
 
             // Add the necessary fields to formData
             for (const key in newProperty) {
-                if (key !== 'rooms') {
-                    formData.append(key, newProperty[key]);
-                }
+            if (key !== 'files' && key !== 'rooms') {
+                formData.append(key, newProperty[key]);
             }
+        }
 
             // Add room data
             formData.append('rooms', JSON.stringify(newProperty.rooms));
+
+            // Add the images to formData
+        imageInputs.forEach((input, index) => {
+            if (input.file) {
+                formData.append(`file${index + 1}`, input.file);
+            }
+        });
+
+
+
 
             const response = await axios.post('http://localhost:5000/addProperty', formData, {
                 withCredentials: true,
@@ -240,7 +257,6 @@ const PropertyPage = () => {
         e.preventDefault(); // Prevent the default form submission
         handleSearchClick(); // Call the existing search function
     };
-
 
 
 
@@ -276,7 +292,7 @@ const PropertyPage = () => {
     security: (property.security === 'true' || property.security === true) ? 'כן' : 'לא',
     status: property.status || 'N/A',
     notes: property.notes || 'אין',
-    pictures: property.pictures || '',
+    pictures: property.pictures || {},
     type: property.type?.apartment?.type || 'N/A',
     floor: property.type?.apartment?.floor || 'N/A',
     apNum: property.type?.apartment?.apNum || 'N/A',
@@ -426,9 +442,9 @@ const PropertyPage = () => {
                 ))}
             </div>
 
+
                 {/* Property Table */}
-                {/* Property Table */}
-{activeTab !== 'מקורות חיצוניים' && (
+    {activeTab !== 'מקורות חיצוניים' && (
     <table className="min-w-full bg-white text-right">
         <thead>
             <tr>
@@ -493,7 +509,7 @@ const PropertyPage = () => {
                         </button>
                         <h2 className="text-2xl mb-4">הוספת נכס חדש</h2>
                         <div className="mb-4">
-                        <label className="block text-right">רחוב</label>
+                            <label className="block text-right">רחוב</label>
                             <input
                                 type="text"
                                 name="street"
@@ -811,15 +827,22 @@ const PropertyPage = () => {
                                 className="w-full p-2 border rounded-md"
                             />
                         </div>
-                        <div className="mb-4">
-                            <label className="block text-right">תמונות</label>
-                            <input
-                                type="file"
-                                name="file"
-                                onChange={handleFileChange}
-                                className="w-full p-2 border rounded-md"
-                            />
-                        </div>
+                        {/* Dynamic image inputs */}
+            {imageInputs.map((input, index) => (
+                <div key={input.id} className="mb-4">
+                    <label className="block text-right">תמונה {index + 1}</label>
+                    <input
+                        type="file"
+                        onChange={(e) => handleFileChange(index, e)}
+                        className="w-full p-2 border rounded-md"
+                        dir="rtl"
+                    />
+                </div>
+            ))}
+
+            <button onClick={addImageInput} className="bg-green-500 text-white p-2 rounded-md mb-4">
+                הוספת תמונה נוספת
+            </button>
                         <div className="flex justify-end">
                             <button onClick={() => setIsPopupOpen(false)}
                                     className="bg-gray-300 p-2 rounded-md mr-2">
@@ -834,8 +857,8 @@ const PropertyPage = () => {
             )}
 
             {isDetailsPopupOpen && selectedProperty && (
-    <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
-        <div className="bg-white p-6 rounded-lg relative w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
+                    <div className="bg-white p-6 rounded-lg relative w-full max-w-2xl max-h-[80vh] overflow-y-auto">
             <button onClick={() => setIsDetailsPopupOpen(false)}
                     className="absolute top-2 left-2 text-gray-600 hover:text-gray-800">✕
             </button>
@@ -864,12 +887,24 @@ const PropertyPage = () => {
                 <p><strong>הערות:</strong> {selectedProperty.notes || 'אין'}</p>
             </div>
 
-            {/* Images */}
-            {selectedProperty && selectedProperty.pictures && selectedProperty.pictures.trim() ? (
-                <img src={selectedProperty.pictures} alt="Property"/>
-            ) : (
-                <p>אין תמונות לנכס זה</p>
-            )}
+            {/* Display pictures */}
+            <div className="mb-4">
+                <h3 className="text-xl underline"><strong>תמונות:</strong></h3>
+                {Object.keys(selectedProperty.pictures).length > 0 ? (
+                    <div className="flex flex-wrap gap-4">
+                        {Object.entries(selectedProperty.pictures).map(([key, url]) => (
+                            <img
+                                key={key}
+                                src={url}
+                                alt={`Property Image ${key}`}
+                                className="w-32 h-32 object-cover rounded-md"
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <p>אין תמונות לנכס זה</p>
+                )}
+            </div>
             {/*room specifications*/}
             <div className="mb-4" dir="rtl">
                 <h3 className="text-xl mt-4 underline"><strong>חדרים :</strong></h3> {/* Colon placed on the left */}

@@ -3,6 +3,7 @@ import os
 from werkzeug.utils import secure_filename
 import datetime
 import json
+from flask import request
 
 
 db_ref = initialize_firebase()
@@ -65,7 +66,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
             prop_security = 'true' if prop_data.get('security') == True or prop_data.get('security') == 'true' else 'false'
             prop_notes = prop_data.get('notes', 'אין')
             prop_room_specifications = prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('rooms', [])
-
+            pictures = prop_data.get('pictures', {})
 
 
 
@@ -125,7 +126,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'bars': prop_bars,
                 'security': prop_security,
                 'notes' :prop_notes,
-                'pictures': prop_data.get('pictures', {}).get('first', ''),
+                'pictures': pictures,
                 'roomSpecifications': prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('rooms', [])
 
             })
@@ -186,14 +187,14 @@ def add_property(data, file, realtor_email):
                     }
                 }
             },
-            'pictures': {
-                'first': ''
-            }
+            'pictures': {}
+
         }
 
         # Save the property data to the Firebase database
         new_property_ref = db_ref.child('property').push(property_data)
         new_property_key = new_property_ref.key  # Retrieve the key of the new property
+
 
         # Store the ownership data
         ownership_data = {
@@ -204,19 +205,21 @@ def add_property(data, file, realtor_email):
             'endDate': '',
         }
         db_ref.child('Ownership').child(new_property_key).set(ownership_data)
+        files = request.files  # Get files from the request
+        # Handle multiple file uploads
+        if files:
+            for key in files:
+                file = files[key]  # Get each file
+                file_path = f"property_images/{new_property_key}_{file.filename}"
+                bucket = get_storage_bucket()
+                blob = bucket.blob(file_path)
+                blob.upload_from_file(file)
+                blob.make_public()  # Make the file publicly accessible
 
-
-
-        # Handle file upload if provided
-        if file:
-            file_path = f"property_images/{new_property_key}_{file.filename}"
-            bucket = get_storage_bucket()
-            blob = bucket.blob(file_path)
-            blob.upload_from_file(file)
-            blob.make_public()  # Make the file publicly accessible
-            db_ref.child('property').child(new_property_key).child('pictures').update({
-                'first': blob.public_url
-            })
+                # Save the picture URLs in the 'pictures' field
+                db_ref.child('property').child(new_property_key).child('pictures').update({
+                    key: blob.public_url  # Use the key to store multiple pictures
+                })
 
         return {"message": "Property added successfully"}, 200
 
