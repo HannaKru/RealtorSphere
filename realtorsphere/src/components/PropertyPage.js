@@ -292,6 +292,107 @@ const addImageInput = () => {
 };
 
     const handleAddProperty = async () => {
+        const houseNumberPattern = /^[0-9]+(\s?[א-ת]?)$/;
+        // Check if the required fields (city, street, house) are filled
+    if (!newProperty.city || newProperty.city.trim() === "") {
+        alert('נא לבחור עיר');
+        return;
+    }
+
+    if (!newProperty.street || newProperty.street.trim() === "") {
+        alert('נא לבחור רחוב');
+        return;
+    }
+
+    if (!newProperty.house || newProperty.house.trim() === "") {
+        alert('נא להזין מספר בית');
+        return;
+    }
+    // Validate the house number using the regular expression
+    if (!houseNumberPattern.test(newProperty.house)) {
+        alert('נא להזין מספר בית חוקי (לדוגמה: 42ב, 42 ב, או רק 42)');
+        return;
+    }
+
+    // Check if the room number is more than 0
+    if (newProperty.roomsNum === null || newProperty.roomsNum <= 0) {
+        alert('מספר החדרים חייב להיות יותר מ-0');
+        return;
+    }
+
+    // Check if the price is more than 0
+    if (newProperty.price === null || newProperty.price <= 0) {
+        alert('המחיר חייב להיות יותר מ-0');
+        return;
+    }
+
+     // Check if the size is more than 0
+    if (newProperty.size === null || newProperty.size <= 0) {
+        alert('הגודל חייב להיות יותר מ-0');
+        return;
+    }
+
+    // Check if the parking number is not less than 0 and not null
+    if (newProperty.parkingNumber === null || newProperty.parkingNumber < 0) {
+        alert('מספר החניות חייב להיות 0 או יותר');
+        return;
+    }
+
+    // Check if the AC number is not less than 0 and not null
+    if (newProperty.ac === null || newProperty.ac < 0) {
+        alert('מספר המזגנים חייב להיות 0 או יותר');
+        return;
+    }
+
+     // Check if the age is not less than 0 and not null
+    if (newProperty.age === null || newProperty.age < 0) {
+        alert('גיל המבנה חייב להיות 0 או יותר');
+        return;
+    }
+
+    // Check if the number of floors is more than 0 and not null
+    if (newProperty.numberOfFloors === null || newProperty.numberOfFloors <= 0) {
+        alert('מספר הקומות בנכס חייב להיות יותר מ-0');
+        return;
+    }
+
+    // Check if the floor is at least 0 and not null
+    if (newProperty.floor === null || newProperty.floor < 0) {
+        alert('קומת הנכס חייבת להיות 0 או יותר');
+        return;
+    }
+
+     // Validate apartment number (can be null only for 'private house' or 'two-family house')
+    if (
+        (newProperty.propertyType !== 'private house' && newProperty.propertyType !== 'two-family house') &&
+        (newProperty.apNum === null || newProperty.apNum < 0)
+    ) {
+        alert('מספר הדירה חייב להיות 0 או יותר');
+        return;
+    }
+
+    if (newProperty.bathroomsNum === null || newProperty.bathroomsNum < 1) {
+        alert('מספר חדרי השירותים חייב להיות לפחות 1');
+        return;
+    }
+    if (!newProperty.ownerName || newProperty.ownerName.trim() === "") {
+        alert('שם הבעלים לא יכול להיות ריק');
+        return;
+    }
+
+    // Check if the owner's ID is not null or empty
+    if (!newProperty.ownerID || newProperty.ownerID.trim() === "") {
+        alert('תעודת זהות של הבעלים לא יכולה להיות ריקה');
+        return;
+    }
+
+    // Check if the start date is not null
+    if (!newProperty.startDate || newProperty.startDate.trim() === "") {
+        alert('תאריך תחילת העסקה לא יכול להיות ריק');
+        return;
+    }
+
+
         try {
             const formData = new FormData();
 
