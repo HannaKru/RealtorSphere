@@ -7,7 +7,7 @@ from login import login_user
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 app.config['SECRET_KEY'] = secrets.token_hex(32)
 
 db_ref = initialize_firebase()

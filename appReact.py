@@ -7,12 +7,14 @@ from firebase_config import initialize_firebase
 from login import login_user
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status, get_events_by_email,add_event, edit_event_by_id, delete_event_by_id
 from forgetPass import check_user_and_send_email
-from Property import get_properties, get_property_by_id, add_property
+from Property import get_properties, get_property_by_id, add_property,scrape_yad2_listings
 from sendMessage import send_email_with_attachment
 from ClientProfessionalPage import get_filtered_persons, add_person, get_person_details, update_person_details, remove_person
 from Deals import get_deals, get_deal_details, new_price
 from werkzeug.utils import secure_filename
 import os
+import requests
+from bs4 import BeautifulSoup
 
 
 app = Flask(__name__)
@@ -335,5 +337,17 @@ def update_deal_price(deal_id):
     except Exception as e:
         print(f"Error updating deal price: {e}")
         return jsonify({"error": "Failed to update price"}), 500
+
+
+@app.route('/api/scrapedListings', methods=['GET'])
+def get_scraped_listings():
+    try:
+        scraped_data = scrape_yad2_listings()
+        print("Scraped data:", scraped_data)  # Add this line for debugging
+        return jsonify(scraped_data), 200
+    except Exception as e:
+        print(f"Error scraping listings: {e}")
+        return jsonify({"error": "Failed to scrape listings"}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

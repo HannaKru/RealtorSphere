@@ -4,14 +4,14 @@ from werkzeug.utils import secure_filename
 import datetime
 import json
 from flask import request
-
+from bs4 import BeautifulSoup
+import requests
+from flask import jsonify
 
 db_ref = initialize_firebase()
 
-
 UPLOAD_FOLDER = 'uploads/'  # Folder to store uploaded images
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
-
 
 # Ensure the upload folder exists
 if not os.path.exists(UPLOAD_FOLDER):
@@ -230,3 +230,62 @@ def add_property(data, file, realtor_email):
     except Exception as e:
         print(f"Error adding property to Firebase: {e}")
         return {"error": "An error occurred while adding the property"}, 500
+
+
+def scrape_yad2_listings(max_listings=50):
+    print("Starting scraping process")
+    base_url = "https://www.yad2.co.il/realestate/forsale"
+    listings = []
+    page_num = 1
+
+    while len(listings) < max_listings:
+        url = f"{base_url}?page={page_num}"
+        print(f"Scraping URL: {url}")
+        try:
+            response = requests.get(url)
+            response.raise_for_status()  # Raise an exception for bad status codes
+            print(f"Response status code: {response.status_code}")
+
+            soup = BeautifulSoup(response.content, 'html.parser')
+            print(f"HTML content length: {len(response.content)}")
+
+            property_cards = soup.find_all('div', class_='feeditem table')
+            print(f"Found {len(property_cards)} property cards")
+
+            if not property_cards:
+                print("No property cards found. HTML structure might have changed.")
+                print(f"Page content: {soup.prettify()[:1000]}...")  # Print first 1000 characters of the page
+                break
+
+            for card in property_cards:
+                if len(listings) >= max_listings:
+                    break
+
+                # Extract details
+                property_type = card.find('span', class_='title').text.strip() if card.find('span',
+                                                                                            class_='title') else 'N/A'
+                price = card.find('div', class_='price').text.strip() if card.find('div', class_='price') else 'N/A'
+                city = card.find('span', class_='city').text.strip() if card.find('span', class_='city') else 'N/A'
+                rooms = card.find('span', class_='rooms').text.strip() if card.find('span', class_='rooms') else 'N/A'
+                link = f"https://www.yad2.co.il{card.find('a')['href']}" if card.find('a') else 'N/A'
+
+                listings.append({
+                    'propertyType': property_type,
+                    'price': price,
+                    'city': city,
+                    'rooms': rooms,
+                    'link': link
+                })
+                print(f"Added listing: {listings[-1]}")
+
+            page_num += 1
+            time.sleep(2)  # Add a 2-second delay between requests to avoid overwhelming the server
+
+        except requests.RequestException as e:
+            print(f"Request failed: {e}")
+            break
+
+    print(f"Finished scraping. Total listings: {len(listings)}")
+    return listings
+
+

@@ -150,6 +150,10 @@ const PropertyPage = () => {
         setFilteredProperties(filtered);
     }, [properties, activeTab]);
 
+    useEffect(() => {
+  console.log("External properties updated:", externalProperties);
+}, [externalProperties]);
+
 
 
 
@@ -157,11 +161,22 @@ const PropertyPage = () => {
         setSearchFilters({ ...searchFilters, [e.target.name]: e.target.value });
     };
 
-    const handleTabChange = (tab) => {
-        setActiveTab(tab);
-        const filteredProps = filterPropertiesByTab(tab);
-        setFilteredProperties(filteredProps);
-    };
+    const handleTabChange = async (tab) => {
+  setActiveTab(tab);
+  if (tab === 'מקורות חיצוניים') {
+    try {
+      console.log("Fetching external listings...");
+      const response = await axios.get('http://localhost:5000/api/scrapedListings', { withCredentials: true });
+      console.log("Fetched data:", response.data);
+      setExternalProperties(response.data);
+    } catch (error) {
+      console.error('Error fetching external listings:', error);
+    }
+  } else {
+    const filteredProps = filterPropertiesByTab(tab);
+    setFilteredProperties(filteredProps);
+  }
+};
 
     const handleSearchClick = () => {
         fetchFilteredProperties(); // Apply search when the search button is clicked
@@ -470,7 +485,7 @@ const addImageInput = () => {
     </table>
 )}
 
-{/* External Sources Table */}
+                {/*External Sources Table*/}
 {activeTab === 'מקורות חיצוניים' && (
     <table className="min-w-full bg-white text-right">
         <thead>
@@ -493,6 +508,7 @@ const addImageInput = () => {
         </tbody>
     </table>
 )}
+
 
             </div>
 
