@@ -119,31 +119,19 @@ const ClientProfessionalPage = () => {
     };
 
     const handleAddCity = () => {
-    if (newCity.trim() !== "") {
-        setSelectedPerson((prevPerson) => ({
-            ...prevPerson,
-            Type: {
-                ...prevPerson.Type,
-                Client: {
-                    ...prevPerson.Type.Client,
-                    searchCity: [...(prevPerson?.Type?.Client?.searchCity || []), newCity.trim()],
-                    },
-                },
+        if (newCity.trim() !== "") {
+            setNewPerson((prevPerson) => ({
+                ...prevPerson,
+                cities: [...prevPerson.cities, newCity.trim()],
             }));
-        setNewCity(''); // Clear input after adding
+            setNewCity(''); // Clear input after adding
         }
     };
 
-    const handleRemoveCity = (city) => {
-    setSelectedPerson((prevPerson) => ({
-        ...prevPerson,
-        Type: {
-            ...prevPerson.Type,
-            Client: {
-                ...prevPerson.Type.Client,
-                searchCity: prevPerson.Type.Client.searchCity.filter((c) => c !== city),
-                },
-            },
+    const handleRemoveCity = (index) => {
+        setNewPerson((prevPerson) => ({
+            ...prevPerson,
+            cities: prevPerson.cities.filter((_, idx) => idx !== index),
         }));
     };
 
@@ -190,16 +178,28 @@ const ClientProfessionalPage = () => {
         if (propertyInput.trim() !== "") {
             setSelectedPerson(prevPerson => ({
                 ...prevPerson,
-                PropertiesLiked: [...prevPerson.PropertiesLiked, { id: propertyInput, address: propertyInput }]
+                Type: {
+                    ...prevPerson.Type,
+                    Client: {
+                        ...prevPerson.Type.Client,
+                        PropertiesList: [...(prevPerson.Type.Client.PropertiesList || []), propertyInput]
+                    }
+                }
             }));
-            setNewProperty(''); // Clear the input after adding
+            setNewProperty(''); // Clear input after adding
         }
     };
 
     const handleRemoveProperty = (propertyId) => {
         setSelectedPerson(prevPerson => ({
             ...prevPerson,
-            PropertiesLiked: prevPerson.PropertiesLiked.filter(property => property.id !== propertyId)
+            Type: {
+                ...prevPerson.Type,
+                Client: {
+                    ...prevPerson.Type.Client,
+                    PropertiesList: prevPerson.Type.Client.PropertiesList.filter(id => id !== propertyId)
+                }
+            }
         }));
     };
 
@@ -349,9 +349,9 @@ const ClientProfessionalPage = () => {
 
                                 <h3 className="text-xl mt-4">Properties Liked</h3>
                                 <ul>
-                                    {(selectedPerson?.PropertiesLiked || []).map((property, index) => (
+                                    {(selectedPerson?.PropertiesList || []).map((property, index) => (
                                         <li key={index}>
-                                            {property.id} - {property.address}
+                                            {property.id}
                                             <button onClick={() => handleRemoveProperty(property.id)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
                                         </li>
                                     ))}
@@ -560,7 +560,7 @@ const ClientProfessionalPage = () => {
                                     {(newPerson.cities || []).map((city, index) => (
                                         <li key={index} className="flex justify-between">
                                             {city}
-                                            <button onClick={() => handleRemoveCity(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
+                                            <button onClick={() => handleRemoveCity(index)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
                                         </li>
                                     ))}
                                 </ul>
