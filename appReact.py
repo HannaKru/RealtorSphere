@@ -364,5 +364,27 @@ def get_cities():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/streets', methods=['GET'])
+def get_streets():
+    try:
+        city = request.args.get('city')  # Get the selected city from the request
+
+        if not city:
+            return jsonify({"error": "City parameter is missing"}), 400
+
+        # Load the CSV file
+        file_path = 'IsraelCitiesAndStreets.csv'
+        data = pd.read_csv(file_path, encoding='ISO-8859-8')
+
+        # Filter streets by the selected city
+        filtered_data = data[data['שם_ישוב'] == city]
+
+        # Extract unique street names
+        unique_streets = filtered_data['שם_רחוב'].unique().tolist()
+
+        return jsonify(unique_streets), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 if __name__ == '__main__':
     app.run(debug=True)

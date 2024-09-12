@@ -130,24 +130,66 @@ const PropertyPage = () => {
     }, [searchFilters, activeTab]);
 
         const [cityList, setCityList] = useState([]);
-        // const [cities, setCities] = useState([]);  // To store cities from the backend
-        // const [streets, setStreets] = useState([]);  // To store streets of the selected city
-        // const [selectedCity, setSelectedCity] = useState(null);  // Selected city
-        // const [selectedStreet, setSelectedStreet] = useState(null);
+        const [cities, setCities] = useState([]);  // To store cities from the backend
+        const [streets, setStreets] = useState([]);  // To store streets of the selected city
+        const [selectedCity, setSelectedCity] = useState(null);  // Selected city
+        const [selectedStreet, setSelectedStreet] = useState(null);
+        const [streetList, setStreetList] = useState([]);  // State to hold the list of streets
 
 
-    useEffect(() => {
-        // Fetch the city list from the backend
-        const fetchCities = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/api/cities');  // Adjust if needed
-                setCityList(response.data);  // Set the city list state with data from API
-            } catch (error) {
-                console.error("Error fetching cities:", error);
-            }
-        };
-        fetchCities();
-    }, []);  // Empty dependency array means this runs once when the component mounts
+    // Fetch the list of cities when the component loads
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/cities');
+        setCityList(response.data);  // Set city list from the backend
+      } catch (error) {
+        console.error('Error fetching cities:', error);
+      }
+    };
+
+    fetchCities();
+  }, []);
+
+    // Fetch the list of streets when a city is selected
+  const handleCityChange = async (e) => {
+
+    const selectedCity = e.target.value;
+
+    setNewProperty({
+      ...newProperty,
+      city: selectedCity,
+      street: '', // Reset street when a new city is selected
+    });
+
+    // Fetch streets based on the selected city
+    if (selectedCity) {
+      try {
+        const response = await axios.get('http://localhost:5000/api/streets', {
+          params: { city: selectedCity },
+        });
+        console.log("Streets for city:", response.data);
+
+        if (response.status === 200) {
+          setStreetList(response.data);  // Populate streetList with the response data
+        } else {
+          setStreetList([]);  // Clear streetList if no streets are returned
+        }
+      } catch (error) {
+        console.error('Error fetching streets:', error);
+        setStreetList([]);  // Clear streetList on error
+      }
+    } else {
+      setStreetList([]);  // Clear streetList if no city is selected
+    }
+};
+
+  const handleStreetChange = (e) => {
+    setNewProperty({
+      ...newProperty,
+      street: e.target.value,
+    });
+  };
 
     // Filter properties based on the active tab
     const filterPropertiesByTab = (tab) => {
@@ -547,36 +589,47 @@ const addImageInput = () => {
                         </button>
                         <h2 className="text-2xl mb-4">הוספת נכס חדש</h2>
                         {/* City Dropdown */}
-                        <div className="mb-4">
-                            <label className="block text-right">עיר</label>
-                            <select
-                                name="city"
-                                value={newProperty.city}
-                                onChange={handleNewPropertyChange}
-                                className="w-full p-2 border rounded-md"
-                                dir="rtl"
-                            >
-                                <option value="">בחר עיר</option>
-                                {cityList.map((city, index) => (
-                                    <option key={index} value={city}>
-                                        {city}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
+      <div className="mb-4">
+        <label className="block text-right">עיר</label>
+        <select
+          name="city"
+          value={newProperty.city}
+          onChange={handleCityChange}
+          className="w-full p-2 border rounded-md"
+          dir="rtl"
+        >
+          <option value="">בחר עיר</option>
+          {cityList.map((city, index) => (
+            <option key={index} value={city}>
+              {city}
+            </option>
+          ))}
+        </select>
+      </div>
 
-                        {/* Street Input */}
-                        <div className="mb-4">
-                            <label className="block text-right">רחוב</label>
-                            <input
-                                type="text"
-                                name="street"
-                                value={newProperty.street}
-                                onChange={handleNewPropertyChange}
-                                className="w-full p-2 border rounded-md"
-                                dir="rtl"
-                            />
-                        </div>
+      {/* Street Dropdown (only show when a city is selected) */}
+      {newProperty.city && (
+        <div className="mb-4">
+            <label className="block text-right">רחוב</label>
+            <select
+                name="street"
+                value={newProperty.street}
+                onChange={handleStreetChange}
+                className="w-full p-2 border rounded-md"
+                dir="rtl"
+            >
+            <option value="">בחר רחוב</option>
+            {streetList.map((street, index) => (
+                <option key={index} value={street}>
+                {street}
+                </option>
+            ))}
+          </select>
+        </div>
+          )
+      };
+
+
                         <div className="mb-4">
                             <label className="block text-right">מס' בית</label>
                             <input
