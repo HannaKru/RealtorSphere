@@ -15,7 +15,7 @@ from werkzeug.utils import secure_filename
 import os
 import requests
 from bs4 import BeautifulSoup
-
+import pandas as pd
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -348,6 +348,21 @@ def get_scraped_listings():
     except Exception as e:
         print(f"Error scraping listings: {e}")
         return jsonify({"error": "Failed to scrape listings"}), 500
+
+@app.route('/api/cities', methods=['GET'])
+def get_cities():
+    try:
+        # Load the CSV file
+        file_path = 'IsraelCitiesAndStreets.csv'
+        data = pd.read_csv(file_path, encoding='ISO-8859-8')
+
+        # Extract unique city names
+        unique_cities = data['שם_ישוב'].unique().tolist()
+
+        # Return the list of unique cities as JSON
+        return jsonify(unique_cities), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(debug=True)

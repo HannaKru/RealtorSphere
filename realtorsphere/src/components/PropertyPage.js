@@ -79,6 +79,8 @@ const PropertyPage = () => {
         elevator: false,  // New elevator field
     });
 
+    const [cityList, setCityList] = useState([]);
+
      // Fetches all properties for the logged-in realtor when the component loads
     const fetchAllProperties = useCallback(async () => {
         try {
@@ -127,6 +129,19 @@ const PropertyPage = () => {
             alert('אין רשומה מתאימה');
         }
     }, [searchFilters, activeTab]);
+
+    useEffect(() => {
+        // Fetch the city list from the backend
+        const fetchCities = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/api/cities');  // Adjust if needed
+                setCityList(response.data);  // Set the city list state with data from API
+            } catch (error) {
+                console.error("Error fetching cities:", error);
+            }
+        };
+        fetchCities();
+    }, []);  // Empty dependency array means this runs once when the component mounts
 
     // Filter properties based on the active tab
     const filterPropertiesByTab = (tab) => {
@@ -189,6 +204,8 @@ const PropertyPage = () => {
             [name]: type === 'checkbox' ? checked : value
         }));
     };
+
+
 
     const handleRoomChange = (index, e) => {
         const { name, value } = e.target;
@@ -310,15 +327,14 @@ const addImageInput = () => {
     pictures: property.pictures || {},
     type: property.type?.apartment?.type || 'N/A',
     floor: property.floor || 'N/A',
-    apNum: property.type?.apartment?.apNum || 'N/A',
+    apNum: property.apNum || 'N/A',
     elevator: property.elevator === "true" ? 'כן' : 'לא',
     parkingNumber: property.parkingNumber !== undefined ? property.parkingNumber : 'N/A',
     bathroomsNum: property.bathroomsNum !== undefined ? property.bathroomsNum : 'N/A',
     roomsNum: property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A',
     roomSpecifications: property.roomSpecifications || [],
-     transactionType: property.transactionType || 'N/A'
-
-
+    transactionType: property.transactionType || 'N/A',
+    propertyType: property.propertyType || 'N/A'
 
   });
   setIsDetailsPopupOpen(true);
@@ -524,23 +540,32 @@ const addImageInput = () => {
                             ✕
                         </button>
                         <h2 className="text-2xl mb-4">הוספת נכס חדש</h2>
+                        {/* City Dropdown */}
+                        <div className="mb-4">
+                            <label className="block text-right">עיר</label>
+                            <select
+                                name="city"
+                                value={newProperty.city}
+                                onChange={handleNewPropertyChange}
+                                className="w-full p-2 border rounded-md"
+                                dir="rtl"
+                            >
+                                <option value="">בחר עיר</option>
+                                {cityList.map((city, index) => (
+                                    <option key={index} value={city}>
+                                        {city}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Street Input */}
                         <div className="mb-4">
                             <label className="block text-right">רחוב</label>
                             <input
                                 type="text"
                                 name="street"
                                 value={newProperty.street}
-                                onChange={handleNewPropertyChange}
-                                className="w-full p-2 border rounded-md"
-                                dir="rtl"
-                            />
-                        </div>
-                        <div className="mb-4">
-                            <label className="block text-right">עיר</label>
-                            <input
-                                type="text"
-                                name="city"
-                                value={newProperty.city}
                                 onChange={handleNewPropertyChange}
                                 className="w-full p-2 border rounded-md"
                                 dir="rtl"
@@ -844,21 +869,21 @@ const addImageInput = () => {
                             />
                         </div>
                         {/* Dynamic image inputs */}
-            {imageInputs.map((input, index) => (
-                <div key={input.id} className="mb-4">
-                    <label className="block text-right">תמונה {index + 1}</label>
-                    <input
-                        type="file"
-                        onChange={(e) => handleFileChange(index, e)}
-                        className="w-full p-2 border rounded-md"
-                        dir="rtl"
-                    />
-                </div>
-            ))}
+                        {imageInputs.map((input, index) => (
+                            <div key={input.id} className="mb-4">
+                                <label className="block text-right">תמונה {index + 1}</label>
+                                <input
+                                    type="file"
+                                    onChange={(e) => handleFileChange(index, e)}
+                                    className="w-full p-2 border rounded-md"
+                                    dir="rtl"
+                                />
+                            </div>
+                        ))}
 
-            <button onClick={addImageInput} className="bg-green-500 text-white p-2 rounded-md mb-4">
-                הוספת תמונה נוספת
-            </button>
+                        <button onClick={addImageInput} className="bg-green-500 text-white p-2 rounded-md mb-4">
+                            הוספת תמונה נוספת
+                        </button>
                         <div className="flex justify-end">
                             <button onClick={() => setIsPopupOpen(false)}
                                     className="bg-gray-300 p-2 rounded-md mr-2">
@@ -875,8 +900,8 @@ const addImageInput = () => {
             {isDetailsPopupOpen && selectedProperty && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
                     <div className="bg-white p-6 rounded-lg relative w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-            <button onClick={() => setIsDetailsPopupOpen(false)}
-                    className="absolute top-2 left-2 text-gray-600 hover:text-gray-800">✕
+                        <button onClick={() => setIsDetailsPopupOpen(false)}
+                                className="absolute top-2 left-2 text-gray-600 hover:text-gray-800">✕
             </button>
             <h2 className="text-2xl mb-4">פרטי נכס</h2>
 
@@ -886,6 +911,9 @@ const addImageInput = () => {
                                 <strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}
                             </p>
                             <p><strong>שכונה:</strong> {selectedProperty.neighborhood || 'N/A'}</p>
+                            {selectedProperty.propertyType !== 'private house' && (
+                                <p><strong>מספר דירה:</strong> {selectedProperty.apNum || 'N/A'}</p>
+                            )}
                             <p><strong>גודל:</strong> {selectedProperty.size} מ"ר</p>
                             <p><strong>מספר חדרים:</strong> {selectedProperty.roomsNum}</p>
                             <p><strong>מחיר:</strong> ₪ {selectedProperty.price}</p>
