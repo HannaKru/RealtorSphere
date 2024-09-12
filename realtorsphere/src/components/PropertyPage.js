@@ -583,7 +583,7 @@ const addImageInput = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">שכונה</label>
+                            <label className="block text-right">שכונה:</label>
                             <input
                                 type="text"
                                 name="neighborhood"
