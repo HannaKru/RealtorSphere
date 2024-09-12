@@ -54,17 +54,13 @@ def get_filtered_persons(name='', city='', person_id='', tab='owners', email = '
 
 def add_person(data, email):
     try:
-        # Extract and sanitize input data
         person_id = data.get('id', '').strip()
-        person_type = data.get('type', '').strip()  # Use the type from the data directly
+        person_type = data.get('type', '').strip()
 
-        # Check if the ID already exists
         existing_person_snapshot = db.child("Person").child(person_id).get()
-        if existing_person_snapshot:  # `existing_person_snapshot` is already a dict
-            if existing_person_snapshot is not None:
-                return {"error": "Person with this ID already exists"}, 400
+        if existing_person_snapshot:
+            return {"error": "Person with this ID already exists"}, 400
 
-        # Prepare person data
         person_data = {
             "FirstName": data.get('firstName', '').strip(),
             "LastName": data.get('lastName', '').strip(),
@@ -75,34 +71,32 @@ def add_person(data, email):
 
         if person_type == "Owner":
             person_data["Type"]["Owner"] = {
-                "realtor": email,
-                #"sellORrent": data.get('sellORrent', '').strip(),
+                "realtor": email
             }
         elif person_type == "Client":
             person_data["Type"]["Client"] = {
                 "realtor": email,
                 "buyORrent": data.get('buyORrent', '').strip(),
                 "budget": data.get('budget', '').strip(),
-                "PropertiesList": data.get('propertiesList', ''),
+                "PropertiesList": data.get('propertiesList', []),
                 "maxRooms": data.get('maxRooms', '').strip(),
                 "minRooms": data.get('minRooms', '').strip(),
                 "maxSize": data.get('maxSize', '').strip(),
                 "minSize": data.get('minSize', '').strip(),
                 "propertyType": data.get('propertyType', '').strip(),
-                "searchCity": data.get('cities', []),
+                "searchCity": data.get('cities', [])
             }
 
-        # Push the new person to Firebase with the given ID
         db.child("Person").child(person_id).set(person_data)
-
         return {"message": "Person added successfully"}, 200
 
     except Exception as e:
-        print(f"Error adding person to Firebase: {e}")
-        return {"error": "An error occurred while adding the person"}, 500
+        return {"error": f"An error occurred while adding the person: {str(e)}"}, 500
 
 
-# Get details of a person by their ID
+
+
+
 def get_person_details(person_id):
     try:
         person_ref = db.child('Person').child(person_id)
@@ -112,22 +106,20 @@ def get_person_details(person_id):
             return None, "Person not found"
 
         properties_owned = []
-        properties_liked = []
-
         if 'Owner' in person_data.get('Type', {}):
             ownerships_ref = db.child('Ownership')
             ownerships = ownerships_ref.order_by_child('PersonID').equal_to(person_id).get()
-            if ownerships:
-                for ownership_key, ownership in ownerships.items():
-                    property_id = ownership.get('propertyID')
-                    property_ref = db.child('property').child(property_id)
-                    property_data = property_ref.get()
-                    if property_data:
-                        properties_owned.append({
-                            'id': property_id,
-                            'address': f"{property_data.get('Steet', '')} {property_data.get('house', '')}, {property_data.get('city', '')}"
-                        })
+            for ownership_key, ownership in ownerships.items():
+                property_id = ownership.get('propertyID')
+                property_ref = db.child('property').child(property_id)
+                property_data = property_ref.get()
+                if property_data:
+                    properties_owned.append({
+                        'id': property_id,
+                        'address': f"{property_data.get('Street', '')} {property_data.get('house', '')}, {property_data.get('city', '')}"
+                    })
 
+        properties_liked = []
         if 'Client' in person_data.get('Type', {}):
             properties_list = person_data['Type']['Client'].get('PropertiesList', [])
             for property_id in properties_list:
@@ -136,7 +128,7 @@ def get_person_details(person_id):
                 if property_data:
                     properties_liked.append({
                         'id': property_id,
-                        'address': f"{property_data.get('Steet', '')} {property_data.get('house', '')}, {property_data.get('city', '')}"
+                        'address': f"{property_data.get('Street', '')} {property_data.get('house', '')}, {property_data.get('city', '')}"
                     })
 
         person_details = {
@@ -152,27 +144,23 @@ def get_person_details(person_id):
 
         return person_details, None
     except Exception as e:
-        print(f"Error fetching person details from Firebase: {e}")
         return None, f"An error occurred while fetching person details: {str(e)}"
 
-# Update person details
+
+
+
 def update_person_details(data, realtor_email):
     person_id = data.get('id')
-
     if not person_id:
         return {"message": "Person ID is required"}, 400
 
     try:
-        # Get a reference to the person's data
-        person_ref = db.child('Person').child(person_id)  # Adjust based on your Firebase setup
-        person_data = person_ref.get()  # No need for .val(), get() already returns the data
+        person_ref = db.child('Person').child(person_id)
+        person_data = person_ref.get()
+        if not person_data:
+            return {"message": "Person not found"}, 404
 
-        #if not person_data.val():  # If data doesn't exist
-            #return {"message": "Person not found"}, 404
-
-        #person_data = person_data.val()  # Get the dictionary data
-
-        # Create updated data object by merging existing and new values
+        # Update or initialize Type and Client dictionary
         updated_data = {
             "FirstName": data.get('FirstName', person_data.get('FirstName')),
             "LastName": data.get('LastName', person_data.get('LastName')),
@@ -181,41 +169,34 @@ def update_person_details(data, realtor_email):
             "Type": person_data.get('Type', {})
         }
 
-        # Update PropertiesLiked if present in the data
-        if 'PropertiesLiked' in data:
-            updated_data['PropertiesLiked'] = data['PropertiesLiked']
-        #if 'PropertiesOwned' in data:
-           # updated_data['PropertiesOwned'] = data['PropertiesOwned']
-
-        # Handle Owner and Client types
-        person_type = data.get('Type', {})
-        if 'Owner' in person_type:
-            updated_data['Type']['Owner'] = {
-                "realtor": realtor_email,
-                "sellORrent": person_type['Owner'].get('sellORrent', 'rent')
-            }
-        elif 'Client' in person_type:
+        if 'Client' in data['Type']:
+            client_data = data['Type']['Client']
             updated_data['Type']['Client'] = {
                 "realtor": realtor_email,
-                "PropertiesList": person_type['Client'].get('PropertiesList', ''),
-                "budget": person_type['Client'].get('budget'),
-                "buyORrent": person_type['Client'].get('buyORrent'),
-                "maxRooms": person_type['Client'].get('maxRooms'),
-                "minRooms": person_type['Client'].get('minRooms'),
-                "maxSize": person_type['Client'].get('maxSize'),
-                "minSize": person_type['Client'].get('minSize'),
-                "propertyType": person_type['Client'].get('propertyType'),
-                "searchCity": person_type['Client'].get('searchCity', [])
+                "PropertiesList": client_data.get('PropertiesList', []),
+                "budget": client_data.get('budget'),
+                "buyORrent": client_data.get('buyORrent'),
+                "maxRooms": client_data.get('maxRooms'),
+                "minRooms": client_data.get('minRooms'),
+                "maxSize": client_data.get('maxSize'),
+                "minSize": client_data.get('minSize'),
+                "propertyType": client_data.get('propertyType'),
+                "searchCity": client_data.get('searchCity', [])
             }
 
-        # Update the data in Firebase
+        if 'Owner' in data['Type']:
+            owner_data = data['Type']['Owner']
+            updated_data['Type']['Owner'] = {
+                "realtor": realtor_email,
+                "sellORrent": owner_data.get('sellORrent', updated_data['Type'].get('Owner', {}).get('sellORrent', 'rent'))
+            }
+
         person_ref.update(updated_data)
-
         return {"message": "Person updated successfully", "updated_data": updated_data}, 200
-
     except Exception as e:
-        print(f"Error updating person in Firebase: {str(e)}")
         return {"message": f"An error occurred while updating the person: {str(e)}"}, 500
+
+
 
 def remove_person(person_id):
     try:
