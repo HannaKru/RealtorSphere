@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
+import Select from 'react-select';
 import axios from "axios";
-
 
 const PropertyPage = () => {
     const [activeTab, setActiveTab] = useState('כל הנכסים');
@@ -79,7 +79,6 @@ const PropertyPage = () => {
         elevator: false,  // New elevator field
     });
 
-    const [cityList, setCityList] = useState([]);
 
      // Fetches all properties for the logged-in realtor when the component loads
     const fetchAllProperties = useCallback(async () => {
@@ -129,6 +128,13 @@ const PropertyPage = () => {
             alert('אין רשומה מתאימה');
         }
     }, [searchFilters, activeTab]);
+
+        const [cityList, setCityList] = useState([]);
+        // const [cities, setCities] = useState([]);  // To store cities from the backend
+        // const [streets, setStreets] = useState([]);  // To store streets of the selected city
+        // const [selectedCity, setSelectedCity] = useState(null);  // Selected city
+        // const [selectedStreet, setSelectedStreet] = useState(null);
+
 
     useEffect(() => {
         // Fetch the city list from the backend
@@ -583,7 +589,7 @@ const addImageInput = () => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block text-right">שכונה:</label>
+                            <label className="block text-right">שכונה</label>
                             <input
                                 type="text"
                                 name="neighborhood"
