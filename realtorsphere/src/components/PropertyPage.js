@@ -466,7 +466,7 @@ const addImageInput = () => {
     size: property.size || 'N/A',
     ac: property.ac !==undefined ? property.ac: 'N/A',
     accessibility: property.accessibility === "true" ? 'כן' : 'לא',
-    age: property.age || 'N/A',
+    age: property.age !== undefined ? property.age : 'N/A',
     bars: (property.bars === 'true' || property.bars === true) ? 'כן' : 'לא',
     number_of_floors: property.number_of_floors || 'N/A',
     realtor: property.realtor || 'N/A',
@@ -1092,6 +1092,7 @@ const addImageInput = () => {
                             <div className="mb-4" dir="rtl">
                                 <p><strong>סטטוס:</strong> {selectedProperty.status || 'N/A'}</p>
                             </div>
+                            <p><strong>גיל המבנה:</strong> {selectedProperty.age}</p> {/* Add age display */}
                             <p><strong>הערות:</strong> {selectedProperty.notes || 'אין'}</p>
                         </div>
 
