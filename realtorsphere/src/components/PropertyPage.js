@@ -276,14 +276,20 @@ const PropertyPage = () => {
             rooms: [...prevState.rooms, { length: '', width: '', roomType: '' }]
         }));
     };
-    const [imageInputs, setImageInputs] = useState([{ id: 1, file: null }]); // Array to store image inputs
-    const handleFileChange = (index, e) => {
-    const files = e.target.files[0]; // Only handle one file per input field
+    const [imageInputs, setImageInputs] = useState([{ id: 1, file: null }]); // Store image inputs
+   // Handle file input change
+const handleFileChange = (index, e) => {
+    const file = e.target.files[0];
     setImageInputs(prevInputs => {
-        const newInputs = [...prevInputs];
-        newInputs[index].file = files;
-        return newInputs;
+        const updatedInputs = [...prevInputs];
+        updatedInputs[index].file = file;
+        return updatedInputs;
     });
+};
+
+// Function to remove image input
+const removeImageInput = (index) => {
+    setImageInputs(prevInputs => prevInputs.filter((_, i) => i !== index)); // Remove the selected image input
 };
 
     // Add more image input fields when "הוספת תמונה נוספת" is clicked
@@ -468,14 +474,14 @@ const addImageInput = () => {
     accessibility: property.accessibility === "true" ? 'כן' : 'לא',
     age: property.age !== undefined ? property.age : 'N/A',
     bars: (property.bars === 'true' || property.bars === true) ? 'כן' : 'לא',
-    number_of_floors: property.number_of_floors || 'N/A',
+    number_of_floors: property.number_of_floors !== undefined ? property.number_of_floors : 'N/A',
     realtor: property.realtor || 'N/A',
     security: (property.security === 'true' || property.security === true) ? 'כן' : 'לא',
     status: property.status || 'N/A',
     notes: property.notes || 'אין',
     pictures: property.pictures || {},
     type: property.type?.apartment?.type || 'N/A',
-    floor: property.floor || 'N/A',
+    floor: property.floor!==undefined ? property.floor : 'N/A',
     apNum: property.apNum || 'N/A',
     elevator: property.elevator === "true" ? 'כן' : 'לא',
     parkingNumber: property.parkingNumber !== undefined ? property.parkingNumber : 'N/A',
@@ -1030,16 +1036,24 @@ const addImageInput = () => {
                         </div>
                         {/* Dynamic image inputs */}
                         {imageInputs.map((input, index) => (
-                            <div key={input.id} className="mb-4">
-                                <label className="block text-right">תמונה {index + 1}</label>
-                                <input
-                                    type="file"
-                                    onChange={(e) => handleFileChange(index, e)}
-                                    className="w-full p-2 border rounded-md"
-                                    dir="rtl"
-                                />
-                            </div>
-                        ))}
+    <div key={input.id} className="mb-4 flex items-center">
+        <label className="block text-right mr-2">תמונה {index + 1}</label>
+        <input
+            type="file"
+            onChange={(e) => handleFileChange(index, e)}
+            className="w-full p-2 border rounded-md"
+            dir="rtl"
+        />
+        {/* X button to remove the image */}
+        <button
+            type="button"
+            onClick={() => removeImageInput(index)}
+            className="text-red-600 font-bold ml-2"
+        >
+            ✕
+        </button>
+    </div>
+))}
 
                         <button onClick={addImageInput} className="bg-green-500 text-white p-2 rounded-md mb-4">
                             הוספת תמונה נוספת
@@ -1086,7 +1100,9 @@ const addImageInput = () => {
                             <p><strong>סורגים:</strong> {selectedProperty.bars}</p>
                             <p><strong>אבטחה:</strong> {selectedProperty.security}</p>
                             <p><strong>מספר קומות בנכס:</strong> {selectedProperty.number_of_floors || 'N/A'}</p>
-                            <p><strong>קומת הנכס:</strong> {selectedProperty.floor || 'N/A'}</p>
+                            <p><strong>קומת
+                                הנכס:</strong> {selectedProperty.floor !== null && selectedProperty.floor !== undefined ? selectedProperty.floor : 'N/A'}
+                            </p>
                             <p><strong>סוג
                                 עסקה:</strong> {selectedProperty.transactionType === 'sell' ? 'למכירה' : 'להשכרה'}</p>
                             <div className="mb-4" dir="rtl">
@@ -1098,7 +1114,7 @@ const addImageInput = () => {
 
                         {/* Display pictures vertically */}
                         <div className="mb-4" dir="rtl">
-                            <h3 className="text-xl underline"><strong>תמונות:</strong></h3>
+                        <h3 className="text-xl underline"><strong>תמונות:</strong></h3>
                 {Object.keys(selectedProperty.pictures).length > 0 ? (
                     <div className="flex flex-col gap-4">  {/* flex-col for vertical stacking */}
                         {Object.entries(selectedProperty.pictures).map(([key, url]) => (
