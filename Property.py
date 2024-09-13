@@ -9,6 +9,8 @@ import requests
 from flask import jsonify
 import time
 
+##
+
 db_ref = initialize_firebase()
 
 UPLOAD_FOLDER = 'uploads/'  # Folder to store uploaded images
