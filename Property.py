@@ -7,6 +7,7 @@ from flask import request
 from bs4 import BeautifulSoup
 import requests
 from flask import jsonify
+import time
 
 db_ref = initialize_firebase()
 
@@ -235,6 +236,98 @@ def add_property(data, file, realtor_email):
         print(f"Error adding property to Firebase: {e}")
         return {"error": "An error occurred while adding the property"}, 500
 
+def remove_picture(property_id, picture_key):
+    try:
+        # Construct the file path in Firebase Storage based on property_id and picture_key
+        file_path = f"property_images/{property_id}_{picture_key}"
+
+        # Access the Firebase Storage bucket
+        bucket = get_storage_bucket()
+
+        # Get the blob object (file) from Firebase Storage
+        blob = bucket.blob(file_path)
+
+        # Delete the file from Firebase Storage
+        blob.delete()
+
+        # Now, remove the picture entry from the Firebase Database
+        db_ref.child(f'property/{property_id}/pictures/{picture_key}').delete()
+
+        return {"message": "Picture deleted successfully"}, 200
+
+    except Exception as e:
+        print(f"Error deleting picture: {e}")
+        return {"error": "An error occurred while deleting the picture"}, 500
+def add_pictures_to_property(property_id, files):
+    try:
+        bucket = get_storage_bucket()
+        for key, file in files.items():
+            file_path = f"property_images/{property_id}_{file.filename}"
+            blob = bucket.blob(file_path)
+            blob.upload_from_file(file)
+            blob.make_public()
+
+            # Save picture URL to Firebase
+            db_ref.child(f'property/{property_id}/pictures').update({
+                key: blob.public_url
+            })
+
+        return {"message": "Pictures uploaded successfully"}, 200
+
+    except Exception as e:
+        print(f"Error uploading pictures: {e}")
+        return {"error": "An error occurred while uploading the pictures"}, 500
+
+
+def update_property(property_id, data, files):
+    try:
+        property_ref = db_ref.child(f'property/{property_id}')
+
+        # Prepare the update data
+        update_data = {
+            'Price': data.get('price'),
+            'street': data.get('street'),
+            'city': data.get('city'),
+            'house': data.get('house'),
+            'neighborhood': data.get('neighborhood'),
+            'size': int(data.get('size', 0)),
+            'ac': int(data.get('ac', 0)),
+            'accessibility': data.get('accessibility') == 'true',
+            'age': int(data.get('age', 0)),
+            'bars': data.get('bars') == 'true',
+            'number_of_floors': int(data.get('numberOfFloors', 1)),
+            'security': data.get('security') == 'true',
+            'status': data.get('status', 'active'),
+            'notes': data.get('notes', ''),
+            'type': {
+                'apartment': {
+                    'type': data.get('propertyType'),
+                    'floor': int(data.get('floor', 0)),
+                    'apNum': int(data.get('apNum', 0)),
+                    'elevator': data.get('elevator') == 'true',
+                    'item:': {
+                        'Pparking': {
+                            'number': int(data.get('parkingNumber', 0))
+                        },
+                        'bathroomsNum': int(data.get('bathroomsNum', 0)),
+                        'roomsNum': int(data.get('roomsNum', 0)),
+                        'rooms': json.loads(data.get('rooms', '[]'))
+                    }
+                }
+            }
+        }
+
+        # Update the existing property
+        property_ref.update(update_data)
+
+        # Handle file uploads if any
+        if files:
+            add_pictures_to_property(property_id, files)
+
+        return {"message": "Property updated successfully"}, 200
+    except Exception as e:
+        print(f"Error updating property in Firebase: {e}")
+        return {"error": "An error occurred while updating the property"}, 500
 
 def scrape_yad2_listings(max_listings=50):
     print("Starting scraping process")

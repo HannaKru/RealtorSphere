@@ -7,7 +7,7 @@ from firebase_config import initialize_firebase
 from login import login_user
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status, get_events_by_email,add_event, edit_event_by_id, delete_event_by_id
 from forgetPass import check_user_and_send_email
-from Property import get_properties, get_property_by_id, add_property,scrape_yad2_listings
+from Property import get_properties, get_property_by_id, add_property,scrape_yad2_listings,remove_picture,update_property
 from sendMessage import send_email_with_attachment
 from ClientProfessionalPage import get_filtered_persons, add_person, get_person_details, update_person_details, remove_person
 from Deals import get_deals, get_deal_details, new_price
@@ -385,6 +385,30 @@ def get_streets():
         return jsonify(unique_streets), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+@app.route('/api/remove-picture', methods=['DELETE'])
+def remove_picture_route():
+    property_id = request.args.get('propertyId')
+    picture_key = request.args.get('pictureKey')
+
+    if not property_id or not picture_key:
+        return jsonify({"error": "Missing propertyId or pictureKey"}), 400
+
+    return remove_picture(property_id, picture_key)
+
+@app.route('/updateProperty/<property_id>', methods=['POST'])
+def update_property_route(property_id):
+    if 'user_email' not in session:
+        return jsonify({"message": "User not logged in"}), 401
+
+    data = request.form.to_dict()
+    files = request.files
+
+    if not property_id:
+        return jsonify({"error": "Property ID is missing"}), 400
+
+    response, status_code = update_property(property_id, data, files)
+    return jsonify(response), status_code
 
 if __name__ == '__main__':
     app.run(debug=True)
