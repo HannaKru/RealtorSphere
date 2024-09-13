@@ -135,6 +135,35 @@ const ClientProfessionalPage = () => {
         }));
     };
 
+    const handleAddCityForEditing = () => {
+    if (newCity.trim() !== "") {
+        setSelectedPerson(prevPerson => ({
+            ...prevPerson,
+            Type: {
+                ...prevPerson.Type,
+                Client: {
+                    ...prevPerson.Type.Client,
+                    searchCity: [...(prevPerson.Type.Client.searchCity || []), newCity.trim()]
+                }
+            }
+        }));
+        setNewCity(''); // Clear the input after adding
+    }
+};
+
+const handleRemoveCityForEditing = (cityToRemove) => {
+    setSelectedPerson(prevPerson => ({
+        ...prevPerson,
+        Type: {
+            ...prevPerson.Type,
+            Client: {
+                ...prevPerson.Type.Client,
+                searchCity: prevPerson.Type.Client.searchCity.filter(city => city !== cityToRemove)
+            }
+        }
+    }));
+};
+
     const handleAddPerson = async () => {
         try {
             const response = await axios.post('http://localhost:5000/addPerson', newPerson, {
@@ -327,12 +356,10 @@ const ClientProfessionalPage = () => {
 
                                 <h3 className="text-xl mt-4">Preferred Cities</h3>
                                 <ul>
-                                    {(selectedPerson?.Type?.Client?.searchCity || []).map((city, index) => (
+                                    {(selectedPerson?.Type?.Client?.searchCity  || []).map((city, index) => (
                                         <li key={index} className="flex justify-between">
                                             {city}
-                                            <button onClick={() => handleRemoveCity(city)}
-                                                    className="bg-red-500 text-white p-1 rounded-md ml-2">Remove
-                                            </button>
+                                            <button onClick={() => handleRemoveCityForEditing(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
                                         </li>
                                     ))}
                                 </ul>
@@ -342,17 +369,17 @@ const ClientProfessionalPage = () => {
                                         placeholder="Add City"
                                         value={newCity}
                                         onChange={(e) => setNewCity(e.target.value)}
-                                        className="w-full p-2 border rounded-md"
+                                        className="w-full p-2 border rounded-md mb-4"
                                     />
-                                    <button onClick={handleAddCity} className="bg-green-500 text-white p-2 rounded-md ml-2">Add</button>
+                                    <button onClick={handleAddCityForEditing} className="bg-green-500 text-white p-2 rounded-md ml-2">Add</button>
                                 </div>
 
                                 <h3 className="text-xl mt-4">Properties Liked</h3>
                                 <ul>
-                                    {(selectedPerson?.PropertiesList || []).map((property, index) => (
+                                    {(selectedPerson?.Type?.Client?.PropertiesList || []).map((property, index) => (
                                         <li key={index}>
-                                            {property.id}
-                                            <button onClick={() => handleRemoveProperty(property.id)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
+                                            {property}
+                                            <button onClick={() => handleRemoveProperty(property)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
                                         </li>
                                     ))}
                                 </ul>
