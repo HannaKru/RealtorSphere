@@ -509,7 +509,7 @@ const addImageInput = () => {
     neighborhood: property.neighborhood || 'N/A',
     size: property.size || 'N/A',
     ac: property.ac !==undefined ? property.ac: 'N/A',
-    accessibility: property.accessibility === "true" ? 'כן' : 'לא',
+    accessibility: (property.accessibility === 'true' || property.accessibility === true) ? 'כן' : 'לא',
     age: property.age !== undefined ? property.age : 'N/A',
     bars: (property.bars === 'true' || property.bars === true) ? 'כן' : 'לא',
     number_of_floors: property.number_of_floors !== undefined ? property.number_of_floors : 'N/A',
@@ -1490,7 +1490,7 @@ const handleClosePopup = () => {
                                 onChange={(e) => {
                                     setEditData((prevData) => ({
                                         ...prevData,
-                                        accessibility: e.target.checked ? 'כן' : 'לא',  // Set as 'כן' or 'לא' based on checkbox state
+                                        accessibility: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
                                     }));
                                 }}
                                 className="ml-2"
@@ -1509,7 +1509,7 @@ const handleClosePopup = () => {
                                 onChange={(e) => {
                                     setEditData((prevData) => ({
                                         ...prevData,
-                                        bars: e.target.checked ? 'כן' : 'לא',  // Set as 'כן' or 'לא' based on checkbox state
+                                        bars: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
                                     }));
                                 }}
                                 className="ml-2"
@@ -1528,7 +1528,7 @@ const handleClosePopup = () => {
                                 onChange={(e) => {
                                     setEditData((prevData) => ({
                                         ...prevData,
-                                        security: e.target.checked ? 'כן' : 'לא',  // Set as 'כן' or 'לא' based on checkbox state
+                                        security: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
                                     }));
                                 }}
                                 className="ml-2"
