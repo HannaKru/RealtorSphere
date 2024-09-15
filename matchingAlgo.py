@@ -6,23 +6,15 @@ from sklearn.neighbors import NearestNeighbors
 
 db = initialize_firebase()
 
-#Similarity Score = w1 * (Price Match) + w2 * (Room Match) + w3 * (Size Match) + w4 * (City Match)
 #Content-Based Filtering
-# recommended algorthm:
-#"Linear regression": LinearRegression(), "Lasso": Lasso(alpha=1.0, max_iter=10000),
-                 #"KNN_7": KNeighborsRegressor(n_neighbors=7),
-                 #"RFR": RandomForestRegressor(n_estimators=1000, n_jobs=3, max_features="auto", random_state=0),
-                 #"SVR": SVR(C=1.0)}
-                 #cosine similarity
 
-# k-Nearest Neighbors or matrix factorization Singular Value Decomposition (SVD)
+#cosine similarity
+
+# k-Nearest Neighbors
 #Collaborative Filtering
 
 #Weighted Hybrid: Assign a weight to both approaches and combine the scores from content-based and collaborative filtering.
-#Final Score = w_content * content_score + w_collab * collab_score
-#Switching Hybrid: Use content-based filtering when there is limited user data, then switch to collaborative filtering as you gather more user interaction data.
-#Mixed Hybrid: Present both content-based and collaborative filtering results separately, allowing the user to choose.
-#Hybrid
+
 
 def normalize_scores(scores):
     min_score = np.min(scores)
@@ -42,6 +34,7 @@ def match_Algo(data, email):
         if client_data and client_data.get('realtor') == email:
             client_data['person_id'] = person_id  # Optionally add person ID to the data for reference
             clients_list.append(client_data)
+
 
 
     properties_ref = db.child('property').order_by_child('realtor').equal_to(email)
@@ -107,8 +100,11 @@ def match_Algo(data, email):
 
             if ownership_data:
                 rent_or_sell = ownership_data.get('rentORsell', 'Unknown')
+
                 if rent_or_sell == 'sell':
                     rent_or_sell = 'buy'
+
+
 
             rent_sell_vector = [1 if rent_or_sell == p_type else 0 for p_type in transaction_types_forProperties]
 
@@ -119,9 +115,6 @@ def match_Algo(data, email):
             # Property vector
             property_vector = np.array([price, rooms_num, size] + property_type_vectorforProperty + rent_sell_vector)
 
-            # Check dimensions of both arrays before cosine similarity
-            print(f"Client array length: {len(client_array)}")
-            print(f"Property vector length: {len(property_vector)}")
 
             # Ensure that both vectors have the same length
             assert len(client_array) == len(property_vector), "Client array and property vector have different lengths!"
@@ -153,19 +146,27 @@ def match_Algo(data, email):
     property_ids = list(properties.keys())
     interaction_matrix = np.zeros((len(clients_list), len(property_ids)))
 
-    for i, client_id in enumerate(clients_list):
+    for i, client_data in enumerate(clients_list):
+        client_properties = client_data.get('PropertiesList', [])
+        client_buy_or_rent = client_data.get('buyORrent', '')
+        person_id = client_data.get('person_id', 'Unknown')  # Safely get person_id
+
         for j, propertyID in enumerate(property_ids):
             property = properties.get(propertyID, {})
             ownership_data = ownerships.get(propertyID,{})
             # If ownership data is found, extract rentORsell information
             if ownership_data:
-                rent_or_sell = ownership_data.get('rentORsell', 'Unknown')
-                if rent_or_sell == 'sell':
-                    rent_or_sell == 'buy'
+                rentorsell = ownership_data.get('rentORsell', 'Unknown')
+                if rentorsell == 'sell':
+                    rentorsell = 'buy'
 
-            # Check if the property is in the client's PropertiesList and the transaction type matches
-            if propertyID in client_data.get('PropertiesList', []) and client_data.get('buyORrent') == rent_or_sell:
+
+
+                # Check if the property is in the client's PropertiesList and the transaction type matches
+            if propertyID in client_data.get('PropertiesList', []) and client_data.get('buyORrent') == rentorsell:
+
                 interaction_matrix[i, j] = 1
+
 
     print(interaction_matrix)
 
@@ -203,8 +204,9 @@ def match_Algo(data, email):
     # Extract similarity scores from the list of dictionaries
     similarity_scores = [entry['similarity'] for entry in similarities]
 
-    # Normalize only the similarity scores
-    similarity_normalized = normalize_scores(np.array(similarity_scores))
+    # Check if we have similarity scores before normalizing
+    if len(similarity_scores) > 0:
+        similarity_normalized = normalize_scores(np.array(similarity_scores))
 
     # Collaborative filtering scores initialization (all zeros for now)
     collaborative_scores = np.zeros_like(similarity_scores)
