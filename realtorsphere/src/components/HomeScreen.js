@@ -22,7 +22,7 @@ const HomeScreen = () => {
   const [navigationLinks] = useState([
     { name: 'נכסים', url: '/propertyPage' },
     { name: 'ניהול לקוחות', url: '/clientProfessionalPage' },
-    { name: 'מסמכים', url: '/documents' },
+    { name: 'התאמה', url: '/getClients' },
     { name: 'דוא"ל', url: '/sendMessage' },
     { name: 'סיכומי פגישות', url: '/deals' },
     { name: 'אנשי קשר', url: '/contacts' },

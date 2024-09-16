@@ -9,6 +9,7 @@ import PropertyPage from "./components/PropertyPage";
 import SendMessage from "./components/SendMessage";
 import ClientProfessionalPage from "./components/ClientProfessionalPage";
 import DealsPage from "./components/DealsPage";
+import MatchPage from "./components/match";
 function App() {
   return (
       <Router>
@@ -22,6 +23,7 @@ function App() {
                 <Route path="/sendMessage" element={<SendMessage />} />
                 <Route path="/clientProfessionalPage" element={<ClientProfessionalPage />} />
                 <Route path="/deals" element={<DealsPage />} />
+                <Route path="/getClients" element={<MatchPage />} />
             </Routes>
         </div>
       </Router>
