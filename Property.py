@@ -281,9 +281,18 @@ def add_pictures_to_property(property_id, files):
         return {"error": "An error occurred while uploading the pictures"}, 500
 
 
-def update_property(property_id, data, files):
+def update_property(property_id, data, files,pictures_to_delete=None):
     try:
         property_ref = db_ref.child(f'property/{property_id}')
+
+        # Function to safely parse integer values, with fallback to 0 or a default value
+        def safe_int(value, default=0):
+            if isinstance(value, str) and (value.lower() == 'n/a' or value.strip() == ''):
+                return default
+            try:
+                return int(value)
+            except (ValueError, TypeError):
+                return default
 
         # Prepare the update data
         update_data = {
@@ -305,7 +314,7 @@ def update_property(property_id, data, files):
                 'apartment': {
                     'type': data.get('propertyType'),
                     'floor': int(data.get('floor', 0)),
-                    'apNum': int(data.get('apNum', 0)),
+                    'apNum':  safe_int(data.get('apNum', 0)),
                     'elevator': data.get('elevator') == 'true',
                     'item:': {
                         'Pparking': {
@@ -319,17 +328,53 @@ def update_property(property_id, data, files):
             }
         }
 
-        # Update the existing property
-        property_ref.update(update_data)
 
         # Handle file uploads if any
         if files:
             add_pictures_to_property(property_id, files)
 
+        if pictures_to_delete:
+            pictures_to_delete = json.loads(pictures_to_delete)
+            for picture_key in pictures_to_delete:
+                # Remove the picture file from storage
+                remove_picture(property_id, picture_key)
+
+                #  update the database to remove the picture reference
+                db_ref.child(f'property/{property_id}/pictures/{picture_key}').delete()
+                # Check if there are any remaining pictures in the property after deletions
+        existing_pictures = db_ref.child(f'property/{property_id}/pictures').get()
+        if not existing_pictures:
+            # If no pictures are left, ensure the pictures field is set to an empty dictionary
+            update_data['pictures'] = {}
+        # Update the existing property
+        property_ref.update(update_data)
+
         return {"message": "Property updated successfully"}, 200
     except Exception as e:
         print(f"Error updating property in Firebase: {e}")
         return {"error": "An error occurred while updating the property"}, 500
+def remove_picture(property_id, picture_key):
+    try:
+        # Initialize the storage bucket
+        bucket = get_storage_bucket()
+
+        # Construct the file path in Firebase Storage based on property_id and picture_key
+        file_path = f"property_images/{property_id}_{picture_key}"
+
+        # Get the blob object (file) from Firebase Storage
+        blob = bucket.blob(file_path)
+
+        # Delete the file from Firebase Storage
+        blob.delete()
+
+        # Now, remove the picture entry from the Firebase Database
+        db_ref.child(f'property/{property_id}/pictures/{picture_key}').delete()
+
+        return {"message": "Picture deleted successfully"}, 200
+
+    except Exception as e:
+        print(f"Error deleting picture: {e}")
+        return {"error": "An error occurred while deleting the picture"}, 500
 
 def scrape_yad2_listings(max_listings=50):
     print("Starting scraping process")

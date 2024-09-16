@@ -572,6 +572,9 @@ const addImageInput = () => {
     }
   });
 
+  // Send pictures to delete
+    formData.append('picturesToDelete', JSON.stringify(picturesToDelete));
+
   // Append new images if any
   imageInputs.forEach((input, index) => {
     if (input.file) {
@@ -686,18 +689,20 @@ const handleEditCityChange = async (e) => {
     }
 };
 
-const handleRemovePicture = (pictureKey) => {
-    if (window.confirm('האם ברצונך למחוק את התמונה?')) {
-        // Remove the picture from editData
-        const updatedPictures = { ...editData.pictures };
-        delete updatedPictures[pictureKey];
+const [picturesToDelete, setPicturesToDelete] = useState([]);
 
-        // Update the state with removed picture
-        setEditData({ ...editData, pictures: updatedPictures });
-
-        // Call backend to remove the picture
-        removePictureFromDB(selectedProperty.id, pictureKey);
-    }
+const handleRemovePicture = (key) => {
+    setPicturesToDelete([...picturesToDelete, key]);
+    // Also, remove the picture from the local state to update the UI immediately
+    setEditData(prevData => ({
+        ...prevData,
+        pictures: Object.keys(prevData.pictures)
+            .filter(pictureKey => pictureKey !== key)
+            .reduce((acc, pictureKey) => {
+                acc[pictureKey] = prevData.pictures[pictureKey];
+                return acc;
+            }, {})
+    }));
 };
 
 const handleClosePopup = () => {
@@ -706,6 +711,8 @@ const handleClosePopup = () => {
   setEditData({}); // Clear any unsaved changes
   setImageInputs([{ id: 1, file: null }]); // Reset image inputs
 };
+
+
 
 
     return (
@@ -1395,6 +1402,19 @@ const handleClosePopup = () => {
                             dir="rtl"
                         />
                     </div>
+
+                    <div className="mb-4">
+                        <label className="block text-right">שכונה</label>
+                        <input
+                            type="text"
+                            name="neighborhood"
+                            value={editData.neighborhood || ''}  // Pre-fill with existing neighborhood data
+                            onChange={handleEditChange}  // Update editData when changed
+                            className="w-full p-2 border rounded-md"
+                            dir="rtl"
+                        />
+                    </div>
+
                     {/* Property Size */}
                     <div className="mb-4">
                         <label className="block text-right">גודל (במטרים מרובעים)</label>
@@ -1608,34 +1628,34 @@ const handleClosePopup = () => {
                         </div>
 
                         <div className="mt-4">
-  <label className="block text-right mb-2">הוספת תמונות נוספות</label>
-  {imageInputs.map((input, index) => (
-    <div key={input.id} className="flex items-center mb-2">
-      <input
-        type="file"
-        onChange={(e) => handleFileChange(index, e)}
-        accept="image/*"
-        className="mb-2 ml-2"
-      />
-      {input.file && (
-          <>
-              <img
-                  src={URL.createObjectURL(input.file)}
-                  alt={`Preview ${index + 1}`}
-                  className="w-24 h-24 object-cover ml-2"
-              />
-              <button
-                  type="button"
-                  onClick={() => removeImageInput(index)}
-                  className="bg-red-500 text-white px-2 py-1 rounded ml-2"
-              >
-                  X
-              </button>
-          </>
-      )}
+                            <label className="block text-right mb-2">הוספת תמונות נוספות</label>
+                            {imageInputs.map((input, index) => (
+                                <div key={input.id} className="flex items-center mb-2">
+                                    <input
+                                        type="file"
+                                        onChange={(e) => handleFileChange(index, e)}
+                                        accept="image/*"
+                                        className="mb-2 ml-2"
+                                    />
+                                    {input.file && (
+                                        <>
+                                            <img
+                                                src={URL.createObjectURL(input.file)}
+                                                alt={`Preview ${index + 1}`}
+                                                className="w-24 h-24 object-cover ml-2"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeImageInput(index)}
+                                                className="bg-red-500 text-white px-2 py-1 rounded ml-2"
+                                            >
+                                                X
+                                            </button>
+                                        </>
+                                    )}
 
-    </div>
-  ))}
+                                </div>
+                            ))}
                             <button
                                 type="button"
                                 onClick={addImageInput}
@@ -1683,46 +1703,45 @@ const handleClosePopup = () => {
                                         name="roomType"
                                         value={room.roomType}
                                         onChange={(e) => handleRoomChange(index, e)}
-                    className="w-full p-2 border rounded-md"
-                    dir="rtl"
-                >
-                    <option value="">בחר סוג החדר</option>
-                    <option value="bedroom">חדר שינה</option>
-                    <option value="livingroom">סלון</option>
-                    <option value="bathroom">שירותים</option>
-                    <option value="balcony">מרפסת</option>
-                    <option value="garden">גינה</option>
-                    <option value="saferoom">ממ"ד</option>
-                    <option value="storage">מחסן</option>
-                </select>
-            </div>
-        </div>
-    ))
-) : (
-    <p>אין חדרים</p>
-)}
+                                        className="w-full p-2 border rounded-md"
+                                        dir="rtl"
+                                    >
+                                        <option value="">בחר סוג החדר</option>
+                                        <option value="bedroom">חדר שינה</option>
+                                        <option value="livingroom">סלון</option>
+                                        <option value="bathroom">שירותים</option>
+                                        <option value="balcony">מרפסת</option>
+                                        <option value="garden">גינה</option>
+                                        <option value="saferoom">ממ"ד</option>
+                                        <option value="storage">מחסן</option>
+                                    </select>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p>אין חדרים</p>
+                    )}
 
-        {/* Button to add a new room */}
-        <button
-            type="button"
-            className="bg-green-500 text-white p-2 rounded-md"
-            onClick={addRoom}
-        >
-            הוסף חדר נוסף
-        </button>
-
+                    {/* Button to add a new room */}
+                    <button
+                        type="button"
+                        className="bg-green-500 text-white p-2 rounded-md"
+                        onClick={addRoom}
+                    >
+                        הוסף חדר נוסף
+                    </button>
 
 
                 </div>
 
             ) : (<div>
                 <div className="mb-4">
-                <p>
-                    <strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}
-                </p>
-                <p><strong>שכונה:</strong> {selectedProperty.neighborhood || 'N/A'}</p>
-                {selectedProperty.propertyType !== 'private house' && (
-                    <p><strong>מספר דירה:</strong> {selectedProperty.apNum || 'N/A'}</p>
+                    <p>
+                        <strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}
+                    </p>
+                    <p><strong>שכונה:</strong> {selectedProperty.neighborhood || 'N/A'}</p>
+                    {selectedProperty.propertyType !== 'private house' && (
+                        <p><strong>מספר דירה:</strong> {selectedProperty.apNum || 'N/A'}</p>
                 )}
                 <p><strong>גודל:</strong> {selectedProperty.size} מ"ר</p>
                 <p><strong>מספר חדרים:</strong> {selectedProperty.roomsNum}</p>

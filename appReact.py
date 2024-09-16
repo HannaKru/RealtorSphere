@@ -7,7 +7,7 @@ from firebase_config import initialize_firebase
 from login import login_user
 from HomeScreen import get_user_by_email, get_tasks_by_email, add_task, update_task_status, get_events_by_email,add_event, edit_event_by_id, delete_event_by_id
 from forgetPass import check_user_and_send_email
-from Property import get_properties, get_property_by_id, add_property,scrape_yad2_listings,remove_picture,update_property
+from Property import get_properties, get_property_by_id, add_property,scrape_yad2_listings,remove_picture,update_property,remove_picture
 from sendMessage import send_email_with_attachment
 from ClientProfessionalPage import get_filtered_persons, add_person, get_person_details, update_person_details, remove_person
 from Deals import get_deals, get_deal_details, new_price
@@ -403,12 +403,15 @@ def update_property_route(property_id):
 
     data = request.form.to_dict()
     files = request.files
+    pictures_to_delete = request.form.get('picturesToDelete')
 
     if not property_id:
         return jsonify({"error": "Property ID is missing"}), 400
 
-    response, status_code = update_property(property_id, data, files)
+    response, status_code = update_property(property_id, data, files,pictures_to_delete )
     return jsonify(response), status_code
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
