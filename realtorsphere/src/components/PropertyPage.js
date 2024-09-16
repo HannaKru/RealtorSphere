@@ -1585,8 +1585,8 @@ const handleClosePopup = () => {
                         <label className="block text-right">סוג עסקה</label>
                         <select
                             name="transactionType"
-                            value={editData.transactionType || ''}  // Pre-fill with existing data
-                            onChange={handleEditChange}  // Update editData when changed
+                            value={editData.transactionType || ''}
+                            onChange={handleEditChange}
                             className="w-full p-2 border rounded-md"
                             dir="rtl"
                         >

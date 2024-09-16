@@ -329,6 +329,7 @@ def update_property(property_id, data, files,pictures_to_delete=None):
         }
 
 
+
         # Handle file uploads if any
         if files:
             add_pictures_to_property(property_id, files)
@@ -348,6 +349,16 @@ def update_property(property_id, data, files,pictures_to_delete=None):
             update_data['pictures'] = {}
         # Update the existing property
         property_ref.update(update_data)
+
+        transaction_type = data.get('transactionType')
+        ownership_ref = db_ref.child('Ownership').order_by_child('propertyID').equal_to(property_id).get()
+
+        if ownership_ref:
+            for ownership_id, ownership_data in ownership_ref.items():
+                # Update the rentORsell field in the Ownership document
+                db_ref.child(f'Ownership/{ownership_id}').update({
+                    'rentORsell': transaction_type
+                })
 
         return {"message": "Property updated successfully"}, 200
     except Exception as e:
