@@ -87,7 +87,7 @@ const logout = async () => {
                 {userName ? `שלום, ${userName}` : 'Loading...'}
             </div>
             <div className="text-white text-4xl">🔔</div>
-            <div className="text-white text-4xl" onClick={logout}>
+            <div className="text-blue-950 text-4xl" onClick={logout}>
                 התנתק
             </div>
 
