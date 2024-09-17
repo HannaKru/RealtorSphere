@@ -175,11 +175,24 @@ const HomeScreen = () => {
     setShowEventModal(true);
   };
 
-  const logout = () => {
-    localStorage.removeItem('currentUser');
-    window.location.href = '/';
-  };
+const logout = async () => {
+    try {
+        // Send a logout request to the Flask backend
+        const response = await axios.get('http://localhost:5000/logout', { withCredentials: true });
 
+        if (response.status === 200) {
+            // Remove local storage or any other frontend data
+            localStorage.removeItem('currentUser');
+
+            // Redirect to the login or homepage
+            window.location.href = '/';
+        } else {
+            console.error('Failed to log out:', response.status);
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
+};
   return (
     <main className="flex flex-col items-center bg-cover bg-center min-h-screen p-4" style={{ backgroundImage: `url('/RealtorSphereHomeScreen2.png')` }}>
       <div className="flex justify-end items-center w-full p-4">
