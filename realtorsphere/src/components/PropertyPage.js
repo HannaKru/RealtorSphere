@@ -593,6 +593,9 @@ const addImageInput = () => {
   // Send pictures to delete
     formData.append('picturesToDelete', JSON.stringify(picturesToDelete));
 
+    // rooms to delete
+    formData.append('roomsToDelete', JSON.stringify(roomsToDelete));
+
   // Append new images if any
   imageInputs.forEach((input, index) => {
     if (input.file) {
@@ -732,6 +735,20 @@ const handleClosePopup = () => {
   setImageInputs([{ id: 1, file: null }]); // Reset image inputs
 };
 
+const [roomsToDelete, setRoomsToDelete] = useState([]);
+
+const handleRoomDelete = (index) => {
+    // Show a confirmation alert before deleting
+    if (window.confirm("האם ברצונך למחוק את החדר הזה?")) {
+        // Mark the room for deletion
+        setRoomsToDelete((prev) => [...prev, editData.roomSpecifications[index]]);
+        // Remove the room from the UI
+        setEditData((prevState) => ({
+            ...prevState,
+            roomSpecifications: prevState.roomSpecifications.filter((_, i) => i !== index),
+        }));
+    }
+};
 
 
 
@@ -1695,9 +1712,17 @@ const handleClosePopup = () => {
 
 
                     {Array.isArray(editData.roomSpecifications) && editData.roomSpecifications.length > 0 ? (
-                        editData.roomSpecifications.map((room, index) => (
-                            <div key={index} className="mb-4 border p-2 rounded-md">
-                                <h4 className="text-lg">חדר {index + 1}</h4>
+    editData.roomSpecifications.map((room, index) => (
+        <div key={index} className="mb-4 border p-2 rounded-md relative">
+            <button
+                type="button"
+                className="absolute top-0 right-0 text-red-500 text-lg font-bold"
+                onClick={() => handleRoomDelete(index)}
+            >
+                ✕
+            </button>
+
+            <h4 className="text-lg">חדר {index + 1}</h4>
 
                                 <div className="mb-4">
                                     <label className="block text-right">אורך (מ')</label>
