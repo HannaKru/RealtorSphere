@@ -194,6 +194,7 @@ def add_property(data, file, realtor_email):
                         },
                         'bathroomsNum': int(data.get('bathroomsNum', 0)),
                         'roomsNum': int(data.get('roomsNum', 0)),
+
                         'rooms': json.loads(data.get('rooms', '[]'))
                     }
                 }
@@ -285,6 +286,9 @@ def update_property(property_id, data, files,pictures_to_delete=None):
     try:
         property_ref = db_ref.child(f'property/{property_id}')
 
+        # Fetch the existing property data
+        existing_property = property_ref.get()
+
         # Function to safely parse integer values, with fallback to 0 or a default value
         def safe_int(value, default=0):
             if isinstance(value, str) and (value.lower() == 'n/a' or value.strip() == ''):
@@ -322,13 +326,26 @@ def update_property(property_id, data, files,pictures_to_delete=None):
                         },
                         'bathroomsNum': int(data.get('bathroomsNum', 0)),
                         'roomsNum': int(data.get('roomsNum', 0)),
-                        'rooms': json.loads(data.get('rooms', '[]'))
+                        ##'rooms': json.loads(data.get('roomSpecifications', '[]'))
+                        ##'rooms': json.loads(data.get('rooms', '[]'))
+
                     }
                 }
             }
         }
-
-
+        # Handle room specifications
+        rooms_data = data.get('rooms') or data.get('roomSpecifications')
+        if rooms_data:
+            try:
+                rooms = json.loads(rooms_data) if isinstance(rooms_data, str) else rooms_data
+                update_data['type']['apartment']['item:']['rooms'] = rooms
+            except json.JSONDecodeError:
+                print("Error decoding rooms data")
+        elif 'type' in existing_property and 'apartment' in existing_property['type'] and 'item:' in \
+                existing_property['type']['apartment'] and 'rooms' in existing_property['type']['apartment']['item:']:
+            # Preserve existing rooms if no new data is provided
+            update_data['type']['apartment']['item:']['rooms'] = existing_property['type']['apartment']['item:'][
+                'rooms']
 
         # Handle file uploads if any
         if files:
@@ -442,6 +459,3 @@ def scrape_yad2_listings(max_listings=50):
 
     print(f"Finished scraping. Total listings: {len(listings)}")
     return listings
-
-
-#

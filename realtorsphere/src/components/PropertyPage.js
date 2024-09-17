@@ -259,15 +259,18 @@ const PropertyPage = () => {
 
     const handleRoomChange = (index, e) => {
   const { name, value } = e.target;
+
   if (isEditMode) {
+    // For editing existing properties, update roomSpecifications
     setEditData(prevState => {
-      const updatedRooms = [...prevState.rooms];
+      const updatedRooms = Array.isArray(prevState.roomSpecifications) ? [...prevState.roomSpecifications] : [];
       updatedRooms[index] = { ...updatedRooms[index], [name]: value };
-      return { ...prevState, rooms: updatedRooms };
+      return { ...prevState, roomSpecifications: updatedRooms };
     });
   } else {
+    // For adding new properties, update rooms
     setNewProperty(prevState => {
-      const updatedRooms = [...prevState.rooms];
+      const updatedRooms = Array.isArray(prevState.rooms) ? [...prevState.rooms] : [];
       updatedRooms[index] = { ...updatedRooms[index], [name]: value };
       return { ...prevState, rooms: updatedRooms };
     });
@@ -525,7 +528,7 @@ const addImageInput = () => {
     parkingNumber: property.parkingNumber !== undefined ? property.parkingNumber : 'N/A',
     bathroomsNum: property.bathroomsNum !== undefined ? property.bathroomsNum : 'N/A',
     roomsNum: property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A',
-    roomSpecifications: property.roomSpecifications || [],
+    roomSpecifications: property.roomSpecifications || [] ,
     transactionType: property.transactionType || 'N/A',
     propertyType: property.propertyType || 'N/A'
 
@@ -545,17 +548,35 @@ const addImageInput = () => {
 
     const [isEditMode, setIsEditMode] = useState(false);
     const [editData, setEditData] = useState({
-    ...selectedProperty, // Spread selectedProperty into the state
-    rooms: selectedProperty.rooms || [], // Ensure rooms is an array, default to an empty array if undefined
+  ...selectedProperty,
+  rooms: selectedProperty.rooms || [],  // Initialize rooms as an array
 });
     // Handle changes in the form inputs when editing
-    const handleEditChange = (e) => {
-        const { name, value } = e.target;
-        setEditData((prevData) => ({
-            ...prevData,
-            [name]: value,
-        }));
-    };
+    const handleEditChange = (e, index = null) => {
+  const { name, value } = e.target;
+
+  if (index !== null) {
+    // Update roomSpecifications if an index is provided
+    setEditData((prevData) => {
+      const updatedRoomSpecifications = [...prevData.roomSpecifications];
+      updatedRoomSpecifications[index] = {
+        ...updatedRoomSpecifications[index],
+        [name]: value,
+      };
+
+      return {
+        ...prevData,
+        roomSpecifications: updatedRoomSpecifications,
+      };
+    });
+  } else {
+    // General property changes
+    setEditData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  }
+};
 
 
 
@@ -564,9 +585,10 @@ const addImageInput = () => {
   const formData = new FormData();
 
   // Append all form fields to formData
-  Object.keys(editData).forEach(key => {
-    if (key === 'rooms') {
-      formData.append(key, JSON.stringify(editData[key]));
+    Object.keys(editData).forEach(key => {
+    if (key === 'roomSpecifications' || key === 'rooms') {
+      // Ensure room data is properly formatted
+      formData.append('rooms', JSON.stringify(editData[key]));
     } else {
       formData.append(key, editData[key]);
     }
@@ -1292,7 +1314,11 @@ const handleClosePopup = () => {
                     className="bg-yellow-500 text-white p-2 rounded-md"
                     onClick={async () => {
                         setIsEditMode(true);
-                        setEditData(selectedProperty); // Pre-fill the form with selected property data
+                         console.log("Selected Property Room Specifications:", selectedProperty.roomSpecifications); // Debugging
+                         setEditData({
+  ...selectedProperty,
+   roomSpecifications: selectedProperty.roomSpecifications || [],   // Ensure rooms is always an array
+}); // Pre-fill the form with selected property data
 
                         // Ensure cities are fetched if not already
                         if (cityList.length === 0) {
@@ -1668,60 +1694,59 @@ const handleClosePopup = () => {
 
                     {/* Display existing rooms */}
 
-                    {editData.rooms && editData.rooms.length > 0 ? (
-                        editData.rooms.map((room, index) => (
-                            <div key={index} className="mb-4 border p-2 rounded-md">
-                                <h4 className="text-lg">חדר {index + 1}</h4>
+             {Array.isArray(editData.roomSpecifications) && editData.roomSpecifications.length > 0 ? (
+  editData.roomSpecifications.map((room, index) => (
+    <div key={index} className="mb-4 border p-2 rounded-md">
+      <h4 className="text-lg">חדר {index + 1}</h4>
 
-                                <div className="mb-4">
-                                    <label className="block text-right">אורך (מ')</label>
-                                    <input
-                                        type="number"
-                                        name="length"
-                                        value={room.length}
-                                        onChange={(e) => handleRoomChange(index, e)}
-                                        className="w-full p-2 border rounded-md"
-                                        dir="rtl"
-                                    />
-                                </div>
+      <div className="mb-4">
+        <label className="block text-right">אורך (מ')</label>
+        <input
+          type="number"
+          name="length"
+          value={room.length || ''}  // Bind value to state
+          onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
+          className="w-full p-2 border rounded-md"
+          dir="rtl"
+        />
+      </div>
 
-                                <div className="mb-4">
-                                    <label className="block text-right">רוחב (מ')</label>
-                                    <input
-                                        type="number"
-                                        name="width"
-                                        value={room.width}
-                                        onChange={(e) => handleRoomChange(index, e)}
-                                        className="w-full p-2 border rounded-md"
-                                        dir="rtl"
-                                    />
-                                </div>
+      <div className="mb-4">
+        <label className="block text-right">רוחב (מ')</label>
+        <input
+          type="number"
+          name="width"
+          value={room.width || ''}  // Bind value to state
+          onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
+          className="w-full p-2 border rounded-md"
+          dir="rtl"
+        />
+      </div>
 
-                                <div className="mb-4">
-                                    <label className="block text-right">סוג החדר</label>
-                                    <select
-                                        name="roomType"
-                                        value={room.roomType}
-                                        onChange={(e) => handleRoomChange(index, e)}
-                                        className="w-full p-2 border rounded-md"
-                                        dir="rtl"
-                                    >
-                                        <option value="">בחר סוג החדר</option>
-                                        <option value="bedroom">חדר שינה</option>
-                                        <option value="livingroom">סלון</option>
-                                        <option value="bathroom">שירותים</option>
-                                        <option value="balcony">מרפסת</option>
-                                        <option value="garden">גינה</option>
-                                        <option value="saferoom">ממ"ד</option>
-                                        <option value="storage">מחסן</option>
-                                    </select>
-                                </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p>אין חדרים</p>
-                    )}
-
+      <div className="mb-4">
+        <label className="block text-right">סוג החדר</label>
+        <select
+          name="roomType"
+          value={room.roomType}
+          onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
+          className="w-full p-2 border rounded-md"
+          dir="rtl"
+        >
+          <option value="">בחר סוג החדר</option>
+          <option value="bedroom">חדר שינה</option>
+          <option value="livingroom">סלון</option>
+          <option value="bathroom">שירותים</option>
+          <option value="balcony">מרפסת</option>
+          <option value="garden">גינה</option>
+          <option value="saferoom">ממ"ד</option>
+          <option value="storage">מחסן</option>
+        </select>
+      </div>
+    </div>
+  ))
+) : (
+  <p>אין חדרים</p>
+)}
                     {/* Button to add a new room */}
                     <button
                         type="button"
