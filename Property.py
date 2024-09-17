@@ -326,8 +326,6 @@ def update_property(property_id, data, files,pictures_to_delete=None):
                         },
                         'bathroomsNum': int(data.get('bathroomsNum', 0)),
                         'roomsNum': int(data.get('roomsNum', 0)),
-                        ##'rooms': json.loads(data.get('roomSpecifications', '[]'))
-                        ##'rooms': json.loads(data.get('rooms', '[]'))
 
                     }
                 }
@@ -346,6 +344,10 @@ def update_property(property_id, data, files,pictures_to_delete=None):
             # Preserve existing rooms if no new data is provided
             update_data['type']['apartment']['item:']['rooms'] = existing_property['type']['apartment']['item:'][
                 'rooms']
+
+            # Check if the property is being archived and save the archive reason
+            if data.get('status') == 'archived':
+                update_data['archiveReason'] = data.get('archiveReason', '')
 
         # Handle file uploads if any
         if files:
@@ -403,6 +405,30 @@ def remove_picture(property_id, picture_key):
     except Exception as e:
         print(f"Error deleting picture: {e}")
         return {"error": "An error occurred while deleting the picture"}, 500
+
+def archive_property(property_id, archive_reason):
+    try:
+        # Fetch the existing property data
+        property_ref = db_ref.child(f'property/{property_id}')
+        existing_property = property_ref.get()
+
+        if not existing_property:
+            return {"error": "Property not found"}, 404
+
+        # Update only the status and archive reason
+        update_data = {
+            'status': 'archived',
+            'archiveReason': archive_reason
+        }
+
+        # Update the property in the database
+        property_ref.update(update_data)
+
+        return {"message": "Property archived successfully"}, 200
+
+    except Exception as e:
+        print(f"Error archiving property in Firebase: {e}")
+        return {"error": "An error occurred while archiving the property"}, 500
 
 def scrape_yad2_listings(max_listings=50):
     print("Starting scraping process")

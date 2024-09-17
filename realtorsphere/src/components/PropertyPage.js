@@ -200,7 +200,7 @@ const PropertyPage = () => {
     } else if (tab === 'להשכרה') {
     return properties.filter(property => property.transactionType === 'rent' && property.status === 'active');
     } else if (tab === 'ארכיון') {
-    return properties.filter(property => property.status === 'inactive');
+    return properties.filter(property => property.status === 'archived');
     }
     return properties; // Show all properties for כל הנכסים
     };
@@ -609,6 +609,12 @@ const addImageInput = () => {
     return;
   }
 
+     // Include archiveReason if the property is being archived
+  if (editData.status === 'archived') {
+    formData.append('archiveReason', archiveReason);
+  }
+
+
   try {
     const response = await axios.post(`http://localhost:5000/updateProperty/${selectedProperty.id}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
@@ -750,6 +756,35 @@ const handleRoomDelete = (index) => {
     }
 };
 
+
+const [archiveReason, setArchiveReason] = useState('');
+const [showArchivePopup, setShowArchivePopup] = useState(false);
+
+
+const handleArchiveProperty = async () => {
+  if (!archiveReason.trim()) {
+    alert('יש להזין סיבה להעברה לארכיון');
+    return;
+  }
+
+  try {
+    const response = await axios.post(`http://localhost:5000/archiveProperty/${selectedProperty.id}`, {
+      archiveReason
+    }, { withCredentials: true });
+
+    if (response.status === 200) {
+      setShowArchivePopup(false); // Close the archive reason popup
+      setIsDetailsPopupOpen(false); // Close the property details popup
+      alert('Property archived successfully');
+      fetchAllProperties(); // Refresh the property list
+    } else {
+      alert('Failed to archive property');
+    }
+  } catch (error) {
+    console.error("Failed to archive property:", error);
+    alert('Error occurred while archiving the property');
+  }
+};
 
 
     return (
@@ -1316,552 +1351,595 @@ const handleRoomDelete = (index) => {
 
             {isDetailsPopupOpen && selectedProperty && (
 
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
-                    <div className="bg-white p-6 rounded-lg relative w-full max-w-2xl max-h-[80vh] overflow-y-auto">
-                        <button onClick={handleClosePopup}
-                                className="absolute top-2 left-2 text-gray-600 hover:text-gray-800">✕
-                        </button>
-            <h2 className="text-2xl mb-4">פרטי נכס</h2>
 
-                         {/* Toggle between Edit and Save */}
-            {!isEditMode ? (
-                <button
-                    className="bg-yellow-500 text-white p-2 rounded-md"
-                    onClick={async () => {
-                        setIsEditMode(true);
-                         console.log("Selected Property Room Specifications:", selectedProperty.roomSpecifications); // Debugging
-                         setEditData({
-  ...selectedProperty,
-   roomSpecifications: selectedProperty.roomSpecifications || [],   // Ensure rooms is always an array
-}); // Pre-fill the form with selected property data
 
-                        // Ensure cities are fetched if not already
-                        if (cityList.length === 0) {
-                            try {
-                                const cityResponse = await axios.get('http://localhost:5000/api/cities');
-                                setCityList(cityResponse.data);
-                            } catch (error) {
-                                console.error('Error fetching cities:', error);
-                            }
-                        }
+                    <div
 
-                        // Fetch streets for the selected city in the edit mode
-                        if (selectedProperty.city) {
-                            try {
-                                const response = await axios.get('http://localhost:5000/api/streets', {
-                                    params: { city: selectedProperty.city },
-                                });
-                                setStreetList(response.data); // Set the streets for the selected city
-                            } catch (error) {
-                                console.error('Error fetching streets:', error);
-                            }
-                        }
-                    }}
-                >
-                    עריכה
-                </button>
-            ) : (
-                <button
-                    className="bg-green-500 text-white p-2 rounded-md"
-                    onClick={handleSaveEdit}
-                >
-                    שמירה
-                </button>
-            )}
+                        className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
+                        <div className="bg-white p-6 rounded-lg relative w-full max-w-2xl max-h-[80vh] overflow-y-auto">
+                            <button onClick={handleClosePopup}
+                                    className="absolute top-2 left-2 text-gray-600 hover:text-gray-800">✕
+                            </button>
 
-                         {/* Edit Mode Form */}
-            {isEditMode ? (
-                <div>
-                    {/* City Dropdown */}
-                    <div className="mb-4">
-                        <label className="block text-right">עיר</label>
-                        <select
-                            name="city"
-                            value={editData.city || ''}
-                            onChange={async (e) => {
-                                handleEditChange(e); // Update city in the editData
-                                const selectedCity = e.target.value;
+                            <h2 className="text-2xl mb-4">פרטי נכס</h2>
 
-                                // Fetch streets when a new city is selected
-                                if (selectedCity) {
-                                    try {
-                                        const response = await axios.get('http://localhost:5000/api/streets', {
-                                            params: {city: selectedCity},
-                                        });
-                                        setStreetList(response.data); // Update street list based on the new city
-                                        setEditData((prevState) => ({
-                                            ...prevState,
-                                            street: '', // Reset street when a new city is selected
-                                        }));
-                                    } catch (error) {
-                                        console.error('Error fetching streets:', error);
-                                    }
-                                }
-                            }}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        >
-                            <option value="">בחר עיר</option>
-                            {cityList.map((city, index) => (
-                                <option key={index} value={city}>
-                                    {city}
-                                </option>
-                            ))}
-                        </select>
-                    </div>
+                            {/* Toggle between Edit and Save */}
+                            {!isEditMode ? (
+                                <button
+                                    className="bg-yellow-500 text-white p-2 rounded-md"
+                                    onClick={async () => {
+                                        setIsEditMode(true);
+                                        console.log("Selected Property Room Specifications:", selectedProperty.roomSpecifications); // Debugging
+                                        setEditData({
+                                            ...selectedProperty,
+                                            roomSpecifications: selectedProperty.roomSpecifications || [],   // Ensure rooms is always an array
+                                        }); // Pre-fill the form with selected property data
 
-                    {/* Street Dropdown */}
-                    {editData.city && (
-                        <div className="mb-4">
-                            <label className="block text-right">רחוב</label>
-                            <select
-                                name="street"
-                                value={editData.street || ''}
-                                onChange={handleEditChange}
-                                className="w-full p-2 border rounded-md"
-                                dir="rtl"
-                            >
-                                <option value="">בחר רחוב</option>
-                                {streetList.map((street, index) => (
-                                    <option key={index} value={street}>
-                                        {street}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-                    )}
+                                        // Ensure cities are fetched if not already
+                                        if (cityList.length === 0) {
+                                            try {
+                                                const cityResponse = await axios.get('http://localhost:5000/api/cities');
+                                                setCityList(cityResponse.data);
+                                            } catch (error) {
+                                                console.error('Error fetching cities:', error);
+                                            }
+                                        }
 
-                    {/* House, neighborhood, propertyType, roomsNum, etc. */}
-                    <div className="mb-4">
-                        <label className="block text-right">מס' בית</label>
-                        <input
-                            type="text"
-                            name="house"
-                            value={editData.house || ''}
-                            onChange={handleEditChange}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
+                                        // Fetch streets for the selected city in the edit mode
+                                        if (selectedProperty.city) {
+                                            try {
+                                                const response = await axios.get('http://localhost:5000/api/streets', {
+                                                    params: {city: selectedProperty.city},
+                                                });
+                                                setStreetList(response.data); // Set the streets for the selected city
+                                            } catch (error) {
+                                                console.error('Error fetching streets:', error);
+                                            }
+                                        }
+                                    }}
+                                >
+                                    עריכה
+                                </button>
+                            ) : (
+                                <button
+                                    className="bg-green-500 text-white p-2 rounded-md"
+                                    onClick={handleSaveEdit}
+                                >
+                                    שמירה
+                                </button>
+                            )}
 
-                    <div className="mb-4">
-                        <label className="block text-right">שכונה</label>
-                        <input
-                            type="text"
-                            name="neighborhood"
-                            value={editData.neighborhood || ''}  // Pre-fill with existing neighborhood data
-                            onChange={handleEditChange}  // Update editData when changed
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
+                            {/* Edit Mode Form */}
+                            {isEditMode ? (
+                                <div>
+                                    {/* City Dropdown */}
+                                    <div className="mb-4">
+                                        <label className="block text-right">עיר</label>
+                                        <select
+                                            name="city"
+                                            value={editData.city || ''}
+                                            onChange={async (e) => {
+                                                handleEditChange(e); // Update city in the editData
+                                                const selectedCity = e.target.value;
 
-                    {/* Property Size */}
-                    <div className="mb-4">
-                        <label className="block text-right">גודל (במטרים מרובעים)</label>
-                        <input
-                            type="number"
-                            name="size"
-                            value={editData.size || ''}  // Pre-fill with existing size data
-                            onChange={handleEditChange}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
-                    {/* Room Numbers */}
-                    <div className="mb-4">
-                        <label className="block text-right">מספר חדרים</label>
-                        <input
-                            type="number"
-                            name="roomsNum"
-                            value={editData.roomsNum || ''}  // Pre-fill with existing room numbers
-                            onChange={handleEditChange}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
-                    {/* Price */}
-                    <div className="mb-4">
-                        <label className="block text-right">מחיר</label>
-                        <input
-                            type="number"
-                            name="price"
-                            value={editData.price || ''}  // Pre-fill with existing price data
-                            onChange={handleEditChange}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
-                    {/* Parking Number */}
-                    <div className="mb-4">
-                        <label className="block text-right">מס' חניות</label>
-                        <input
-                            type="number"
-                            name="parkingNumber"
-                            value={editData.parkingNumber !== undefined && editData.parkingNumber !== null ? editData.parkingNumber : 0}  // Ensure it shows 0 when it's 0 or undefined
-                            onChange={handleEditChange}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
-                    {/* Bathrooms Number */}
-                    <div className="mb-4">
-                        <label className="block text-right">מס' חדרי שירותים</label>
-                        <input
-                            type="number"
-                            name="bathroomsNum"
-                            value={editData.bathroomsNum !== undefined && editData.bathroomsNum !== null ? editData.bathroomsNum : 0}  // Pre-fill with existing bathrooms number data, show 0 if undefined
-                            onChange={handleEditChange}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
-                    {/* AC Number */}
-                    <div className="mb-4">
-                        <label className="block text-right">מס' מזגנים</label>
-                        <input
-                            type="number"
-                            name="ac"
-                            value={editData.ac !== undefined && editData.ac !== null ? editData.ac : 0}  // Pre-fill with existing AC number data, show 0 if undefined
-                            onChange={handleEditChange}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
-                    {/* age */}
-                    <div className="mb-4">
-                        <label className="block text-right">גיל המבנה</label>
-                        <input
-                            type="number"
-                            name="age"
-                            value={editData.age !== undefined && editData.ac !== null ? editData.age : 0}  // Pre-fill with existing AC number data, show 0 if undefined
-                            onChange={handleEditChange}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
+                                                // Fetch streets when a new city is selected
+                                                if (selectedCity) {
+                                                    try {
+                                                        const response = await axios.get('http://localhost:5000/api/streets', {
+                                                            params: {city: selectedCity},
+                                                        });
+                                                        setStreetList(response.data); // Update street list based on the new city
+                                                        setEditData((prevState) => ({
+                                                            ...prevState,
+                                                            street: '', // Reset street when a new city is selected
+                                                        }));
+                                                    } catch (error) {
+                                                        console.error('Error fetching streets:', error);
+                                                    }
+                                                }
+                                            }}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        >
+                                            <option value="">בחר עיר</option>
+                                            {cityList.map((city, index) => (
+                                                <option key={index} value={city}>
+                                                    {city}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
 
-                    <div className="mb-4">
-                        <label className="block text-right">גישה לנכים</label>
-                        <div className="flex items-center justify-end">
-                            <input
-                                type="checkbox"
-                                name="accessibility"
-                                checked={editData.accessibility === 'כן'}  // Checked if 'כן'
-                                onChange={(e) => {
-                                    setEditData((prevData) => ({
-                                        ...prevData,
-                                        accessibility: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
-                                    }));
-                                }}
-                                className="ml-2"
-                            />
-                            <span>{editData.accessibility}</span> {/* Show 'כן' or 'לא' */}
-                        </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="block text-right">סורגים על חלונות</label>
-                        <div className="flex items-center justify-end">
-                            <input
-                                type="checkbox"
-                                name="bars"
-                                checked={editData.bars === 'כן'}  // Checked if 'כן'
-                                onChange={(e) => {
-                                    setEditData((prevData) => ({
-                                        ...prevData,
-                                        bars: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
-                                    }));
-                                }}
-                                className="ml-2"
-                            />
-                            <span>{editData.bars}</span> {/* Show 'כן' or 'לא' */}
-                        </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="block text-right">אבטחה</label>
-                        <div className="flex items-center justify-end">
-                            <input
-                                type="checkbox"
-                                name="security"
-                                checked={editData.security === 'כן'}  // Checked if 'כן'
-                                onChange={(e) => {
-                                    setEditData((prevData) => ({
-                                        ...prevData,
-                                        security: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
-                                    }));
-                                }}
-                                className="ml-2"
-                            />
-                            <span>{editData.security}</span> {/* Show 'כן' or 'לא' */}
-                        </div>
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="block text-right">מס' קומות בנכס</label>
-                        <input
-                            type="number"
-                            name="number_of_floors"
-                            value={editData.number_of_floors || ''}  // Pre-fill with existing data
-                            onChange={handleEditChange}  // Update editData when changed
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="block text-right">קומת הנכס</label>
-                        <input
-                            type="number"
-                            name="floor"
-                            value={editData.floor !== undefined && editData.floor !== null ? editData.floor : ''}  // Pre-fill with 0 or other values
-                            onChange={handleEditChange}  // Update editData when changed
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="block text-right">סוג עסקה</label>
-                        <select
-                            name="transactionType"
-                            value={editData.transactionType || ''}
-                            onChange={handleEditChange}
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        >
-                            <option value="sell">מכירה</option>
-                            <option value="rent">השכרה</option>
-                        </select>
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="block text-right">הערות נוספות</label>
-                        <textarea
-                            name="notes"
-                            value={editData.notes || ''}  // Pre-fill with existing data
-                            onChange={handleEditChange}  // Update editData when changed
-                            className="w-full p-2 border rounded-md"
-                            dir="rtl"
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <h3 className="text-right">תמונות</h3>
-                        <div className="flex flex-wrap">
-                            {editData.pictures && Object.entries(editData.pictures).map(([key, url]) => (
-                                <div key={key} className="relative m-2">
-                                    <img
-                                        src={url}
-                                        alt={`Property ${key}`}
-                                        className="w-24 h-24 object-cover"
-                                    />
-                                    <button
-                                        type="button"
-                                        onClick={() => handleRemovePicture(key)}
-                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                                    >
-                                        X
-                                    </button>
-                                </div>
-                            ))}
-                        </div>
-
-                        <div className="mt-4">
-                            <label className="block text-right mb-2">הוספת תמונות נוספות</label>
-                            {imageInputs.map((input, index) => (
-                                <div key={input.id} className="flex items-center mb-2">
-                                    <input
-                                        type="file"
-                                        onChange={(e) => handleFileChange(index, e)}
-                                        accept="image/*"
-                                        className="mb-2 ml-2"
-                                    />
-                                    {input.file && (
-                                        <>
-                                            <img
-                                                src={URL.createObjectURL(input.file)}
-                                                alt={`Preview ${index + 1}`}
-                                                className="w-24 h-24 object-cover ml-2"
-                                            />
-                                            <button
-                                                type="button"
-                                                onClick={() => removeImageInput(index)}
-                                                className="bg-red-500 text-white px-2 py-1 rounded ml-2"
+                                    {/* Street Dropdown */}
+                                    {editData.city && (
+                                        <div className="mb-4">
+                                            <label className="block text-right">רחוב</label>
+                                            <select
+                                                name="street"
+                                                value={editData.street || ''}
+                                                onChange={handleEditChange}
+                                                className="w-full p-2 border rounded-md"
+                                                dir="rtl"
                                             >
-                                                X
-                                            </button>
-                                        </>
+                                                <option value="">בחר רחוב</option>
+                                                {streetList.map((street, index) => (
+                                                    <option key={index} value={street}>
+                                                        {street}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     )}
 
-                                </div>
-                            ))}
-                            <button
-                                type="button"
-                                onClick={addImageInput}
-                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
-                            >
-                                הוספת תמונה נוספת
-                            </button>
-                        </div>
-                    </div>
+                                    {/* House, neighborhood, propertyType, roomsNum, etc. */}
+                                    <div className="mb-4">
+                                        <label className="block text-right">מס' בית</label>
+                                        <input
+                                            type="text"
+                                            name="house"
+                                            value={editData.house || ''}
+                                            onChange={handleEditChange}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
 
-                    {/* Display existing rooms */}
-                    <h3 className="text-right">חדרים</h3>
+                                    <div className="mb-4">
+                                        <label className="block text-right">שכונה</label>
+                                        <input
+                                            type="text"
+                                            name="neighborhood"
+                                            value={editData.neighborhood || ''}  // Pre-fill with existing neighborhood data
+                                            onChange={handleEditChange}  // Update editData when changed
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+
+                                    {/* Property Size */}
+                                    <div className="mb-4">
+                                        <label className="block text-right">גודל (במטרים מרובעים)</label>
+                                        <input
+                                            type="number"
+                                            name="size"
+                                            value={editData.size || ''}  // Pre-fill with existing size data
+                                            onChange={handleEditChange}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+                                    {/* Room Numbers */}
+                                    <div className="mb-4">
+                                        <label className="block text-right">מספר חדרים</label>
+                                        <input
+                                            type="number"
+                                            name="roomsNum"
+                                            value={editData.roomsNum || ''}  // Pre-fill with existing room numbers
+                                            onChange={handleEditChange}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+                                    {/* Price */}
+                                    <div className="mb-4">
+                                        <label className="block text-right">מחיר</label>
+                                        <input
+                                            type="number"
+                                            name="price"
+                                            value={editData.price || ''}  // Pre-fill with existing price data
+                                            onChange={handleEditChange}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+                                    {/* Parking Number */}
+                                    <div className="mb-4">
+                                        <label className="block text-right">מס' חניות</label>
+                                        <input
+                                            type="number"
+                                            name="parkingNumber"
+                                            value={editData.parkingNumber !== undefined && editData.parkingNumber !== null ? editData.parkingNumber : 0}  // Ensure it shows 0 when it's 0 or undefined
+                                            onChange={handleEditChange}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+                                    {/* Bathrooms Number */}
+                                    <div className="mb-4">
+                                        <label className="block text-right">מס' חדרי שירותים</label>
+                                        <input
+                                            type="number"
+                                            name="bathroomsNum"
+                                            value={editData.bathroomsNum !== undefined && editData.bathroomsNum !== null ? editData.bathroomsNum : 0}  // Pre-fill with existing bathrooms number data, show 0 if undefined
+                                            onChange={handleEditChange}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+                                    {/* AC Number */}
+                                    <div className="mb-4">
+                                        <label className="block text-right">מס' מזגנים</label>
+                                        <input
+                                            type="number"
+                                            name="ac"
+                                            value={editData.ac !== undefined && editData.ac !== null ? editData.ac : 0}  // Pre-fill with existing AC number data, show 0 if undefined
+                                            onChange={handleEditChange}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+                                    {/* age */}
+                                    <div className="mb-4">
+                                        <label className="block text-right">גיל המבנה</label>
+                                        <input
+                                            type="number"
+                                            name="age"
+                                            value={editData.age !== undefined && editData.ac !== null ? editData.age : 0}  // Pre-fill with existing AC number data, show 0 if undefined
+                                            onChange={handleEditChange}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-right">גישה לנכים</label>
+                                        <div className="flex items-center justify-end">
+                                            <input
+                                                type="checkbox"
+                                                name="accessibility"
+                                                checked={editData.accessibility === 'כן'}  // Checked if 'כן'
+                                                onChange={(e) => {
+                                                    setEditData((prevData) => ({
+                                                        ...prevData,
+                                                        accessibility: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
+                                                    }));
+                                                }}
+                                                className="ml-2"
+                                            />
+                                            <span>{editData.accessibility}</span> {/* Show 'כן' or 'לא' */}
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-right">סורגים על חלונות</label>
+                                        <div className="flex items-center justify-end">
+                                            <input
+                                                type="checkbox"
+                                                name="bars"
+                                                checked={editData.bars === 'כן'}  // Checked if 'כן'
+                                                onChange={(e) => {
+                                                    setEditData((prevData) => ({
+                                                        ...prevData,
+                                                        bars: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
+                                                    }));
+                                                }}
+                                                className="ml-2"
+                                            />
+                                            <span>{editData.bars}</span> {/* Show 'כן' or 'לא' */}
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-right">אבטחה</label>
+                                        <div className="flex items-center justify-end">
+                                            <input
+                                                type="checkbox"
+                                                name="security"
+                                                checked={editData.security === 'כן'}  // Checked if 'כן'
+                                                onChange={(e) => {
+                                                    setEditData((prevData) => ({
+                                                        ...prevData,
+                                                        security: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
+                                                    }));
+                                                }}
+                                                className="ml-2"
+                                            />
+                                            <span>{editData.security}</span> {/* Show 'כן' or 'לא' */}
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-right">מס' קומות בנכס</label>
+                                        <input
+                                            type="number"
+                                            name="number_of_floors"
+                                            value={editData.number_of_floors || ''}  // Pre-fill with existing data
+                                            onChange={handleEditChange}  // Update editData when changed
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-right">קומת הנכס</label>
+                                        <input
+                                            type="number"
+                                            name="floor"
+                                            value={editData.floor !== undefined && editData.floor !== null ? editData.floor : ''}  // Pre-fill with 0 or other values
+                                            onChange={handleEditChange}  // Update editData when changed
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-right">סוג עסקה</label>
+                                        <select
+                                            name="transactionType"
+                                            value={editData.transactionType || ''}
+                                            onChange={handleEditChange}
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        >
+                                            <option value="sell">מכירה</option>
+                                            <option value="rent">השכרה</option>
+                                        </select>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <label className="block text-right">הערות נוספות</label>
+                                        <textarea
+                                            name="notes"
+                                            value={editData.notes || ''}  // Pre-fill with existing data
+                                            onChange={handleEditChange}  // Update editData when changed
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <h3 className="text-right">תמונות</h3>
+                                        <div className="flex flex-wrap">
+                                            {editData.pictures && Object.entries(editData.pictures).map(([key, url]) => (
+                                                <div key={key} className="relative m-2">
+                                                    <img
+                                                        src={url}
+                                                        alt={`Property ${key}`}
+                                                        className="w-24 h-24 object-cover"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => handleRemovePicture(key)}
+                                                        className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                                    >
+                                                        X
+                                                    </button>
+                                                </div>
+                                            ))}
+                                        </div>
+
+                                        <div className="mt-4">
+                                            <label className="block text-right mb-2">הוספת תמונות נוספות</label>
+                                            {imageInputs.map((input, index) => (
+                                                <div key={input.id} className="flex items-center mb-2">
+                                                    <input
+                                                        type="file"
+                                                        onChange={(e) => handleFileChange(index, e)}
+                                                        accept="image/*"
+                                                        className="mb-2 ml-2"
+                                                    />
+                                                    {input.file && (
+                                                        <>
+                                                            <img
+                                                                src={URL.createObjectURL(input.file)}
+                                                                alt={`Preview ${index + 1}`}
+                                                                className="w-24 h-24 object-cover ml-2"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => removeImageInput(index)}
+                                                                className="bg-red-500 text-white px-2 py-1 rounded ml-2"
+                                                            >
+                                                                X
+                                                            </button>
+                                                        </>
+                                                    )}
+
+                                                </div>
+                                            ))}
+                                            <button
+                                                type="button"
+                                                onClick={addImageInput}
+                                                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded"
+                                            >
+                                                הוספת תמונה נוספת
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Display existing rooms */}
+                                    <h3 className="text-right">חדרים</h3>
 
 
-                    {Array.isArray(editData.roomSpecifications) && editData.roomSpecifications.length > 0 ? (
-    editData.roomSpecifications.map((room, index) => (
-        <div key={index} className="mb-4 border p-2 rounded-md relative">
-            <button
-                type="button"
-                className="absolute top-0 right-0 text-red-500 text-lg font-bold"
-                onClick={() => handleRoomDelete(index)}
-            >
-                ✕
-            </button>
+                                    {Array.isArray(editData.roomSpecifications) && editData.roomSpecifications.length > 0 ? (
+                                        editData.roomSpecifications.map((room, index) => (
+                                            <div key={index} className="mb-4 border p-2 rounded-md relative">
+                                                <button
+                                                    type="button"
+                                                    className="absolute top-0 right-0 text-red-500 text-lg font-bold"
+                                                    onClick={() => handleRoomDelete(index)}
+                                                >
+                                                    ✕
+                                                </button>
 
-            <h4 className="text-lg">חדר {index + 1}</h4>
+                                                <h4 className="text-lg">חדר {index + 1}</h4>
 
-                                <div className="mb-4">
-                                    <label className="block text-right">אורך (מ')</label>
-                                    <input
-                                        type="number"
-                                        name="length"
-                                        value={room.length || ''}  // Bind value to state
-                                        onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
-                                        className="w-full p-2 border rounded-md"
-                                        dir="rtl"
-                                    />
-                                </div>
+                                                <div className="mb-4">
+                                                    <label className="block text-right">אורך (מ')</label>
+                                                    <input
+                                                        type="number"
+                                                        name="length"
+                                                        value={room.length || ''}  // Bind value to state
+                                                        onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
+                                                        className="w-full p-2 border rounded-md"
+                                                        dir="rtl"
+                                                    />
+                                                </div>
 
-                                <div className="mb-4">
-                                    <label className="block text-right">רוחב (מ')</label>
-                                    <input
-                                        type="number"
-                                        name="width"
-                                        value={room.width || ''}  // Bind value to state
-                                        onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
-                                        className="w-full p-2 border rounded-md"
-                                        dir="rtl"
-                                    />
-                                </div>
+                                                <div className="mb-4">
+                                                    <label className="block text-right">רוחב (מ')</label>
+                                                    <input
+                                                        type="number"
+                                                        name="width"
+                                                        value={room.width || ''}  // Bind value to state
+                                                        onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
+                                                        className="w-full p-2 border rounded-md"
+                                                        dir="rtl"
+                                                    />
+                                                </div>
 
-                                <div className="mb-4">
-                                    <label className="block text-right">סוג החדר</label>
-                                    <select
-                                        name="roomType"
-                                        value={room.roomType}
-                                        onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
-                                        className="w-full p-2 border rounded-md"
-                                        dir="rtl"
+                                                <div className="mb-4">
+                                                    <label className="block text-right">סוג החדר</label>
+                                                    <select
+                                                        name="roomType"
+                                                        value={room.roomType}
+                                                        onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
+                                                        className="w-full p-2 border rounded-md"
+                                                        dir="rtl"
+                                                    >
+                                                        <option value="">בחר סוג החדר</option>
+                                                        <option value="bedroom">חדר שינה</option>
+                                                        <option value="livingroom">סלון</option>
+                                                        <option value="bathroom">שירותים</option>
+                                                        <option value="balcony">מרפסת</option>
+                                                        <option value="garden">גינה</option>
+                                                        <option value="saferoom">ממ"ד</option>
+                                                        <option value="storage">מחסן</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>אין חדרים</p>
+                                    )}
+                                    {/* Button to add a new room */}
+                                    <button
+                                        type="button"
+                                        className="bg-green-500 text-white p-2 rounded-md"
+                                        onClick={addRoom}
                                     >
-                                        <option value="">בחר סוג החדר</option>
-                                        <option value="bedroom">חדר שינה</option>
-                                        <option value="livingroom">סלון</option>
-                                        <option value="bathroom">שירותים</option>
-                                        <option value="balcony">מרפסת</option>
-                                        <option value="garden">גינה</option>
-                                        <option value="saferoom">ממ"ד</option>
-                                        <option value="storage">מחסן</option>
-                                    </select>
+                                        הוסף חדר נוסף
+                                    </button>
+
+
                                 </div>
-                            </div>
-                        ))
-                    ) : (
-                        <p>אין חדרים</p>
-                    )}
-                    {/* Button to add a new room */}
-                    <button
-                        type="button"
-                        className="bg-green-500 text-white p-2 rounded-md"
-                        onClick={addRoom}
-                    >
-                        הוסף חדר נוסף
-                    </button>
+
+                            ) : (<div>
+                                <div className="mb-4">
+                                    <p>
+                                        <strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}
+                                    </p>
+                                    <p><strong>שכונה:</strong> {selectedProperty.neighborhood || 'N/A'}</p>
+                                    {selectedProperty.propertyType !== 'private house' && (
+                                        <p><strong>מספר דירה:</strong> {selectedProperty.apNum || 'N/A'}</p>
+                                    )}
+                                    <p><strong>גודל:</strong> {selectedProperty.size} מ"ר</p>
+                                    <p><strong>מספר חדרים:</strong> {selectedProperty.roomsNum}</p>
+                                    <p><strong>מחיר:</strong> ₪ {selectedProperty.price}</p>
+                                    <p><strong>מספר חניות:</strong> {selectedProperty.parkingNumber}</p>
+                                    <p><strong>מספר חדרי שירותים:</strong> {selectedProperty.bathroomsNum}</p>
+                                    <p><strong>מספר מזגנים:</strong> {selectedProperty.ac}</p>
+                                    <p><strong>גיל המבנה:</strong> {selectedProperty.age}</p>
+                                    <p><strong>גישה לנכים:</strong> {selectedProperty.accessibility}</p>
+                                    <p><strong>סורגים:</strong> {selectedProperty.bars}</p>
+                                    <p><strong>אבטחה:</strong> {selectedProperty.security}</p>
+                                    <p><strong>מספר קומות בנכס:</strong> {selectedProperty.number_of_floors || 'N/A'}
+                                    </p>
+                                    <p><strong>קומת
+                                        הנכס:</strong> {selectedProperty.floor !== null && selectedProperty.floor !== undefined ? selectedProperty.floor : 'N/A'}
+                                    </p>
+                                    <p><strong>סוג
+                                        עסקה:</strong> {selectedProperty.transactionType === 'sell' ? 'למכירה' : 'להשכרה'}
+                                    </p>
+                                    <div className="mb-4" dir="rtl">
+                                        <p><strong>סטטוס:</strong> {selectedProperty.status || 'N/A'}</p>
+                                    </div>
+
+                                </div>
+                                {/* Display pictures vertically */}
+                                <div className="mb-4" dir="rtl">
+                                    <h3 className="text-xl underline"><strong>תמונות:</strong></h3>
+                                    {Object.keys(selectedProperty.pictures).length > 0 ? (
+                                        <div className="flex flex-col gap-4">  {/* flex-col for vertical stacking */}
+                                            {Object.entries(selectedProperty.pictures).map(([key, url]) => (
+                                                <img
+                                                    key={key}
+                                                    src={url}
+                                                    alt={`Property Image ${key}`}
+                                                    className="w-full h-auto object-cover rounded-md"
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p>אין תמונות לנכס זה</p>
+                                    )}
+                                </div>
+                                {/*room specifications*/}
+                                <div className="mb-4" dir="rtl">
+                                    <h3 className="text-xl mt-4 underline"><strong>חדרים :</strong>
+                                    </h3> {/* Colon placed on the left */}
+
+                                    {selectedProperty.roomSpecifications && selectedProperty.roomSpecifications.length > 0 ? (
+                                        selectedProperty.roomSpecifications.map((room, index) => (
+                                            <div key={index} className="mb-4">
+                                                <p>
+                                                    <strong>חדר {index + 1} :</strong> {/* Colon placed on the left */}
+                                                </p>
+                                                <p>
+                                                    <strong>סוג: {roomTypeDictionary[room.roomType] || room.roomType}</strong>
+                                                </p>
+                                                <p><strong>מידות :</strong> {room.length}x{room.width} מטר
+                                                </p> {/* Colon placed on the left */}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p>אין חדרים</p>
+                                    )}
+                                </div>
+                                <button
+                                    className="bg-red-500 text-white p-2 rounded-md"
+                                    onClick={() => setShowArchivePopup(true)} // Show the archive confirmation popup
+                                >
+                                    העברה לארכיון
+                                </button>
 
 
-                </div>
+{showArchivePopup && (
+  <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+    <div className="bg-white p-6 rounded-lg w-full max-w-lg">
+      <h2 className="text-xl mb-4">סיבת ההעברה לארכיון:</h2>
+      <textarea
+        value={archiveReason}
+        onChange={(e) => setArchiveReason(e.target.value)}
+        placeholder="הזן סיבה להעברה לארכיון"
+        className="w-full p-2 border rounded-md mb-4"
+      />
+      <div className="flex justify-end">
+        <button
+          className="bg-gray-300 p-2 rounded-md mr-2"
+          onClick={() => setShowArchivePopup(false)}
+        >
+          ביטול
+        </button>
+        <button
+          className="bg-green-500 text-white p-2 rounded-md"
+          onClick={handleArchiveProperty}
+        >
+          אישור
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
-            ) : (<div>
-            <div className="mb-4">
-                    <p>
-                        <strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}
-                    </p>
-                    <p><strong>שכונה:</strong> {selectedProperty.neighborhood || 'N/A'}</p>
-                    {selectedProperty.propertyType !== 'private house' && (
-                        <p><strong>מספר דירה:</strong> {selectedProperty.apNum || 'N/A'}</p>
-                )}
-                <p><strong>גודל:</strong> {selectedProperty.size} מ"ר</p>
-                <p><strong>מספר חדרים:</strong> {selectedProperty.roomsNum}</p>
-                <p><strong>מחיר:</strong> ₪ {selectedProperty.price}</p>
-                <p><strong>מספר חניות:</strong> {selectedProperty.parkingNumber}</p>
-                <p><strong>מספר חדרי שירותים:</strong> {selectedProperty.bathroomsNum}</p>
-                <p><strong>מספר מזגנים:</strong> {selectedProperty.ac}</p>
-                <p><strong>גיל המבנה:</strong> {selectedProperty.age}</p>
-                <p><strong>גישה לנכים:</strong> {selectedProperty.accessibility}</p>
-                <p><strong>סורגים:</strong> {selectedProperty.bars}</p>
-                <p><strong>אבטחה:</strong> {selectedProperty.security}</p>
-                <p><strong>מספר קומות בנכס:</strong> {selectedProperty.number_of_floors || 'N/A'}</p>
-                <p><strong>קומת
-                    הנכס:</strong> {selectedProperty.floor !== null && selectedProperty.floor !== undefined ? selectedProperty.floor : 'N/A'}
-                </p>
-                <p><strong>סוג
-                    עסקה:</strong> {selectedProperty.transactionType === 'sell' ? 'למכירה' : 'להשכרה'}</p>
-                <div className="mb-4" dir="rtl">
-                    <p><strong>סטטוס:</strong> {selectedProperty.status || 'N/A'}</p>
-                </div>
 
-            </div>
-                {/* Display pictures vertically */}
-                        <div className="mb-4" dir="rtl">
-                        <h3 className="text-xl underline"><strong>תמונות:</strong></h3>
-                {Object.keys(selectedProperty.pictures).length > 0 ? (
-                    <div className="flex flex-col gap-4">  {/* flex-col for vertical stacking */}
-                        {Object.entries(selectedProperty.pictures).map(([key, url]) => (
-                            <img
-                                key={key}
-                                src={url}
-                                alt={`Property Image ${key}`}
-                                className="w-full h-auto object-cover rounded-md"
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <p>אין תמונות לנכס זה</p>
-                )}
-            </div>
-                {/*room specifications*/}
-            <div className="mb-4" dir="rtl">
-                <h3 className="text-xl mt-4 underline"><strong>חדרים :</strong></h3> {/* Colon placed on the left */}
+                            </div>)}
 
-                {selectedProperty.roomSpecifications && selectedProperty.roomSpecifications.length > 0 ? (
-                    selectedProperty.roomSpecifications.map((room, index) => (
-                        <div key={index} className="mb-4">
-                            <p>
-                                <strong>חדר {index + 1} :</strong> {/* Colon placed on the left */}
-                            </p>
-                            <p><strong>סוג: {roomTypeDictionary[room.roomType] || room.roomType}</strong></p>
-                            <p><strong>מידות :</strong> {room.length}x{room.width} מטר
-                            </p> {/* Colon placed on the left */}
+
                         </div>
-                    ))
-                ) : (
-                    <p>אין חדרים</p>
-                )}
-            </div>
-
-
-
-            </div>)}
-
-
-
-
-        </div>
-        )
-    </div>)
+                        )
+                    </div>
+            )
             }
 
 
