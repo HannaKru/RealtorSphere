@@ -456,7 +456,7 @@ def scrape_yad2_listings(max_listings=50):
         except requests.RequestException as e:
             print(f"Request failed: {e}")
             break
-            ##
+            ###
 
     print(f"Finished scraping. Total listings: {len(listings)}")
     return listings
