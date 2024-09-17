@@ -279,34 +279,30 @@ const PropertyPage = () => {
 
     const addRoom = () => {
   if (isEditMode) {
-    setEditData((prevState) => ({
+    setEditData(prevState => ({
       ...prevState,
-      rooms: [
-        ...(prevState.rooms || []),
-        { length: '', width: '', roomType: '' }
-      ],
+      roomSpecifications: [
+        ...(prevState.roomSpecifications || []),  // Safely spread existing roomSpecifications
+        { length: '', width: '', roomType: '' }  // Add a new room with default values
+      ]
     }));
   } else {
-    setNewProperty((prevState) => ({
+    setNewProperty(prevState => ({
       ...prevState,
       rooms: [
-        ...(prevState.rooms || []),
-        { length: '', width: '', roomType: '' }
-      ],
+        ...(prevState.rooms || []),  // Safely spread existing rooms
+        { length: '', width: '', roomType: '' }  // Add a new room with default values
+      ]
     }));
   }
 };
 
     // Function to delete a room
 const deleteRoom = (index) => {
-    setEditData((prevState) => {
-        const updatedRooms = [...prevState.rooms];
-        updatedRooms.splice(index, 1); // Remove the room at the specified index
-        return {
-            ...prevState,
-            rooms: updatedRooms,
-        };
-    });
+  setEditData(prevState => ({
+    ...prevState,
+    rooms: prevState.rooms.filter((_, i) => i !== index)
+  }));
 };
 
     const [imageInputs, setImageInputs] = useState([{ id: 1, file: null }]); // Store image inputs
@@ -627,6 +623,8 @@ const addImageInput = () => {
     alert('Failed to update property');
   }
 };
+
+
     const removePictureFromDB = async (propertyId, pictureKey) => {
     try {
         // Send a DELETE request to the backend API to remove the picture
@@ -1693,60 +1691,62 @@ const handleClosePopup = () => {
                     </div>
 
                     {/* Display existing rooms */}
+                    <h3 className="text-right">חדרים</h3>
 
-             {Array.isArray(editData.roomSpecifications) && editData.roomSpecifications.length > 0 ? (
-  editData.roomSpecifications.map((room, index) => (
-    <div key={index} className="mb-4 border p-2 rounded-md">
-      <h4 className="text-lg">חדר {index + 1}</h4>
 
-      <div className="mb-4">
-        <label className="block text-right">אורך (מ')</label>
-        <input
-          type="number"
-          name="length"
-          value={room.length || ''}  // Bind value to state
-          onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
-          className="w-full p-2 border rounded-md"
-          dir="rtl"
-        />
-      </div>
+                    {Array.isArray(editData.roomSpecifications) && editData.roomSpecifications.length > 0 ? (
+                        editData.roomSpecifications.map((room, index) => (
+                            <div key={index} className="mb-4 border p-2 rounded-md">
+                                <h4 className="text-lg">חדר {index + 1}</h4>
 
-      <div className="mb-4">
-        <label className="block text-right">רוחב (מ')</label>
-        <input
-          type="number"
-          name="width"
-          value={room.width || ''}  // Bind value to state
-          onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
-          className="w-full p-2 border rounded-md"
-          dir="rtl"
-        />
-      </div>
+                                <div className="mb-4">
+                                    <label className="block text-right">אורך (מ')</label>
+                                    <input
+                                        type="number"
+                                        name="length"
+                                        value={room.length || ''}  // Bind value to state
+                                        onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
+                                        className="w-full p-2 border rounded-md"
+                                        dir="rtl"
+                                    />
+                                </div>
 
-      <div className="mb-4">
-        <label className="block text-right">סוג החדר</label>
-        <select
-          name="roomType"
-          value={room.roomType}
-          onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
-          className="w-full p-2 border rounded-md"
-          dir="rtl"
-        >
-          <option value="">בחר סוג החדר</option>
-          <option value="bedroom">חדר שינה</option>
-          <option value="livingroom">סלון</option>
-          <option value="bathroom">שירותים</option>
-          <option value="balcony">מרפסת</option>
-          <option value="garden">גינה</option>
-          <option value="saferoom">ממ"ד</option>
-          <option value="storage">מחסן</option>
-        </select>
-      </div>
-    </div>
-  ))
-) : (
-  <p>אין חדרים</p>
-)}
+                                <div className="mb-4">
+                                    <label className="block text-right">רוחב (מ')</label>
+                                    <input
+                                        type="number"
+                                        name="width"
+                                        value={room.width || ''}  // Bind value to state
+                                        onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
+                                        className="w-full p-2 border rounded-md"
+                                        dir="rtl"
+                                    />
+                                </div>
+
+                                <div className="mb-4">
+                                    <label className="block text-right">סוג החדר</label>
+                                    <select
+                                        name="roomType"
+                                        value={room.roomType}
+                                        onChange={(e) => handleRoomChange(index, e, 'roomSpecifications')}  // Pass roomSpecifications to handle change
+                                        className="w-full p-2 border rounded-md"
+                                        dir="rtl"
+                                    >
+                                        <option value="">בחר סוג החדר</option>
+                                        <option value="bedroom">חדר שינה</option>
+                                        <option value="livingroom">סלון</option>
+                                        <option value="bathroom">שירותים</option>
+                                        <option value="balcony">מרפסת</option>
+                                        <option value="garden">גינה</option>
+                                        <option value="saferoom">ממ"ד</option>
+                                        <option value="storage">מחסן</option>
+                                    </select>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <p>אין חדרים</p>
+                    )}
                     {/* Button to add a new room */}
                     <button
                         type="button"
@@ -1760,7 +1760,7 @@ const handleClosePopup = () => {
                 </div>
 
             ) : (<div>
-                <div className="mb-4">
+            <div className="mb-4">
                     <p>
                         <strong>כתובת:</strong> {selectedProperty.street} {selectedProperty.house}, {selectedProperty.city}
                     </p>
