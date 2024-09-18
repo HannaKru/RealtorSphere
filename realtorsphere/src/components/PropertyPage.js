@@ -759,17 +759,20 @@ const handleRoomDelete = (index) => {
 
 const [archiveReason, setArchiveReason] = useState('');
 const [showArchivePopup, setShowArchivePopup] = useState(false);
+const [customArchiveReason, setCustomArchiveReason] = useState('');
 
 
 const handleArchiveProperty = async () => {
-  if (!archiveReason.trim()) {
+  let reasonToSend = archiveReason === "אחר" ? customArchiveReason : archiveReason;
+
+  if (!reasonToSend.trim()) {
     alert('יש להזין סיבה להעברה לארכיון');
     return;
   }
 
   try {
     const response = await axios.post(`http://localhost:5000/archiveProperty/${selectedProperty.id}`, {
-      archiveReason
+      archiveReason: reasonToSend  // Send the selected or custom reason
     }, { withCredentials: true });
 
     if (response.status === 200) {
@@ -1908,16 +1911,31 @@ const handleArchiveProperty = async () => {
 
 
 
-{showArchivePopup && (
+    {showArchivePopup && (
   <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
-    <div className="bg-white p-6 rounded-lg w-full max-w-lg">
+    <div className="bg-white p-6 rounded-lg w-full max-w-lg" dir="rtl">
       <h2 className="text-xl mb-4">סיבת ההעברה לארכיון:</h2>
-      <textarea
+
+      {/* Dropdown menu for reason */}
+      <select
         value={archiveReason}
         onChange={(e) => setArchiveReason(e.target.value)}
-        placeholder="הזן סיבה להעברה לארכיון"
         className="w-full p-2 border rounded-md mb-4"
-      />
+      >
+        <option value="עסקה בוצעה">עסקה בוצעה</option>
+        <option value="אחר">אחר</option>
+      </select>
+
+      {/* Textbox for custom reason if "אחר" is selected */}
+      {archiveReason === "אחר" && (
+        <textarea
+          value={customArchiveReason}
+          onChange={(e) => setCustomArchiveReason(e.target.value)}
+          placeholder="הזן סיבה להעברה לארכיון"
+          className="w-full p-2 border rounded-md mb-4"
+        />
+      )}
+
       <div className="flex justify-end">
         <button
           className="bg-gray-300 p-2 rounded-md mr-2"
@@ -1935,7 +1953,6 @@ const handleArchiveProperty = async () => {
     </div>
   </div>
 )}
-
 
                             </div>)}
 
