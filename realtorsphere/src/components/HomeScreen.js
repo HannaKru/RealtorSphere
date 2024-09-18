@@ -26,7 +26,7 @@ const HomeScreen = () => {
     { name: 'דוא"ל', url: '/sendMessage' },
     { name: 'סיכומי פגישות', url: '/deals' },
     { name: 'אנשי קשר', url: '/contacts' },
-    { name: 'עריכת פרופיל', url: '/edit-profile' },
+    { name: 'דוחות', url: '/ReportPage' },
   ]);
 
   const fetchUserData = useCallback(async () => {

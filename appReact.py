@@ -16,6 +16,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
+from Reports import generate_report,generate_active_vs_archived_report
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -418,7 +419,96 @@ def archive_property_route(property_id):
 
     return archive_property(property_id, archive_reason)
 
+from flask import jsonify, request
+from firebase_config import initialize_firebase
+import datetime
 
+db_ref = initialize_firebase()
+
+def generate_report(realtor_email='', report_type='property'):
+    try:
+        properties_ref = db_ref.child('property')
+        ownerships_ref = db_ref.child('Ownership')
+        users_ref = db_ref.child("Person")
+
+        # Fetch data from Firebase
+        properties = properties_ref.get()
+        ownerships = ownerships_ref.get()
+        all_users = users_ref.get()
+
+        if not properties or not ownerships or not all_users:
+            return []
+
+        report_data = []
+
+        for prop_id, prop_data in properties.items():
+            if not prop_data:
+                continue
+
+            # Example: Filter by realtor's email and property status for the report
+            if realtor_email and prop_data.get('realtor') != realtor_email:
+                continue
+
+            owner_name = ''
+            for ownership_id, ownership in ownerships.items():
+                if ownership.get('propertyID') == prop_id:
+                    owner_id = ownership.get('PersonID')
+                    owner_name = f"{all_users.get(str(owner_id), {}).get('FirstName', '')} {all_users.get(str(owner_id), {}).get('LastName', '')}".strip()
+                    break
+
+            # Prepare report entry (adjust fields as necessary)
+            report_entry = {
+                'property_id': prop_id,
+                'owner': owner_name,
+                'price': prop_data.get('Price', 'N/A'),
+                'city': prop_data.get('city', 'N/A'),
+                'street': prop_data.get('street', 'N/A'),
+                'rooms': prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('roomsNum', 'N/A'),
+                'status': prop_data.get('status', 'N/A'),
+                'transactionType': ownership.get('rentORsell', ''),
+                'archiveReason': prop_data.get('archiveReason', ''),
+                'endDate': ownership.get('endDate', '')
+            }
+
+            report_data.append(report_entry)
+
+        return report_data
+
+    except Exception as e:
+        print(f"Error generating report: {e}")
+        return []
+
+@app.route('/generateReport', methods=['GET'])
+def generate_report_route():
+    # Fetch the email of the currently logged-in user from the session
+    realtor_email = session.get('user_email', '')  # Assuming the email is stored in the session
+
+    if not realtor_email:
+        return jsonify({"error": "User not logged in"}), 401
+
+    report_type = request.args.get('reportType', 'property')
+
+    report_data = generate_report(realtor_email, report_type)
+
+    if report_data:
+        return jsonify(report_data), 200
+    else:
+        return jsonify({"message": "No report data found"}), 404
+
+@app.route('/generateActiveVsArchivedReport', methods=['GET'])
+def generate_active_vs_archived_report_route():
+    # Fetch the email of the currently logged-in user from the session
+    realtor_email = session.get('user_email', '')  # Assuming email is stored in the session
+
+    if not realtor_email:
+        return jsonify({"error": "User not logged in"}), 401
+
+    report_data = generate_active_vs_archived_report(realtor_email)
+
+    if report_data:
+        return jsonify(report_data), 200
+    else:
+        return jsonify({"message": "No report data found"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True)

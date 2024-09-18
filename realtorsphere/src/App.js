@@ -10,6 +10,7 @@ import SendMessage from "./components/SendMessage";
 import ClientProfessionalPage from "./components/ClientProfessionalPage";
 import DealsPage from "./components/DealsPage";
 import MatchPage from "./components/match";
+import ReportPage from "./components/ReportPage";
 function App() {
   return (
       <Router>
@@ -24,6 +25,7 @@ function App() {
                 <Route path="/clientProfessionalPage" element={<ClientProfessionalPage />} />
                 <Route path="/deals" element={<DealsPage />} />
                 <Route path="/getClients" element={<MatchPage />} />
+                <Route path="/ReportPage" element={<ReportPage />} />
             </Routes>
         </div>
       </Router>
