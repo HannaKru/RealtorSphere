@@ -424,6 +424,16 @@ def archive_property(property_id, archive_reason):
         # Update the property in the database
         property_ref.update(update_data)
 
+        ownership_ref = db_ref.child('Ownership').order_by_child('propertyID').equal_to(property_id).get()
+        if ownership_ref:
+            # Get today's date in the desired format (e.g., YYYY-MM-DD)
+            today = datetime.datetime.now().strftime('%Y-%m-%d')
+            for ownership_id, ownership_data in ownership_ref.items():
+                # Update the endDate to today's date
+                db_ref.child(f'Ownership/{ownership_id}').update({
+                    'endDate': today
+                })
+
         return {"message": "Property archived successfully"}, 200
 
     except Exception as e:

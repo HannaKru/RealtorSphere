@@ -1896,12 +1896,16 @@ const handleArchiveProperty = async () => {
                                         <p>אין חדרים</p>
                                     )}
                                 </div>
+                                {
+                                selectedProperty.status !== 'archived' && (
                                 <button
-                                    className="bg-red-500 text-white p-2 rounded-md"
-                                    onClick={() => setShowArchivePopup(true)} // Show the archive confirmation popup
+                                className="bg-red-500 text-white p-2 rounded-md"
+                                onClick={() => setShowArchivePopup(true)} // Show the archive confirmation popup
                                 >
-                                    העברה לארכיון
+                                העברה לארכיון
                                 </button>
+                                    )}
+
 
 
 {showArchivePopup && (
