@@ -16,7 +16,7 @@ import os
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
-from Reports import generate_report,generate_active_vs_archived_report
+from Reports import generate_report,generate_active_vs_archived_report,get_property_performance_report
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
@@ -507,6 +507,14 @@ def generate_active_vs_archived_report_route():
 
     if report_data:
         return jsonify(report_data), 200
+    else:
+        return jsonify({"message": "No report data found"}), 404
+
+@app.route('/propertyPerformanceReport', methods=['GET'])
+def property_performance_report_route():
+    report_data = get_property_performance_report()
+    if report_data:
+        return report_data
     else:
         return jsonify({"message": "No report data found"}), 404
 
