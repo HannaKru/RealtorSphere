@@ -26,6 +26,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
         properties_ref = db_ref.child('property')
         ownerships_ref = db_ref.child('Ownership')
 
+
         users_ref = db_ref.child("Person")
 
         # Retrieve data from Firebase
@@ -137,7 +138,9 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'roomSpecifications': prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('rooms', []),
                 'number_of_floors': prop_number_of_floors,
                 'floor': prop_floor,
-                'apNum': prop_ap_num
+                'apNum': prop_ap_num,
+                'archiveReason': prop_data.get('archiveReason', ''),
+                'endDate': ownership.get('endDate', ''),
 
 
             })

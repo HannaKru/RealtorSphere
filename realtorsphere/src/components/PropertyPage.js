@@ -526,7 +526,9 @@ const addImageInput = () => {
     roomsNum: property.type?.apartment?.item?.roomsNum || property.rooms || 'N/A',
     roomSpecifications: property.roomSpecifications || [] ,
     transactionType: property.transactionType || 'N/A',
-    propertyType: property.propertyType || 'N/A'
+    propertyType: property.propertyType || 'N/A',
+    archiveReason: property.archiveReason || '',
+    endDate: property.endDate || ''
 
   });
   setIsDetailsPopupOpen(true);
@@ -1642,6 +1644,25 @@ const handleArchiveProperty = async () => {
                                     </div>
 
                                     <div className="mb-4">
+                                        <label className="block text-right">מעלית</label>
+                                        <div className="flex items-center justify-end">
+                                            <input
+                                                type="checkbox"
+                                                name="elevator"
+                                                checked={editData.elevator === 'כן'}  // Checked if 'כן'
+                                                onChange={(e) => {
+                                                    setEditData((prevData) => ({
+                                                        ...prevData,
+                                                        elevator: e.target.checked ? "true" : "false",  // Set as 'כן' or 'לא' based on checkbox state
+                                                    }));
+                                                }}
+                                                className="ml-2"
+                                            />
+                                            <span>{editData.elevator}</span> {/* Show 'כן' or 'לא' */}
+                                        </div>
+                                    </div>
+
+                                    <div className="mb-4">
                                         <label className="block text-right">מס' קומות בנכס</label>
                                         <input
                                             type="number"
@@ -1846,6 +1867,7 @@ const handleArchiveProperty = async () => {
                                     <p><strong>גישה לנכים:</strong> {selectedProperty.accessibility}</p>
                                     <p><strong>סורגים:</strong> {selectedProperty.bars}</p>
                                     <p><strong>אבטחה:</strong> {selectedProperty.security}</p>
+                                    <p><strong>מעלית:</strong> {selectedProperty.elevator}</p>
                                     <p><strong>מספר קומות בנכס:</strong> {selectedProperty.number_of_floors || 'N/A'}
                                     </p>
                                     <p><strong>קומת
@@ -1857,6 +1879,13 @@ const handleArchiveProperty = async () => {
                                     <div className="mb-4" dir="rtl">
                                         <p><strong>סטטוס:</strong> {selectedProperty.status || 'N/A'}</p>
                                     </div>
+                                    {/* Conditional rendering for archived properties */}
+                {selectedProperty.status === 'archived' && (
+                    <>
+                        <p><strong>סיבת ארכיון:</strong> {selectedProperty.archiveReason || 'N/A'}</p>
+                        <p><strong>תאריך סיום:</strong> {selectedProperty.endDate || 'N/A'}</p>
+                    </>
+                )}
 
                                 </div>
                                 {/* Display pictures vertically */}
