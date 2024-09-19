@@ -20,6 +20,7 @@ const ClientProfessionalPage = () => {
         id: '',
         firstName: '',
         lastName: '',
+         phonePrefix: '050',
         phone: '',
         email: '',
         type: 'Client',
@@ -112,11 +113,26 @@ const ClientProfessionalPage = () => {
 
     const handleNewPersonChange = (e) => {
         const { name, value } = e.target;
+
+    // Only allow numeric input for ID and enforce the 9-digit limit
+    if (name === "id") {
+        // Prevent entering non-numeric characters and more than 9 digits
+        const numericValue = value.replace(/\D/g, ''); // Remove non-numeric characters
+        if (numericValue.length > 9) {
+            return; // Prevent typing more than 9 numbers
+        }
+
         setNewPerson((prev) => ({
             ...prev,
-            [name]: value,
+            [name]: numericValue,
         }));
-    };
+        } else {
+            setNewPerson((prev) => ({
+                ...prev,
+                [name]: value,
+            }));
+        }
+};
 
     const handleAddCity = () => {
         if (newCity.trim() !== "") {
@@ -165,21 +181,26 @@ const handleRemoveCityForEditing = (cityToRemove) => {
 };
 
     const handleAddPerson = async () => {
-        try {
-            const response = await axios.post('http://localhost:5000/addPerson', newPerson, {
-                withCredentials: true,
-            });
+    if (newPerson.id.length !== 9) {
+        alert('תעודת הזהות חייבת לכלול 9 ספרות בדיוק');
+        return;
+    }
 
-            if (response.status === 200) {
-                setIsNewPersonPopupOpen(false); // Close the popup after saving
-                fetchData(); // Refresh the data
-            } else {
-                console.error('Failed to save new person:', response.status);
-            }
-        } catch (error) {
-            console.error('Error adding new person:', error);
+    try {
+        const response = await axios.post('http://localhost:5000/addPerson', newPerson, {
+            withCredentials: true,
+        });
+
+        if (response.status === 200) {
+            setIsNewPersonPopupOpen(false); // Close the popup after saving
+            fetchData(); // Refresh the data
+        } else {
+            console.error('Failed to save new person:', response.status);
         }
-    };
+    } catch (error) {
+        console.error('Error adding new person:', error);
+    }
+};
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -424,7 +445,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
 
             {/* Popup Window for Adding New Person */}
             {isNewPersonPopupOpen && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center" dir="rtl">
                     <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-screen overflow-y-auto relative">
                         <button
                             className="absolute top-2 right-2 text-red-500 hover:text-red-700"
