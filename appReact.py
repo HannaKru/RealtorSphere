@@ -11,6 +11,7 @@ from Property import get_properties, get_property_by_id, add_property,scrape_yad
 from sendMessage import send_email_with_attachment
 from ClientProfessionalPage import get_filtered_persons, add_person, get_person_details, update_person_details, remove_person
 from Deals import get_deals, get_deal_details, new_price
+from matchingAlgo import get_clients_for_realtor, match_Algo, send_property_email
 from werkzeug.utils import secure_filename
 import os
 import requests
@@ -518,5 +519,54 @@ def property_performance_report_route():
     else:
         return jsonify({"message": "No report data found"}), 404
 
+
+@app.route('/getClients', methods=['GET'])
+def get_clients():
+    print("Current session state:", session)
+    # Check if the user is logged in by checking session
+    user_email = session.get('user_email')
+    if not user_email:
+        return jsonify({'error': 'Unauthorized'}), 401
+    first_name = get_user_by_email(user_email)
+    clients = get_clients_for_realtor(user_email)
+
+    return jsonify({
+        "first_name": first_name,
+        "clients": clients
+    }), 200
+
+
+@app.route('/matchProperties', methods=['POST'])
+def match_properties():
+
+    data = request.json
+    clientData = data.get('clientData')
+    print(clientData)
+    realtorEmail = session.get('user_email')
+
+    # Check if person_id is in clientData
+    if 'id' not in clientData:
+        return jsonify({'error': 'person_id is missing from client data'}), 400
+
+    # Process matching logic here
+    try:
+        matched_properties = match_Algo(clientData, realtorEmail)
+        return jsonify(matched_properties)
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400  # Return the error with a status code 400
+
+
+@app.route('/sendMatches', methods=['POST'])
+def send_matches():
+    data = request.get_json()
+    client_email = data.get('email')
+    property_id = data.get('propertyId')
+
+    success, message = send_property_email(client_email, property_id)
+
+    if success:
+        return jsonify({'message': message}), 200
+    else:
+        return jsonify({'error':message}),500
 if __name__ == '__main__':
     app.run(debug=True)
