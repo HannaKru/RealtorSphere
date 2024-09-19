@@ -326,20 +326,20 @@ const handleRemoveCityForEditing = (cityToRemove) => {
 
             {/* Popup Window for Viewing and Editing Details */}
             {isPopupOpen && selectedPerson && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto">
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto" dir="rtl">
                     <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-full overflow-y-auto">
-                        <h2 className="text-2xl mb-4">Details for {selectedPerson.FirstName} {selectedPerson.LastName}</h2>
-                        <p><strong>Phone:</strong> <input type="text" name="Phone" value={selectedPerson.Phone} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
-                        <p><strong>Email:</strong> <input type="text" name="email" value={selectedPerson.email} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
+                        <h2 className="text-2xl mb-4">פרטים עבור {selectedPerson.FirstName} {selectedPerson.LastName}</h2>
+                        <p><strong>טלפון:</strong> <input type="text" name="Phone" value={selectedPerson.Phone} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
+                        <p><strong>אימייל:</strong> <input type="text" name="email" value={selectedPerson.email} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
 
                         {selectedPerson?.Type?.Client && (
                             <>
                                 <h3 className="text-xl mt-4">Client Preferences</h3>
-                                <p><strong>Budget:</strong> <input type="text" name="budget" value={selectedPerson?.Type?.Client?.budget} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
-                                <p><strong>Rooms:</strong> <input type="text" name="minRooms" value={selectedPerson?.Type?.Client?.minRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxRooms" value={selectedPerson?.Type?.Client?.maxRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
-                                <p><strong>Size:</strong> <input type="text" name="minSize" value={selectedPerson?.Type?.Client?.minSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxSize" value={selectedPerson?.Type?.Client?.maxSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> sqm</p>
+                                <p><strong>תקציב:</strong> <input type="text" name="budget" value={selectedPerson?.Type?.Client?.budget} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
+                                <p><strong>חדרים:</strong> <input type="text" name="minRooms" value={selectedPerson?.Type?.Client?.minRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxRooms" value={selectedPerson?.Type?.Client?.maxRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
+                                <p><strong>גודל:</strong> <input type="text" name="minSize" value={selectedPerson?.Type?.Client?.minSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxSize" value={selectedPerson?.Type?.Client?.maxSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> sqm</p>
 
-                                <p><strong>Property Type:</strong></p>
+                                <p><strong>סוג נכס:</strong></p>
                                 <select
                                     name="propertyType"
                                     value={selectedPerson?.Type?.Client?.propertyType || ''}
@@ -359,7 +359,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                     {(selectedPerson?.Type?.Client?.searchCity  || []).map((city, index) => (
                                         <li key={index} className="flex justify-between">
                                             {city}
-                                            <button onClick={() => handleRemoveCityForEditing(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
+                                            <button onClick={() => handleRemoveCityForEditing(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">הסרה</button>
                                         </li>
                                     ))}
                                 </ul>
@@ -371,7 +371,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                         onChange={(e) => setNewCity(e.target.value)}
                                         className="w-full p-2 border rounded-md mb-4"
                                     />
-                                    <button onClick={handleAddCityForEditing} className="bg-green-500 text-white p-2 rounded-md ml-2">Add</button>
+                                    <button onClick={handleAddCityForEditing} className="bg-green-500 text-white p-2 rounded-md ml-2">הוספה</button>
                                 </div>
 
                                 <h3 className="text-xl mt-4">Properties Liked</h3>
@@ -379,7 +379,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                     {(selectedPerson?.Type?.Client?.PropertiesList || []).map((property, index) => (
                                         <li key={index}>
                                             {property}
-                                            <button onClick={() => handleRemoveProperty(property)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
+                                            <button onClick={() => handleRemoveProperty(property)} className="bg-red-500 text-white p-1 rounded-md ml-2">הסרה</button>
                                         </li>
                                     ))}
                                 </ul>
@@ -396,14 +396,14 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                     onClick={() => handleAddProperty(newProperty)}
                                     className="bg-green-500 text-white p-2 rounded-md ml-2 mt-2"
                                 >
-                                    Add
+                                    הוספה
                                 </button>
                             </>
                         )}
 
                         {selectedPerson?.Type?.Owner && (
                             <>
-                                <h3 className="text-xl mt-4">Owned Properties</h3>
+                                <h3 className="text-xl mt-4">נכסים משוייכים</h3>
                                 <ul>
                                     {(selectedPerson?.PropertiesOwned || []).map((property, index) => (
                                         <li key={index}>
@@ -415,8 +415,8 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                         )}
 
                         <div className="flex justify-end">
-                            <button className="bg-blue-500 text-white p-2 rounded-md mr-2" onClick={handleEditPerson}>Save Changes</button>
-                            <button className="bg-gray-300 p-2 rounded-md" onClick={closePopup}>Close</button>
+                            <button className="bg-blue-500 text-white p-2 rounded-md mr-2" onClick={handleEditPerson}>שמירת שינויים </button>
+                            <button className="bg-gray-300 p-2 rounded-md" onClick={closePopup}>סגירה</button>
                         </div>
                     </div>
                 </div>
@@ -436,7 +436,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
 
                         {/* New Person Input Fields */}
                         <div className="mb-4">
-                            <label className="block">ID</label>
+                            <label className="block">ת.ז</label>
                             <input
                                 type="text"
                                 name="id"
@@ -446,7 +446,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block">First Name</label>
+                            <label className="block">שם פרטי</label>
                             <input
                                 type="text"
                                 name="firstName"
@@ -456,7 +456,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block">Last Name</label>
+                            <label className="block">שם משפחה</label>
                             <input
                                 type="text"
                                 name="lastName"
@@ -466,7 +466,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block">Phone</label>
+                            <label className="block">טלפון</label>
                             <input
                                 type="text"
                                 name="phone"
@@ -476,7 +476,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                             />
                         </div>
                         <div className="mb-4">
-                            <label className="block">Email</label>
+                            <label className="block">אימייל</label>
                             <input
                                 type="email"
                                 name="email"
@@ -487,15 +487,15 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                         </div>
 
                         <div className="mb-4">
-                            <label className="block">Type</label>
+                            <label className="block">סוג</label>
                             <select
                                 name="type"
                                 value={newPerson.type}
                                 onChange={handleNewPersonChange}
                                 className="w-full p-2 border rounded-md"
                             >
-                                <option value="Owner">Owner</option>
-                                <option value="Client">Client</option>
+                                <option value="Owner">בעלי נכס</option>
+                                <option value="Client">לקוח</option>
                             </select>
                         </div>
 
@@ -503,7 +503,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                         {newPerson.type === 'Client' && (
                             <>
                                 <div className="mb-4">
-                                    <label className="block">Budget</label>
+                                    <label className="block">תקציב</label>
                                     <input
                                         type="number"
                                         name="budget"
@@ -513,20 +513,20 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                     />
                                 </div>
                                 <div className="mb-4">
-                                    <label className="block">Rent or Buy</label>
+                                    <label className="block">השכרה או קניה</label>
                                     <select
                                         name="buyORrent"
                                         value={newPerson.buyORrent}
                                         onChange={handleNewPersonChange}
                                         className="w-full p-2 border rounded-md"
                                     >
-                                        <option value="rent">Rent</option>
-                                        <option value="buy">Buy</option>
+                                        <option value="rent">השכרה</option>
+                                        <option value="buy">קניה</option>
                                     </select>
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 mb-4">
                                     <div>
-                                        <label className="block">Min Rooms</label>
+                                        <label className="block">מינימום חדרים</label>
                                         <input
                                             type="number"
                                             name="minRooms"
@@ -536,7 +536,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block">Max Rooms</label>
+                                        <label className="block">מקסימום חדרים</label>
                                         <input
                                             type="number"
                                             name="maxRooms"
@@ -548,7 +548,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-4 mb-4">
                                     <div>
-                                        <label className="block">Min Size (sqm)</label>
+                                        <label className="block">גודל מינימלי</label>
                                         <input
                                             type="number"
                                             name="minSize"
@@ -558,7 +558,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                         />
                                     </div>
                                     <div>
-                                        <label className="block">Max Size (sqm)</label>
+                                        <label className="block">גודל מקסימלי</label>
                                         <input
                                             type="number"
                                             name="maxSize"
@@ -568,7 +568,7 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                         />
                                     </div>
                                 </div>
-                                <p><strong>Property Type:</strong></p>
+                                <p><strong>סוג נכס</strong></p>
                                 <select
                                     name="propertyType"
                                     value={newPerson.propertyType}
@@ -582,12 +582,12 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                         </option>
                                     ))}
                                 </select>
-                                <h3 className="text-xl mb-4">Cities Considered</h3>
+                                <h3 className="text-xl mb-4">ערים</h3>
                                 <ul>
                                     {(newPerson.cities || []).map((city, index) => (
                                         <li key={index} className="flex justify-between">
                                             {city}
-                                            <button onClick={() => handleRemoveCity(index)} className="bg-red-500 text-white p-1 rounded-md ml-2">Remove</button>
+                                            <button onClick={() => handleRemoveCity(index)} className="bg-red-500 text-white p-1 rounded-md ml-2">הסרה</button>
                                         </li>
                                     ))}
                                 </ul>
@@ -599,13 +599,13 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                         onChange={(e) => setNewCity(e.target.value)}
                                         className="w-full p-2 border rounded-md mb-4"
                                     />
-                                    <button onClick={handleAddCity} className="bg-green-500 text-white p-2 rounded-md ml-2">Add</button>
+                                    <button onClick={handleAddCity} className="bg-green-500 text-white p-2 rounded-md ml-2">הוספה</button>
                                 </div>
                             </>
                         )}
 
                         <button className="bg-blue-600 text-white p-2 rounded-md w-full" onClick={handleAddPerson}>
-                            Save
+                            שמירה
                         </button>
                     </div>
                 </div>
