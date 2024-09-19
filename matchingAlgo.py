@@ -258,7 +258,7 @@ def send_property_email(client_email, property_id):
 
     if not property_data:
         return False, "Property not found"
-
+#
     # Create the body of the email message
     body = (f" מספר זיהוי: {property_id}\n"
             f"מיקום:{property_data.get('city')}, {property_data.get('street')}\n"
