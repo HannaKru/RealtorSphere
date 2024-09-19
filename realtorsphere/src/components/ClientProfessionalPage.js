@@ -126,12 +126,22 @@ const ClientProfessionalPage = () => {
             ...prev,
             [name]: numericValue,
         }));
-        } else {
-            setNewPerson((prev) => ({
-                ...prev,
-                [name]: value,
-            }));
+        } else if (name === "phone") {
+        // New phone number validation logic
+        const numericValue = value.replace(/\D/g, '');
+        if (numericValue.length > 10) {
+            return; // Prevent typing more than 10 numbers
         }
+        setNewPerson((prev) => ({
+            ...prev,
+            [name]: numericValue,
+        }));
+    } else {
+        setNewPerson((prev) => ({
+            ...prev,
+            [name]: value,
+        }));
+    }
 };
 
     const handleAddCity = () => {
