@@ -297,6 +297,7 @@ def update_property(property_id, data, files,pictures_to_delete=None):
     try:
         property_ref = db_ref.child(f'property/{property_id}')
 
+
         # Fetch the existing property data
         existing_property = property_ref.get()
 
@@ -387,13 +388,16 @@ def update_property(property_id, data, files,pictures_to_delete=None):
             for ownership_id, ownership_data in ownership_ref.items():
                 # Update the rentORsell field in the Ownership document
                 db_ref.child(f'Ownership/{ownership_id}').update({
-                    'rentORsell': transaction_type
+                    'rentORsell': transaction_type,
+                    'startDate': data.get('startDate', ownership_data.get('startDate'))
                 })
 
         return {"message": "Property updated successfully"}, 200
     except Exception as e:
         print(f"Error updating property in Firebase: {e}")
         return {"error": "An error occurred while updating the property"}, 500
+
+
 def remove_picture(property_id, picture_key):
     try:
         # Initialize the storage bucket

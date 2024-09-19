@@ -1702,6 +1702,18 @@ const handleArchiveProperty = async () => {
                                     </div>
 
                                     <div className="mb-4">
+                                        <label className="block text-right">תאריך תחילת העסקה</label>
+                                        <input
+                                            type="date"
+                                            name="startDate"
+                                            value={editData.startDate || ''}  // Pre-fill with existing start date
+                                            onChange={handleEditChange}  // Update state on change
+                                            className="w-full p-2 border rounded-md"
+                                            dir="rtl"
+                                        />
+                                    </div>
+
+                                    <div className="mb-4">
                                         <label className="block text-right">הערות נוספות</label>
                                         <textarea
                                             name="notes"
