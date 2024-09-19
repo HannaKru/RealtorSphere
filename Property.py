@@ -398,28 +398,6 @@ def update_property(property_id, data, files,pictures_to_delete=None):
         return {"error": "An error occurred while updating the property"}, 500
 
 
-def remove_picture(property_id, picture_key):
-    try:
-        # Initialize the storage bucket
-        bucket = get_storage_bucket()
-
-        # Construct the file path in Firebase Storage based on property_id and picture_key
-        file_path = f"property_images/{property_id}_{picture_key}"
-
-        # Get the blob object (file) from Firebase Storage
-        blob = bucket.blob(file_path)
-
-        # Delete the file from Firebase Storage
-        blob.delete()
-
-        # Now, remove the picture entry from the Firebase Database
-        db_ref.child(f'property/{property_id}/pictures/{picture_key}').delete()
-
-        return {"message": "Picture deleted successfully"}, 200
-
-    except Exception as e:
-        print(f"Error deleting picture: {e}")
-        return {"error": "An error occurred while deleting the picture"}, 500
 
 def archive_property(property_id, archive_reason):
     try:

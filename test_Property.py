@@ -1,9 +1,12 @@
 from unittest import TestCase
 import unittest
 from unittest.mock import patch, MagicMock
-from Property import get_properties, get_property_by_id,allowed_file, add_property, remove_picture, add_pictures_to_property
+from Property import get_properties, get_property_by_id,allowed_file, add_property, remove_picture, add_pictures_to_property,update_property, archive_property, scrape_yad2_listings
 from flask import Flask, request
-
+import datetime
+from bs4 import BeautifulSoup
+import requests
+import time
 
 
 class TestGetProperties(unittest.TestCase):
@@ -499,7 +502,375 @@ class TestAddPicturesToProperty(unittest.TestCase):
         # Verify that the exception was raised and caught
         mock_blob.upload_from_file.assert_called_once()
 
+class TestUpdateProperty(unittest.TestCase):
 
+    @patch('Property.db_ref')  # Mock Firebase DB reference
+    @patch('Property.add_pictures_to_property')  # Mock function to add pictures
+    @patch('Property.remove_picture')  # Mock function to remove pictures
+    def test_update_property_success(self, mock_remove_picture, mock_add_pictures, mock_db_ref):
+        # Mock existing property data
+        mock_property_ref = MagicMock()
+        mock_property_ref.get.return_value = {
+            'Price': '2000',
+            'type': {
+                'apartment': {
+                    'item:': {
+                        'rooms': [{'width': 3, 'length': 4, 'type': 'bedroom'}]
+                    }
+                }
+            }
+        }
+        mock_db_ref.child.return_value = mock_property_ref
+
+        # Mock ownership reference
+        mock_ownership_ref = MagicMock()
+        mock_ownership_ref.items.return_value = [('ownership_id_1', {'propertyID': 'property_1'})]
+        mock_db_ref.child().order_by_child().equal_to().get.return_value = mock_ownership_ref
+
+        data = {
+            'price': '3000',
+            'transactionType': 'rent',
+            'rooms': '[{"width": 3, "length": 4, "type": "livingroom"}]',
+            'startDate': '2022-05-01'
+        }
+
+        result = update_property('property_1', data, None)
+
+        # Ensure the property update was called once with correct data
+        expected_property_update = {
+            'Price': '3000',
+            'street': None,
+            'city': None,
+            'house': None,
+            'neighborhood': None,
+            'size': 0,
+            'ac': 0,
+            'accessibility': False,
+            'age': 0,
+            'bars': False,
+            'number_of_floors': 1,
+            'security': False,
+            'status': 'active',
+            'notes': '',
+            'type': {
+                'apartment': {
+                    'type': None,
+                    'floor': 0,
+                    'apNum': 0,
+                    'elevator': False,
+                    'item:': {
+                        'Pparking': {'number': 0},
+                        'bathroomsNum': 0,
+                        'roomsNum': 0,
+                        'rooms': [{'width': 3, 'length': 4, 'type': 'livingroom'}]
+                    }
+                }
+            }
+        }
+        mock_property_ref.update.assert_any_call(expected_property_update)
+
+        # Ensure the ownership update was called twice with correct data
+        expected_ownership_update = {
+            'rentORsell': 'rent',
+            'startDate': '2022-05-01'
+        }
+        mock_db_ref.child('Ownership/ownership_id_1').update.assert_any_call(expected_ownership_update)
+
+        # Check that the update was called twice: once for the ownership type, and once for the startDate
+        self.assertEqual(mock_db_ref.child('Ownership/ownership_id_1').update.call_count, 2)
+
+        # Check the result
+        self.assertEqual(result, ({"message": "Property updated successfully"}, 200))
+
+    @patch('Property.db_ref')
+    @patch('Property.add_pictures_to_property')
+    def test_update_property_with_files(self, mock_add_pictures, mock_db_ref):
+        # Mock existing property data
+        mock_property_ref = MagicMock()
+        mock_property_ref.get.return_value = {
+            'Price': '2000',
+            'pictures': {}
+        }
+        mock_db_ref.child.return_value = mock_property_ref
+
+        data = {
+            'price': '3000',
+            'transactionType': 'rent'
+        }
+
+        mock_files = {
+            'file1': MagicMock(),
+            'file2': MagicMock()
+        }
+
+        result = update_property('property_1', data, mock_files)
+
+        # Ensure pictures were added
+        mock_add_pictures.assert_called_once_with('property_1', mock_files)
+        # Ensure property update
+        mock_property_ref.update.assert_called_once()
+
+        self.assertEqual(result, ({"message": "Property updated successfully"}, 200))
+
+    @patch('Property.db_ref')
+    @patch('Property.remove_picture')
+    def test_update_property_delete_pictures(self, mock_remove_picture, mock_db_ref):
+        # Mock existing property data
+        mock_property_ref = MagicMock()
+        mock_property_ref.get.return_value = {
+            'Price': '2000',
+            'pictures': {'picture1': 'url1'}
+        }
+        mock_db_ref.child.return_value = mock_property_ref
+
+        data = {
+            'price': '3000',
+            'transactionType': 'rent'
+        }
+
+        pictures_to_delete = '["picture1"]'
+
+        result = update_property('property_1', data, None, pictures_to_delete=pictures_to_delete)
+
+        # Ensure pictures were deleted
+        mock_remove_picture.assert_called_once_with('property_1', 'picture1')
+        # Ensure property update
+        mock_property_ref.update.assert_called_once()
+
+        self.assertEqual(result, ({"message": "Property updated successfully"}, 200))
+
+    @patch('Property.db_ref')
+    def test_update_property_rooms_preserved(self, mock_db_ref):
+        # Mock existing property data
+        mock_property_ref = MagicMock()
+        mock_property_ref.get.return_value = {
+            'Price': '2000',
+            'type': {
+                'apartment': {
+                    'item:': {
+                        'rooms': [{'width': 3, 'length': 4, 'type': 'bedroom'}]
+                    }
+                }
+            }
+        }
+        mock_db_ref.child.return_value = mock_property_ref
+
+        data = {
+            'price': '3000',
+            'transactionType': 'rent'
+        }
+
+        result = update_property('property_1', data, None)
+
+        # Ensure property update
+        mock_property_ref.update.assert_called_once()
+        # Ensure the existing rooms were preserved
+        updated_data = mock_property_ref.update.call_args[0][0]
+        self.assertIn('rooms', updated_data['type']['apartment']['item:'])
+        self.assertEqual(updated_data['type']['apartment']['item:']['rooms'], [{'width': 3, 'length': 4, 'type': 'bedroom'}])
+
+        self.assertEqual(result, ({"message": "Property updated successfully"}, 200))
+
+    @patch('Property.db_ref')
+    def test_update_property_exception(self, mock_db_ref):
+        # Mock existing property data
+        mock_db_ref.child.side_effect = Exception("Firebase error")
+
+        data = {
+            'price': '3000',
+            'transactionType': 'rent'
+        }
+
+        result = update_property('property_1', data, None)
+
+        # Ensure the exception is handled
+        self.assertEqual(result, ({"error": "An error occurred while updating the property"}, 500))
+class TestArchiveProperty(unittest.TestCase):
+
+    @patch('Property.db_ref')  # Mock Firebase reference
+    def test_archive_property_success(self, mock_db_ref):
+        # Mock existing property data
+        mock_property_ref = MagicMock()
+        mock_property_ref.get.return_value = {
+            'Price': '2500',
+            'status': 'active'
+        }
+        mock_db_ref.child.return_value = mock_property_ref
+
+        # Mock ownership data
+        mock_ownership_ref = MagicMock()
+        mock_ownership_ref.items.return_value = {
+            'ownership_id_1': {
+                'propertyID': 'property123',
+                'startDate': '2022-01-01'
+            }
+        }.items()
+        mock_db_ref.child().order_by_child().equal_to().get.return_value = mock_ownership_ref
+
+        # Call the function
+        result = archive_property('property123', 'Property is no longer available')
+
+        # Verify the property was updated with the archive status
+        mock_property_ref.update.assert_any_call({
+            'status': 'archived',
+            'archiveReason': 'Property is no longer available'
+        })
+
+        # Verify the ownership's endDate was updated to today's date
+        today = datetime.datetime.now().strftime('%Y-%m-%d')
+        mock_db_ref.child(f'Ownership/ownership_id_1').update.assert_any_call({
+            'endDate': today
+        })
+
+        # Check the result
+        self.assertEqual(result, ({"message": "Property archived successfully"}, 200))
+
+
+    @patch('Property.db_ref')
+    def test_archive_property_not_found(self, mock_db_ref):
+        # Mock no existing property found
+        mock_property_ref = MagicMock()
+        mock_property_ref.get.return_value = None
+        mock_db_ref.child.return_value = mock_property_ref
+
+        # Call the function
+        result = archive_property('non_existent_property', 'Property not available')
+
+        # Verify no update was made
+        mock_property_ref.update.assert_not_called()
+
+        # Check the result
+        self.assertEqual(result, ({"error": "Property not found"}, 404))
+
+
+    @patch('Property.db_ref')
+    def test_archive_property_exception(self, mock_db_ref):
+        # Mock exception during the update process
+        mock_property_ref = MagicMock()
+        mock_property_ref.get.side_effect = Exception("Firebase error")
+        mock_db_ref.child.return_value = mock_property_ref
+
+        # Call the function and expect it to handle the exception
+        result = archive_property('property123', 'Property is no longer available')
+
+        # Check that the exception was handled and an error was returned
+        self.assertEqual(result, ({"error": "An error occurred while archiving the property"}, 500))
+
+
+class TestScrapeYad2Listings(unittest.TestCase):
+
+    @patch('requests.get')
+    def test_scrape_yad2_listings_success(self, mock_get):
+        # Create a mock HTML response for successful scraping
+        mock_html = '''
+        <html>
+        <body>
+            <div class="feeditem table">
+                <span class="title">Apartment</span>
+                <div class="price">₪1,500,000</div>
+                <span class="city">Tel Aviv</span>
+                <span class="rooms">3</span>
+                <a href="/realestate/12345">View Details</a>
+            </div>
+            <div class="feeditem table">
+                <span class="title">House</span>
+                <div class="price">₪3,200,000</div>
+                <span class="city">Jerusalem</span>
+                <span class="rooms">5</span>
+                <a href="/realestate/54321">View Details</a>
+            </div>
+        </body>
+        </html>
+        '''
+
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = mock_html
+        mock_get.return_value = mock_response
+
+        # Call the function and check the output
+        listings = scrape_yad2_listings(max_listings=2)
+        expected_listings = [
+            {
+                'propertyType': 'Apartment',
+                'price': '₪1,500,000',
+                'city': 'Tel Aviv',
+                'rooms': '3',
+                'link': 'https://www.yad2.co.il/realestate/12345'
+            },
+            {
+                'propertyType': 'House',
+                'price': '₪3,200,000',
+                'city': 'Jerusalem',
+                'rooms': '5',
+                'link': 'https://www.yad2.co.il/realestate/54321'
+            }
+        ]
+
+        self.assertEqual(listings, expected_listings)
+
+    @patch('requests.get')
+    def test_scrape_yad2_listings_no_properties(self, mock_get):
+        # Mock HTML response with no property cards
+        mock_html = '''
+        <html>
+        <body>
+            <div>No properties found</div>
+        </body>
+        </html>
+        '''
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = mock_html
+        mock_get.return_value = mock_response
+
+        # Call the function and check the output
+        listings = scrape_yad2_listings(max_listings=2)
+        self.assertEqual(listings, [])
+
+    @patch('requests.get')
+    def test_scrape_yad2_listings_request_exception(self, mock_get):
+        # Simulate a request exception
+        mock_get.side_effect = requests.RequestException("Request failed")
+
+        # Call the function and check the output
+        listings = scrape_yad2_listings(max_listings=2)
+        self.assertEqual(listings, [])
+
+    @patch('requests.get')
+    def test_scrape_yad2_listings_partial_failure(self, mock_get):
+        # Create a mock HTML response for successful scraping
+        mock_html = '''
+        <html>
+        <body>
+            <div class="feeditem table">
+                <span class="title">Apartment</span>
+                <div class="price">₪1,500,000</div>
+                <span class="city">Tel Aviv</span>
+                <span class="rooms">3</span>
+                <a href="/realestate/12345">View Details</a>
+            </div>
+        </body>
+        </html>
+        '''
+        # Mock a successful response first, then simulate an exception
+        mock_response = MagicMock()
+        mock_response.status_code = 200
+        mock_response.content = mock_html
+        mock_get.side_effect = [mock_response, requests.RequestException("Request failed")]
+
+        # Call the function and check the output
+        listings = scrape_yad2_listings(max_listings=2)
+        expected_listings = [
+            {
+                'propertyType': 'Apartment',
+                'price': '₪1,500,000',
+                'city': 'Tel Aviv',
+                'rooms': '3',
+                'link': 'https://www.yad2.co.il/realestate/12345'
+            }
+        ]
+        self.assertEqual(listings, expected_listings)
 
 if __name__ == '__main__':
     unittest.main()
