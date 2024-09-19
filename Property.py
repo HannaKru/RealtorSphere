@@ -272,19 +272,25 @@ def add_pictures_to_property(property_id, files):
         for key, file in files.items():
             file_path = f"property_images/{property_id}_{file.filename}"
             blob = bucket.blob(file_path)
-            blob.upload_from_file(file)
-            blob.make_public()
 
-            # Save picture URL to Firebase
-            db_ref.child(f'property/{property_id}/pictures').update({
-                key: blob.public_url
-            })
+            try:
+                blob.upload_from_file(file)
+                blob.make_public()
+
+                # Save picture URL to Firebase
+                db_ref.child(f'property/{property_id}/pictures').update({
+                    key: blob.public_url
+                })
+            except Exception as e:
+                print(f"Error uploading file {file.filename}: {e}")
+                return {"error": "An error occurred while uploading the pictures"}, 500
 
         return {"message": "Pictures uploaded successfully"}, 200
 
     except Exception as e:
         print(f"Error uploading pictures: {e}")
         return {"error": "An error occurred while uploading the pictures"}, 500
+
 
 
 def update_property(property_id, data, files,pictures_to_delete=None):
