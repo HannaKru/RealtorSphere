@@ -127,11 +127,9 @@ const ClientProfessionalPage = () => {
             [name]: numericValue,
         }));
         } else if (name === "phone") {
-        // New phone number validation logic
+        // Phone number validation logic
         const numericValue = value.replace(/\D/g, '');
-        if (numericValue.length > 10) {
-            return; // Prevent typing more than 10 numbers
-        }
+        if (numericValue.length > 10) return;
         setNewPerson((prev) => ({
             ...prev,
             [name]: numericValue,
@@ -196,6 +194,11 @@ const handleRemoveCityForEditing = (cityToRemove) => {
         return;
     }
 
+     if (newPerson.phone.length !== 10) {
+        alert('מספר הטלפון חייב לכלול 10 ספרות בדיוק');
+        return;
+    }
+
     try {
         const response = await axios.post('http://localhost:5000/addPerson', newPerson, {
             withCredentials: true,
@@ -213,12 +216,21 @@ const handleRemoveCityForEditing = (cityToRemove) => {
 };
 
     const handleInputChange = (e) => {
-        const { name, value } = e.target;
+    const { name, value } = e.target;
+    if (name === "Phone") {
+        const numericValue = value.replace(/\D/g, '');
+        if (numericValue.length > 10) return;
+        setSelectedPerson((prevPerson) => ({
+            ...prevPerson,
+            [name]: numericValue,
+        }));
+    } else {
         setSelectedPerson((prevPerson) => ({
             ...prevPerson,
             [name]: value,
         }));
-    };
+    }
+};
 
     const handleClientChange = (e) => {
         const { name, value } = e.target;
@@ -359,16 +371,41 @@ const handleRemoveCityForEditing = (cityToRemove) => {
             {isPopupOpen && selectedPerson && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto" dir="rtl">
                     <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-full overflow-y-auto">
-                        <h2 className="text-2xl mb-4">פרטים עבור {selectedPerson.FirstName} {selectedPerson.LastName}</h2>
-                        <p><strong>טלפון:</strong> <input type="text" name="Phone" value={selectedPerson.Phone} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
-                        <p><strong>אימייל:</strong> <input type="text" name="email" value={selectedPerson.email} onChange={handleInputChange} className="w-full p-2 border rounded-md" /></p>
+                        <h2 className="text-2xl mb-4">פרטים
+                            עבור {selectedPerson.FirstName} {selectedPerson.LastName}</h2>
+                        <p><strong>טלפון:</strong>
+                            <input
+                                type="tel"
+                                name="Phone"
+                                value={selectedPerson.Phone}
+                                onChange={handleInputChange}
+                                className="w-full p-2 border rounded-md"
+                                maxLength="10"
+                            />
+                        </p>
+                        <p><strong>אימייל:</strong> <input type="text" name="email" value={selectedPerson.email}
+                                                           onChange={handleInputChange}
+                                                           className="w-full p-2 border rounded-md"/></p>
 
                         {selectedPerson?.Type?.Client && (
                             <>
                                 <h3 className="text-xl mt-4">Client Preferences</h3>
-                                <p><strong>תקציב:</strong> <input type="text" name="budget" value={selectedPerson?.Type?.Client?.budget} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
-                                <p><strong>חדרים:</strong> <input type="text" name="minRooms" value={selectedPerson?.Type?.Client?.minRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxRooms" value={selectedPerson?.Type?.Client?.maxRooms} onChange={handleClientChange} className="w-full p-2 border rounded-md" /></p>
-                                <p><strong>גודל:</strong> <input type="text" name="minSize" value={selectedPerson?.Type?.Client?.minSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> - <input type="text" name="maxSize" value={selectedPerson?.Type?.Client?.maxSize} onChange={handleClientChange} className="w-full p-2 border rounded-md" /> sqm</p>
+                                <p><strong>תקציב:</strong> <input type="text" name="budget"
+                                                                  value={selectedPerson?.Type?.Client?.budget}
+                                                                  onChange={handleClientChange}
+                                                                  className="w-full p-2 border rounded-md"/></p>
+                                <p><strong>חדרים:</strong> <input type="text" name="minRooms"
+                                                                  value={selectedPerson?.Type?.Client?.minRooms}
+                                                                  onChange={handleClientChange}
+                                                                  className="w-full p-2 border rounded-md"/> - <input
+                                    type="text" name="maxRooms" value={selectedPerson?.Type?.Client?.maxRooms}
+                                    onChange={handleClientChange} className="w-full p-2 border rounded-md"/></p>
+                                <p><strong>גודל:</strong> <input type="text" name="minSize"
+                                                                 value={selectedPerson?.Type?.Client?.minSize}
+                                                                 onChange={handleClientChange}
+                                                                 className="w-full p-2 border rounded-md"/> - <input
+                                    type="text" name="maxSize" value={selectedPerson?.Type?.Client?.maxSize}
+                                    onChange={handleClientChange} className="w-full p-2 border rounded-md"/> sqm</p>
 
                                 <p><strong>סוג נכס:</strong></p>
                                 <select
@@ -387,10 +424,12 @@ const handleRemoveCityForEditing = (cityToRemove) => {
 
                                 <h3 className="text-xl mt-4">Preferred Cities</h3>
                                 <ul>
-                                    {(selectedPerson?.Type?.Client?.searchCity  || []).map((city, index) => (
+                                    {(selectedPerson?.Type?.Client?.searchCity || []).map((city, index) => (
                                         <li key={index} className="flex justify-between">
                                             {city}
-                                            <button onClick={() => handleRemoveCityForEditing(city)} className="bg-red-500 text-white p-1 rounded-md ml-2">הסרה</button>
+                                            <button onClick={() => handleRemoveCityForEditing(city)}
+                                                    className="bg-red-500 text-white p-1 rounded-md ml-2">הסרה
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>
@@ -402,7 +441,9 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                         onChange={(e) => setNewCity(e.target.value)}
                                         className="w-full p-2 border rounded-md mb-4"
                                     />
-                                    <button onClick={handleAddCityForEditing} className="bg-green-500 text-white p-2 rounded-md ml-2">הוספה</button>
+                                    <button onClick={handleAddCityForEditing}
+                                            className="bg-green-500 text-white p-2 rounded-md ml-2">הוספה
+                                    </button>
                                 </div>
 
                                 <h3 className="text-xl mt-4">Properties Liked</h3>
@@ -410,7 +451,9 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                     {(selectedPerson?.Type?.Client?.PropertiesList || []).map((property, index) => (
                                         <li key={index}>
                                             {property}
-                                            <button onClick={() => handleRemoveProperty(property)} className="bg-red-500 text-white p-1 rounded-md ml-2">הסרה</button>
+                                            <button onClick={() => handleRemoveProperty(property)}
+                                                    className="bg-red-500 text-white p-1 rounded-md ml-2">הסרה
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>
@@ -446,7 +489,9 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                         )}
 
                         <div className="flex justify-end">
-                            <button className="bg-blue-500 text-white p-2 rounded-md mr-2" onClick={handleEditPerson}>שמירת שינויים </button>
+                            <button className="bg-blue-500 text-white p-2 rounded-md mr-2"
+                                    onClick={handleEditPerson}>שמירת שינויים
+                            </button>
                             <button className="bg-gray-300 p-2 rounded-md" onClick={closePopup}>סגירה</button>
                         </div>
                     </div>
