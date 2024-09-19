@@ -528,7 +528,8 @@ const addImageInput = () => {
     transactionType: property.transactionType || 'N/A',
     propertyType: property.propertyType || 'N/A',
     archiveReason: property.archiveReason || '',
-    endDate: property.endDate || ''
+    endDate: property.endDate || '',
+    startDate: property.startDate || ''
 
   });
   setIsDetailsPopupOpen(true);
@@ -1876,16 +1877,18 @@ const handleArchiveProperty = async () => {
                                     <p><strong>סוג
                                         עסקה:</strong> {selectedProperty.transactionType === 'sell' ? 'למכירה' : 'להשכרה'}
                                     </p>
+                                    <p><strong>תאריך התחלה:</strong> {selectedProperty.startDate || 'N/A'}</p>
                                     <div className="mb-4" dir="rtl">
                                         <p><strong>סטטוס:</strong> {selectedProperty.status || 'N/A'}</p>
                                     </div>
                                     {/* Conditional rendering for archived properties */}
-                {selectedProperty.status === 'archived' && (
-                    <>
-                        <p><strong>סיבת ארכיון:</strong> {selectedProperty.archiveReason || 'N/A'}</p>
-                        <p><strong>תאריך סיום:</strong> {selectedProperty.endDate || 'N/A'}</p>
-                    </>
-                )}
+                                    {selectedProperty.status === 'archived' && (
+                                        <>
+                                            <p><strong>סיבת ארכיון:</strong> {selectedProperty.archiveReason || 'N/A'}
+                                            </p>
+                                            <p><strong>תאריך סיום:</strong> {selectedProperty.endDate || 'N/A'}</p>
+                                        </>
+                                    )}
 
                                 </div>
                                 {/* Display pictures vertically */}

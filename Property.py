@@ -83,6 +83,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 if ownership.get('propertyID') == prop_id:
                     owner_id = ownership.get('PersonID')
                     owner_name = f"{all_users.get(str(owner_id), {}).get('FirstName', '')} {all_users.get(str(owner_id), {}).get('LastName', '')}".strip()
+                    start_date = ownership.get('startDate', '')
                     break
 
 
@@ -141,6 +142,7 @@ def get_properties(ownerName='', roomNumberFrom='', roomNumberTo='', priceFrom='
                 'apNum': prop_ap_num,
                 'archiveReason': prop_data.get('archiveReason', ''),
                 'endDate': ownership.get('endDate', ''),
+                'startDate': start_date
 
 
             })
