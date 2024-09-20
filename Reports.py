@@ -75,7 +75,7 @@ def generate_active_vs_archived_report(realtor_email):
         ownerships = ownerships_ref.get()
 
         if not properties or not ownerships:
-            return []
+            return jsonify({"error": "No properties or ownership data found"}), 404
 
         # Date filters
         one_month_ago, six_months_ago, one_year_ago = get_date_filter_ranges()
@@ -129,76 +129,91 @@ def generate_active_vs_archived_report(realtor_email):
 
     except Exception as e:
         print(f"Error generating report: {e}")
-        return {}
+        return jsonify({"error": "Failed to generate report"}), 500
 
 
 def get_property_performance_report():
-    # Retrieve all properties and ownerships from the database
-    properties = db_ref.child("property").get()
-    ownerships = db_ref.child("Ownership").get()
-    clients = db_ref.child("Person").get()
+    try:
+        realtor_email = session.get('user_email', '')
+        if not realtor_email:
+            return jsonify({"error": "User not logged in"}), 401
 
-    if not properties or not ownerships:
-        return jsonify({"message": "No properties or ownership data found"}), 404
+        properties_ref = db_ref.child('property')
+        ownerships_ref = db_ref.child('Ownership')
+        persons_ref = db_ref.child('Person')
 
-    # Track total days on market and deals closed for calculating averages
-    total_days = 0
-    deal_days = 0
-    deal_count = 0
-    property_count = 0
+        # Fetch data from Firebase
+        properties = properties_ref.get()
+        ownerships = ownerships_ref.get()
+        persons = persons_ref.get()
 
-    property_report = []
+        if not properties or not ownerships or not persons:
+            return jsonify({"error": "No properties or ownership data found"}), 404
 
-    for prop_id, property_data in properties.items():
-        # Look up the ownership record to get the startDate
-        ownership_record = ownerships.get(prop_id, {})
-        start_date = ownership_record.get("startDate")
-        end_date = ownership_record.get("endDate", None)
-        archive_reason = property_data.get("archiveReason", None)
+        report_data = []
+        total_days_on_market = 0
+        total_deal_time = 0
+        property_count = 0
 
-        # Skip properties without a startDate
-        if not start_date:
-            print(f"Skipping property {prop_id} due to missing startDate")
-            continue
+        for prop_id, prop_data in properties.items():
+            # Filter by realtor email
+            if prop_data.get('realtor') != realtor_email:
+                continue
 
-        # Calculate how many days the property was on the market
-        if end_date:
-            days_on_market = (datetime.strptime(end_date, '%Y-%m-%d') - datetime.strptime(start_date, '%Y-%m-%d')).days
-        else:
-            days_on_market = (datetime.now() - datetime.strptime(start_date, '%Y-%m-%d')).days
+            ownership = ownerships.get(prop_id)
+            if not ownership:
+                continue
 
-        total_days += days_on_market
-        property_count += 1
+            # Calculate days on market and deal time
+            start_date_str = ownership.get('startDate')
+            end_date_str = ownership.get('endDate', None)
 
-        # Check how many clients are interested in this property
-        interested_clients = 0
-        for client_id, client_data in clients.items():
-            if "PropertiesList" in client_data.get("Type", {}).get("Client", {}):
-                if prop_id in client_data["Type"]["Client"]["PropertiesList"]:
-                    interested_clients += 1
+            if start_date_str:
+                start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+                end_date = datetime.strptime(end_date_str, '%Y-%m-%d') if end_date_str else datetime.now()
+                days_on_market = (end_date - start_date).days
+            else:
+                continue  # Skip this property if no start date
 
-        # If archived due to "עסקה בוצעה", calculate the time to close the deal
-        if end_date and archive_reason == "עסקה בוצעה":
-            deal_days += days_on_market
-            deal_count += 1
+            # Get interested clients
+            interested_clients = [person for person_id, person in persons.items()
+                                  if prop_id in person.get('Type', {}).get('Client', {}).get('PropertiesList', [])]
+            num_interested_clients = len(interested_clients)
 
-        property_report.append({
-            "property_id": prop_id,
-            "price": property_data.get("Price"),
-            "city": property_data.get("city"),
-            "rooms": property_data.get("type", {}).get("apartment", {}).get("item:", {}).get("roomsNum"),
-            "days_on_market": days_on_market,
-            "interested_clients": interested_clients,
-            "archive_reason": archive_reason,
-            "end_date": end_date,
-        })
+            print(f"Property ID: {prop_id}")
+            print(
+                f"Room Number: {prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('roomsNum', 'N/A')}")
+            print(f"Interested Clients: {num_interested_clients}")
+            print(f"Archive Reason: {prop_data.get('archiveReason', 'N/A')}")
+            print(f"End Date: {end_date_str if end_date_str else 'N/A'}")
 
-    # Calculate average time to close a deal
-    avg_deal_time = deal_days / deal_count if deal_count > 0 else 0
-    avg_days_on_market = total_days / property_count if property_count > 0 else 0
+            # Prepare the report data for each property
+            report_data.append({
+                'property_id': prop_id,
+                'price': prop_data.get('Price', ''),
+                'city': prop_data.get('city', ''),
+                'roomsNum': prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('roomsNum', ''),
+                'days_on_market': days_on_market,
+                'deal_time': days_on_market,  # Using the same value for deal time as an assumption
+                'num_interested_clients': num_interested_clients,
+                'archiveReason': prop_data.get('archiveReason', ''),
+                'endDate': end_date_str if end_date_str else '',
+            })
 
-    return jsonify({
-        "property_report": property_report,
-        "average_days_on_market": avg_days_on_market,
-        "average_deal_time": avg_deal_time,
-    })
+            total_days_on_market += days_on_market
+            total_deal_time += days_on_market  # Assuming deal time is the same as days on market
+            property_count += 1
+
+        # Calculate averages
+        average_days_on_market = total_days_on_market / property_count if property_count else 0
+        average_deal_time = total_deal_time / property_count if property_count else 0
+
+        return jsonify({
+            'property_report': report_data,
+            'average_days_on_market': average_days_on_market,
+            'average_deal_time': average_deal_time
+        }), 200
+
+    except Exception as e:
+        print(f"Error fetching performance report: {e}")
+        return jsonify({"error": "Failed to generate report"}), 500

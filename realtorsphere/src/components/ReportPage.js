@@ -33,29 +33,31 @@ const ReportPage = () => {
 
   // Fetch Performance report data when the button is clicked
   const fetchPerformanceReport = async () => {
-    setLoading(true);
-    setErrorMessage('');
-    try {
-      const response = await axios.get('http://localhost:5000/propertyPerformanceReport', {
-        withCredentials: true,
-      });
+  setLoading(true);
+  setErrorMessage('');
 
-      if (response.status === 200) {
-        console.log('Report data:', response.data); // Debug: Log the response
-        setPerformanceReportData(response.data.property_report);
-        setAverageDays(response.data.average_days_on_market);
-        setAverageDealTime(response.data.average_deal_time);
-        setShowPopup(true); // Open the popup
-      } else {
-        setErrorMessage('לא נמצאו נתונים.');
-      }
-    } catch (error) {
-      console.error('Error fetching performance report:', error); // Debug: Log any error
-      setErrorMessage('שגיאה בטעינת הדוח.');
-    } finally {
-      setLoading(false);
+  try {
+    const response = await axios.get('http://localhost:5000/propertyPerformanceReport', {
+      withCredentials: true, // Ensure credentials are sent to access the session
+    });
+
+    if (response.status === 200) {
+      setPerformanceReportData(response.data.property_report);
+      setAverageDays(response.data.average_days_on_market);
+      setAverageDealTime(response.data.average_deal_time);
+      setShowPopup(true); // Open the popup
+    } else if (response.status === 401) {
+      setErrorMessage('User not logged in.');
+    } else if (response.status === 404) {
+      setErrorMessage('No data found for the logged-in realtor.');
     }
-  };
+  } catch (error) {
+    console.error('Error fetching performance report:', error);
+    setErrorMessage('Failed to load report.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   // Close the popup
   const handleClosePopup = () => {
@@ -127,7 +129,7 @@ const ReportPage = () => {
 
               {!loading && performanceReportData.length > 0 && (
                 <>
-                  <p>זמן ממוצע בשוק: {averageDays} ימים</p>
+                 {/*<p>זמן ממוצע בשוק: {averageDays} ימים</p>*/}
                   <p>זמן ממוצע לעסקה: {averageDealTime} ימים</p>
 
                   <table className="min-w-full table-auto">
@@ -145,17 +147,17 @@ const ReportPage = () => {
                     </thead>
                     <tbody>
                       {performanceReportData.map((property, index) => (
-                        <tr key={index}>
-                          <td className="border px-4 py-2">{property.property_id}</td>
-                          <td className="border px-4 py-2">{property.price}</td>
-                          <td className="border px-4 py-2">{property.city}</td>
-                          <td className="border px-4 py-2">{property.rooms}</td>
-                          <td className="border px-4 py-2">{property.days_on_market}</td>
-                          <td className="border px-4 py-2">{property.interested_clients}</td>
-                          <td className="border px-4 py-2">{property.archive_reason}</td>
-                          <td className="border px-4 py-2">{property.end_date}</td>
-                        </tr>
-                      ))}
+      <tr key={index}>
+        <td className="border px-4 py-2">{property.property_id}</td>
+        <td className="border px-4 py-2">{property.price}</td>
+        <td className="border px-4 py-2">{property.city}</td>
+        <td className="border px-4 py-2">{property.roomsNum}</td>
+        <td className="border px-4 py-2">{property.days_on_market}</td>
+        <td className="border px-4 py-2">{property.num_interested_clients}</td>
+        <td className="border px-4 py-2">{property.archiveReason}</td>
+        <td className="border px-4 py-2">{property.endDate}</td>
+      </tr>
+    ))}
                     </tbody>
                   </table>
                 </>
