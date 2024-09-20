@@ -129,7 +129,7 @@ const ReportPage = () => {
 
               {!loading && performanceReportData.length > 0 && (
                 <>
-                 {/*<p>זמן ממוצע בשוק: {averageDays} ימים</p>*/}
+                 <p>זמן ממוצע בשוק: {averageDays} ימים</p>
                   <p>זמן ממוצע לעסקה: {averageDealTime} ימים</p>
 
                   <table className="min-w-full table-auto">

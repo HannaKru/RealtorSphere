@@ -153,6 +153,7 @@ def get_property_performance_report():
         report_data = []
         total_days_on_market = 0
         total_deal_time = 0
+        deal_count = 0  # Number of properties with deal time (archived with reason "עסקה בוצעה")
         property_count = 0
 
         for prop_id, prop_data in properties.items():
@@ -164,14 +165,28 @@ def get_property_performance_report():
             if not ownership:
                 continue
 
-            # Calculate days on market and deal time
+            # Calculate days on market
             start_date_str = ownership.get('startDate')
             end_date_str = ownership.get('endDate', None)
 
             if start_date_str:
                 start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
-                end_date = datetime.strptime(end_date_str, '%Y-%m-%d') if end_date_str else datetime.now()
+
+                # If end date exists, calculate days until end date; otherwise, calculate days until today
+                if end_date_str:
+                    end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+                else:
+                    end_date = datetime.now()
+
                 days_on_market = (end_date - start_date).days
+                total_days_on_market += days_on_market
+                property_count += 1
+
+                # Calculate deal time for properties with "עסקה בוצעה"
+                if prop_data.get('archiveReason') == "עסקה בוצעה" and end_date_str:
+                    deal_time = (end_date - start_date).days
+                    total_deal_time += deal_time
+                    deal_count += 1
             else:
                 continue  # Skip this property if no start date
 
@@ -180,33 +195,23 @@ def get_property_performance_report():
                                   if prop_id in person.get('Type', {}).get('Client', {}).get('PropertiesList', [])]
             num_interested_clients = len(interested_clients)
 
-            print(f"Property ID: {prop_id}")
-            print(
-                f"Room Number: {prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('roomsNum', 'N/A')}")
-            print(f"Interested Clients: {num_interested_clients}")
-            print(f"Archive Reason: {prop_data.get('archiveReason', 'N/A')}")
-            print(f"End Date: {end_date_str if end_date_str else 'N/A'}")
-
             # Prepare the report data for each property
             report_data.append({
                 'property_id': prop_id,
-                'price': prop_data.get('Price', ''),
-                'city': prop_data.get('city', ''),
-                'roomsNum': prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('roomsNum', ''),
+                'price': prop_data.get('Price', '') or '',
+                'city': prop_data.get('city', '') or '',
+                'roomsNum': prop_data.get('type', {}).get('apartment', {}).get('item:', {}).get('roomsNum', '') or '',
                 'days_on_market': days_on_market,
-                'deal_time': days_on_market,  # Using the same value for deal time as an assumption
                 'num_interested_clients': num_interested_clients,
-                'archiveReason': prop_data.get('archiveReason', ''),
+                'archiveReason': prop_data.get('archiveReason', '') or '',
                 'endDate': end_date_str if end_date_str else '',
             })
 
-            total_days_on_market += days_on_market
-            total_deal_time += days_on_market  # Assuming deal time is the same as days on market
-            property_count += 1
-
-        # Calculate averages
+        # Calculate average days on market
         average_days_on_market = total_days_on_market / property_count if property_count else 0
-        average_deal_time = total_deal_time / property_count if property_count else 0
+
+        # Calculate average deal time (only for properties archived with "עסקה בוצעה")
+        average_deal_time = total_deal_time / deal_count if deal_count else 0
 
         return jsonify({
             'property_report': report_data,
@@ -217,3 +222,4 @@ def get_property_performance_report():
     except Exception as e:
         print(f"Error fetching performance report: {e}")
         return jsonify({"error": "Failed to generate report"}), 500
+
