@@ -97,6 +97,10 @@ const ClientProfessionalPage = () => {
     };
 
     const handleEditPerson = async () => {
+         if (selectedPerson.Phone.length !== 10) {
+        alert('מספר הטלפון חייב לכלול 10 ספרות בדיוק');
+        return;
+    }
         try {
             const response = await axios.post('http://localhost:5000/editPerson', selectedPerson, { withCredentials: true });
             if (response.status === 200) {
