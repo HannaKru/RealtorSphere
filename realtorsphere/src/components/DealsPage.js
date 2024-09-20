@@ -8,20 +8,57 @@ const DealsPage = () => {
     const [selectedDeal, setSelectedDeal] = useState(null);  // For the popup window
     const [newPrice, setNewPrice] = useState('');  // New price suggestion
     const [suggester, setSuggester] = useState('owner');  // Default suggester is 'owner'
+    const [newNote, setNewNote] = useState('');  // New note suggestion
+    const [showNewDealForm, setShowNewDealForm] = useState(false);  // For the new deal form
+
+    const [clients, setClients] = useState([]);
+    const [owners, setOwners] = useState([]);
+    const [properties, setProperties] = useState([]);
+
+    const [selectedClientId, setSelectedClientId] = useState('');
+    const [selectedOwnerId, setSelectedOwnerId] = useState('');
+    const [selectedPropertyId, setSelectedPropertyId] = useState('');
+    const [newStartDate, setNewStartDate] = useState('');
+    const [newFirstPrice, setNewFirstPrice] = useState('');
+    const [endDate, setEndDate] = useState('');
+
+
+    // Define fetchDeals function so it can be used inside both useEffect and handleCreateNewDeal
+    const fetchDeals = async () => {
+        try {
+            const response = await axios.get('http://localhost:5000/deals', { withCredentials: true });
+            setDeals(response.data.deals);  // Set the deals
+            setRealtorName(response.data.first_name);  // Set the realtor's first name
+        } catch (error) {
+            console.error('Error fetching deals:', error);
+        }
+    };
 
     useEffect(() => {
-        const fetchDeals = async () => {
-            try {
-                const response = await axios.get('http://localhost:5000/deals', { withCredentials: true });
-                setDeals(response.data.deals);  // Set the deals
-                setRealtorName(response.data.first_name);  // Set the realtor's first name
-            } catch (error) {
-                console.error('Error fetching deals:', error);
-            }
-        };
-
         fetchDeals();
     }, []);
+
+  useEffect(() => {
+    const fetchDropdownData = async () => {
+        try {
+            const [clientsResponse, ownersResponse, propertiesResponse] = await Promise.all([
+                axios.get('http://localhost:5000/clients', { withCredentials: true }),
+                axios.get('http://localhost:5000/owners', { withCredentials: true }),
+                axios.get('http://localhost:5000/properties', { withCredentials: true })
+            ]);
+            console.log(clientsResponse.data);  // Log fetched data
+            console.log(ownersResponse.data);   // Log fetched data
+            console.log(propertiesResponse.data);  // Log fetched data
+            setClients(clientsResponse.data[0]);
+            setOwners(ownersResponse.data[0]);
+            setProperties(propertiesResponse.data[0]);
+        } catch (error) {
+            console.error('Error fetching dropdown data:', error);
+        }
+    };
+
+    fetchDropdownData();
+}, []);
 
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
@@ -43,7 +80,13 @@ const DealsPage = () => {
     };
 
     const handleClosePopup = () => {
-        setSelectedDeal(null);  // Close the popup
+        setSelectedDeal(null);
+        // Close the popup
+    };
+
+    const handleClosePopup2 = () => {
+        setShowNewDealForm(null);
+        // Close the popup
     };
 
     const handleAddPriceSuggestion = async () => {
@@ -57,7 +100,8 @@ const DealsPage = () => {
 
             const newSuggestion = {
                 amount: parseInt(newPrice),
-                suggester: suggesterName
+                suggester: suggesterName,
+                note: newNote  // Add the note here
             };
 
             // Send new price suggestion to the backend
@@ -70,11 +114,53 @@ const DealsPage = () => {
             }));
 
             setNewPrice('');
+            setNewNote('');  // Reset the note input
         } catch (error) {
             console.error('Error adding price suggestion:', error);
         }
     };
 
+    const handleCreateNewDeal = async () => {
+        try {
+            const newDealData = {
+                clientId: selectedClientId,
+                ownerId: selectedOwnerId,
+                propertyId: selectedPropertyId,
+                startDate: newStartDate,
+                firstPrice: parseInt(newFirstPrice),
+                suggester: suggester || 'Realtor',  // Default to 'Realtor'
+                note: newNote
+            };
+
+            await axios.post('http://localhost:5000/createDeal', newDealData, { withCredentials: true });
+
+            // Reset the form after successful creation
+            setSelectedClientId('');
+            setSelectedOwnerId('');
+            setSelectedPropertyId('');
+            setNewStartDate('');
+            setNewFirstPrice('');
+            setNewNote('');
+            setShowNewDealForm(false);
+
+            // Refresh the deals list after adding a new one
+            fetchDeals();
+        } catch (error) {
+            console.error('Error creating new deal:', error);
+        }
+    };
+const handleCloseDeal = async (dealId) => {
+    const today = new Date().toISOString().slice(0, 10); // Gets current date in YYYY-MM-DD format
+    try {
+        const response = await axios.post(`http://localhost:5000/closeDeal/${dealId}`, { endDate: new Date().toISOString() }, { withCredentials: true });
+            if(response.status === 200) {
+                fetchDeals(); // Re-fetch deals to get the updated status
+            }
+    } catch (error) {
+        console.error('Error closing deal:', error);
+        alert('Failed to close the deal.');
+    }
+};
     return (
         <div className="bg-cover bg-center min-h-screen text-white font-sans" style={{ backgroundImage: `url('/RealtorSphereMain.jpg')` }}>
             <header className="flex flex-col sm:flex-row justify-between items-center p-4 bg-blue-900 bg-opacity-75">
@@ -84,7 +170,6 @@ const DealsPage = () => {
                 </div>
                 <div className="flex items-center">
                     <span className="mr-4">,שלום {realtorName}!</span>  {/* Display the realtor's first name */}
-                    <img src="/path-to-image/alarm-bell-icon.png" alt="Alarm Bell" className="w-6 h-6"/>
                 </div>
             </header>
 
@@ -97,7 +182,8 @@ const DealsPage = () => {
                         onChange={handleSearchChange}
                         className="w-full sm:w-2/3 p-2 rounded-md border border-gray-300 text-gray-900"
                     />
-                    <button className="w-full sm:w-auto mt-4 sm:mt-0 bg-pink-700 hover:bg-pink-600 text-white p-2 rounded-md">
+                    <button className="w-full sm:w-auto mt-4 sm:mt-0 bg-pink-700 hover:bg-pink-600 text-white p-2 rounded-md"
+                        onClick={() => setShowNewDealForm(true)}>
                         הוסף עסקה חדשה
                     </button>
                 </div>
@@ -127,10 +213,17 @@ const DealsPage = () => {
                                         >
                                             פתח
                                         </button>
-                                        <button className="bg-red-500 hover:bg-red-400 text-white p-2 rounded-md">
-                                            סגור
-                                        </button>
+
                                     </td>
+                                    <td>
+                                {deal.status === 'closed' ? (
+                                    <span>סגור</span>
+                                ) : (
+                                    <button onClick={() => handleCloseDeal(deal.id)} className="bg-red-500 hover:bg-red-400 text-white p-2 rounded-md">
+                                        סגור
+                                    </button>
+                                )}
+                            </td>
                                 </tr>
                             ))}
                         </tbody>
@@ -142,13 +235,17 @@ const DealsPage = () => {
             {selectedDeal && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
                     <div className="bg-black p-6 rounded-md shadow-lg w-96">
+                        <button onClick={handleClosePopup} className="absolute top-0 right-0 text-white p-2 text-lg">
+                            X {/* Simple X button */}
+                        </button>
                         <h2 className="text-2xl mb-4">הצעות מחיר עבור נכס {selectedDeal.id}</h2>
                         <ul className="mb-4">
                             {selectedDeal.price && selectedDeal.price.length > 0 ? (
                                 selectedDeal.price.map((price, index) => (
                                     price && price.amount ? ( // Add null/undefined checks here
                                         <li key={index}>
-                                            {price.amount} ₪ - {price.suggester || 'Unknown'}
+                                            {price.amount} ₪ - {price.suggester || 'Unknown'} -
+                                            הערה: {price.note || 'ללא הערה'}
                                         </li>
                                     ) : (
                                         <li key={index}>איו מידע על הצעות</li>
@@ -180,9 +277,18 @@ const DealsPage = () => {
                                 <option value="client">לקוח</option>
                             </select>
                         </div>
+                        <div className="mb-4">
+                            <textarea
+                                placeholder="הוסף הערה"
+                                value={newNote}
+                                onChange={(e) => setNewNote(e.target.value)}
+                                className="w-full text-black p-2 border rounded-md"
+                            />
+                        </div>
 
                         <div className="flex justify-end">
-                            <button className="bg-green-500 text-black p-2 rounded-md mr-2" onClick={handleAddPriceSuggestion}>
+                            <button className="bg-green-500 text-black p-2 rounded-md mr-2"
+                                    onClick={handleAddPriceSuggestion}>
                                 הוסף מחיר
                             </button>
                             <button className="bg-gray-300 text-black p-2 rounded-md" onClick={handleClosePopup}>
@@ -192,9 +298,77 @@ const DealsPage = () => {
                     </div>
                 </div>
             )}
+
+            {/* Popup for creating a new deal */}
+            {showNewDealForm && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center">
+                    <div className="bg-black p-6 rounded-md shadow-lg w-96">
+                        <button onClick={handleClosePopup2} className="absolute top-0 right-0 text-white p-2 text-lg">
+                            X {/* Simple X button */}
+                        </button>
+                        <h2 className="text-2xl mb-4">הוסף עסקה חדשה</h2>
+
+                        <label>לקוח:</label>
+                        <select value={selectedClientId} onChange={(e) => setSelectedClientId(e.target.value)}
+                                className="w-full text-black p-2 border rounded-md mb-4">>
+                            <option value="">Select a client</option>
+                            {clients.map(client => (
+                                <option key={client.id} value={client.id}>{client.name}</option>
+                            ))}
+                        </select>
+
+                        <label>בעלים:</label>
+                        <select value={selectedOwnerId} onChange={(e) => setSelectedOwnerId(e.target.value)}
+                                className="w-full text-black p-2 border rounded-md mb-4">>
+                            <option value="">Select an owner</option>
+                            {owners.map(owner => (
+                                <option key={owner.id} value={owner.id}>{owner.name}</option>
+                            ))}
+                        </select>
+
+                        <label>נכס:</label>
+                        <select value={selectedPropertyId} onChange={(e) => setSelectedPropertyId(e.target.value)}
+                                className="w-full text-black p-2 border rounded-md mb-4">>
+                            <option value="">Select a property</option>
+                            {properties.map(property => (
+                                <option key={property.id} value={property.id}>{property.address}</option>
+                            ))}
+                        </select>
+
+                        <input
+                            type="date"
+                            value={newStartDate}
+                            onChange={(e) => setNewStartDate(e.target.value)}
+                            className="w-full text-black p-2 border rounded-md mb-4"
+                            placeholder="תאריך התחלה"
+                        />
+
+                        <input
+                            type="number"
+                            value={newFirstPrice}
+                            onChange={(e) => setNewFirstPrice(e.target.value)}
+                            className="w-full text-black p-2 border rounded-md mb-4"
+                            placeholder="הכנס סכום"
+                        />
+
+                        <textarea
+                            value={newNote}
+                            onChange={(e) => setNewNote(e.target.value)}
+                            className="w-full text-black p-2 border rounded-md mb-4"
+                            placeholder="הוסף הערה"
+                        />
+
+                        <button
+                            className="bg-green-500 text-black p-2 rounded-md"
+                            onClick={handleCreateNewDeal}
+                        >
+                            צור עסקה חדשה
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
 
 export default DealsPage;
-

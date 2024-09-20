@@ -10,7 +10,7 @@ from forgetPass import check_user_and_send_email
 from Property import get_properties, get_property_by_id, add_property,scrape_yad2_listings,remove_picture,update_property,remove_picture,archive_property
 from sendMessage import send_email_with_attachment
 from ClientProfessionalPage import get_filtered_persons, add_person, get_person_details, update_person_details, remove_person
-from Deals import get_deals, get_deal_details, new_price
+from Deals import get_deals, get_deal_details, new_price, create_new_deal, close_deal, Dealproperties, get_persons_by_type
 from matchingAlgo import get_clients_for_realtor, match_Algo, send_property_email
 from werkzeug.utils import secure_filename
 import os
@@ -333,13 +333,64 @@ def update_deal_price(deal_id):
         data = request.json
         email = session.get('user_email', '')
 
-        # Call the function that will handle adding the new price suggestion
+        # Call the function that will handle adding the new price suggestion, including the note
         response, status_code = new_price(data, deal_id, email)
         return jsonify(response), status_code
     except Exception as e:
         print(f"Error updating deal price: {e}")
         return jsonify({"error": "Failed to update price"}), 500
 
+
+@app.route('/createDeal', methods=['POST'])
+def create_deal():
+    try:
+        data = request.json
+        email = session.get('user_email', '')
+        data['realtor'] = email  # Add realtor's email to the data
+
+        # Call the function to create the new deal
+        response, status_code = create_new_deal(data)
+        return jsonify(response), status_code
+    except Exception as e:
+        print(f"Error creating deal: {e}")
+        return jsonify({"error": "Failed to create deal"}), 500
+
+@app.route('/clients', methods=['GET'])
+def get_clients_Deal():
+    if 'user_email' not in session:
+        return jsonify({"message": "User not logged in"}), 401
+    # Get the realtor's email from the session
+    realtor_email = session['user_email']
+    response = get_persons_by_type('Client', realtor_email)
+    return jsonify(response), 200
+
+@app.route('/owners', methods=['GET'])
+def get_owners():
+    if 'user_email' not in session:
+        return jsonify({'error': 'User not logged in'}), 401
+    # Get the realtor's email from the session
+    realtor_email = session['user_email']
+    response = get_persons_by_type('Owner', realtor_email)
+    return jsonify(response), 200
+
+@app.route('/properties', methods=['GET'])
+def propertiesDeals():
+    if 'user_email' not in session:
+        return jsonify({'error': 'User not logged in'}), 401
+    # Get the realtor's email from the session
+    realtor_email = session['user_email']
+    response = Dealproperties(realtor_email)
+    return jsonify(response), 200
+
+
+@app.route('/closeDeal/<dealId>', methods=['POST'])
+def close_deal_route(dealId):
+    if 'user_email' not in session:
+        return jsonify({'error': 'User not logged in'}), 401
+
+    end_date = request.json.get('endDate')
+    response, status = close_deal(dealId, end_date)  # Call the business logic from Deals.py
+    return jsonify(response), status
 
 @app.route('/api/scrapedListings', methods=['GET'])
 def get_scraped_listings():
