@@ -7,7 +7,7 @@ default_app = firebase_admin.initialize_app(cred, {
     'databaseURL': 'https://realtorspheredb-default-rtdb.firebaseio.com/',
     'storageBucket': '/realtorspheredb.appspot.com/'
 })
-##
+###
 def initialize_firebase():
     return db.reference()
 
