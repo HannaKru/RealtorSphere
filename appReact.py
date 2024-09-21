@@ -175,13 +175,14 @@ def fetch_properties():
     address = request.args.get('address', '')
 
     email = session['user_email']  # Get the realtor's email from the session
+    first_name = get_user_by_email(email=email)
 
     properties = get_properties(ownerName=ownerName, roomNumberFrom=roomNumberFrom, roomNumberTo=roomNumberTo,
                                 priceFrom=priceFrom, priceTo=priceTo, city=city, propertyType=propertyType,
                                 transactionType=transactionType, email=email, address=address)
 
     if properties:
-        return jsonify(properties), 200
+        return jsonify({"properties": properties, "name": first_name}), 200
     else:
         return jsonify({"message": "No properties found"}), 404
 
@@ -207,6 +208,7 @@ def add_property_route():
     response, status_code = add_property(data, file, realtor_email)
     return jsonify(response), status_code
 
+
 @app.route('/sendMessage', methods=['POST'])
 def send_email():
     emails = request.form.get('emails')
@@ -230,14 +232,22 @@ def send_email():
 
 @app.route('/getFiles', methods=['GET'])
 def get_files():
+    print("Current session state:", session)
     files_ref = db_ref.child('files')
     files = files_ref.get()
 
     if not files:
         return jsonify({"files": []}), 200
 
+    email = session['user_email']
     files_list = [{"name": file['name'], "url": file['url']} for file in files.values()]
     return jsonify({"files": files_list}), 200
+@app.route('/name' ,methods=['GET'])
+def get_name():
+    email = session['user_email']
+    first_name = get_user_by_email(email)
+
+    return jsonify({"name": first_name}), 200
 
 
 @app.route('/clientProfessionalPage', methods=['GET'])
@@ -249,9 +259,10 @@ def fetch_filtered_persons():
     email = session.get('user_email', '')
 
     persons, error = get_filtered_persons(name=name, city=city, person_id=person_id, tab=tab, email=email )
+    first_name = get_user_by_email(email)
     if error:
         return jsonify({"error": error}), 500
-    return jsonify(persons), 200
+    return jsonify({"persons": persons, "name": first_name}), 200
 
 
 @app.route('/addPerson', methods=['POST'])
@@ -551,9 +562,10 @@ def generate_active_vs_archived_report_route():
         return jsonify({"error": "User not logged in"}), 401
 
     report_data = generate_active_vs_archived_report(realtor_email)
+    first_name = get_user_by_email(realtor_email)
 
     if report_data:
-        return jsonify(report_data), 200
+        return jsonify({"report_data": report_data, "first_name": first_name}), 200
     else:
         return jsonify({"message": "No report data found"}), 404
 

@@ -15,6 +15,7 @@ const ClientProfessionalPage = () => {
     const [newProperty, setNewProperty] = useState(''); // For managing the new property input
     const [availableProperties, setAvailableProperties] = useState([]); // For managing available properties
     const propertyTypes = ["Apartment", "Duplex Apartment", "Private Home", "Two-Family", "House Penthouse"];
+    const [userName, setUserName] = useState('');
 
     const [newPerson, setNewPerson] = useState({
         id: '',
@@ -44,7 +45,8 @@ const ClientProfessionalPage = () => {
                 },
                 withCredentials: true
             });
-            setFilteredData(response.data);
+            setFilteredData(response.data.persons);
+            setUserName(response.data.name);
         } catch (error) {
             console.error('Error fetching data:', error);
         }
@@ -293,12 +295,39 @@ const handleRemoveCityForEditing = (cityToRemove) => {
         }));
     };
 
+    const logout = async () => {
+    try {
+        // Send a logout request to the Flask backend
+        const response = await axios.get('http://localhost:5000/logout', { withCredentials: true });
+
+        if (response.status === 200) {
+            // Remove local storage or any other frontend data
+            localStorage.removeItem('currentUser');
+
+            // Redirect to the login or homepage
+            window.location.href = '/';
+        } else {
+            console.error('Failed to log out:', response.status);
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
+};
+
     return (
         <div className="bg-gray-50 min-h-screen rtl">
             <header className="bg-blue-900 p-4 text-white text-center">
                 <h1 className="text-4xl">RealtorSphere</h1>
                 <p className="text-lg">Makes Real Estate Easy</p>
             </header>
+            <div className="flex justify-between p-4 lg:p-6">
+                <div className="text-right text-blue-900 font-bold text-xl lg:text-2xl">
+                    {userName ? `שלום, ${userName}` : 'Loading...'}
+                </div>
+                <div className="text-blue-950 text-xl lg:text-2xl cursor-pointer" onClick={logout}>
+                    התנתק
+                </div>
+            </div>
 
             <div className="p-6">
                 {/* Search Filters */}
@@ -325,7 +354,8 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                         <button onClick={fetchData} className="bg-blue-600 text-white p-2 rounded-md">
                             חיפוש
                         </button>
-                        <button onClick={() => setIsNewPersonPopupOpen(true)} className="bg-purple-600 text-white p-2 rounded-md">
+                        <button onClick={() => setIsNewPersonPopupOpen(true)}
+                                className="bg-purple-600 text-white p-2 rounded-md">
                             הוסף איש קשר חדש
                         </button>
                     </div>
@@ -348,38 +378,38 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                 <div className="overflow-x-auto">
                     <table className="min-w-full bg-white text-right" dir="rtl">
                         <thead>
-                            <tr>
-                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">ת.ז</th>
-                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">שם</th>
-                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">טלפון</th>
-                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">סטטוס</th>
-                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">לצפייה</th>
-                                <th className="p-2 border-b-2 border-gray-300 text-gray-600">הסר</th>
-                            </tr>
+                        <tr>
+                            <th className="p-2 border-b-2 border-gray-300 text-gray-600">ת.ז</th>
+                            <th className="p-2 border-b-2 border-gray-300 text-gray-600">שם</th>
+                            <th className="p-2 border-b-2 border-gray-300 text-gray-600">טלפון</th>
+                            <th className="p-2 border-b-2 border-gray-300 text-gray-600">סטטוס</th>
+                            <th className="p-2 border-b-2 border-gray-300 text-gray-600">לצפייה</th>
+                            <th className="p-2 border-b-2 border-gray-300 text-gray-600">הסר</th>
+                        </tr>
                         </thead>
                         <tbody>
-                            {filteredData.map((data, index) => (
-                                <tr key={index}>
-                                    <td className="p-2 border-b">{data.id}</td>
-                                    <td className="p-2 border-b">{data.FirstName} {data.LastName}</td>
-                                    <td className="p-2 border-b">{data.Phone}</td>
-                                    <td className="p-2 border-b">
-                                        {activeTab === 'clients' ? data.Type.Client?.buyORrent || 'N/A' : data.Type.Owner ? 'Owner' : 'N/A'}
-                                    </td>
-                                    <td className="p-2 border-b">
-                                        <button className="bg-blue-500 text-white p-2 rounded-md"
-                                                onClick={() => handleViewDetails(data.id)}>
-                                            צפייה
-                                        </button>
-                                    </td>
-                                    <td className="p-2 border-b">
-                                        <button className="bg-red-500 text-white p-2 rounded-md"
-                                                onClick={() => handleRemovePerson(data.id)}>
-                                            הסר
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
+                        {filteredData.map((data, index) => (
+                            <tr key={index}>
+                                <td className="p-2 border-b">{data.id}</td>
+                                <td className="p-2 border-b">{data.FirstName} {data.LastName}</td>
+                                <td className="p-2 border-b">{data.Phone}</td>
+                                <td className="p-2 border-b">
+                                    {activeTab === 'clients' ? data.Type.Client?.buyORrent || 'N/A' : data.Type.Owner ? 'Owner' : 'N/A'}
+                                </td>
+                                <td className="p-2 border-b">
+                                    <button className="bg-blue-500 text-white p-2 rounded-md"
+                                            onClick={() => handleViewDetails(data.id)}>
+                                        צפייה
+                                    </button>
+                                </td>
+                                <td className="p-2 border-b">
+                                    <button className="bg-red-500 text-white p-2 rounded-md"
+                                            onClick={() => handleRemovePerson(data.id)}>
+                                        הסר
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
                         </tbody>
                     </table>
                 </div>
@@ -387,7 +417,8 @@ const handleRemoveCityForEditing = (cityToRemove) => {
 
             {/* Popup Window for Viewing and Editing Details */}
             {isPopupOpen && selectedPerson && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto" dir="rtl">
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex justify-center items-center overflow-auto"
+                     dir="rtl">
                     <div className="bg-white p-6 rounded-md shadow-lg w-96 max-h-full overflow-y-auto">
                         <h2 className="text-2xl mb-4">פרטים
                             עבור {selectedPerson.FirstName} {selectedPerson.LastName}</h2>
@@ -681,7 +712,9 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                     {(newPerson.cities || []).map((city, index) => (
                                         <li key={index} className="flex justify-between">
                                             {city}
-                                            <button onClick={() => handleRemoveCity(index)} className="bg-red-500 text-white p-1 rounded-md ml-2">הסרה</button>
+                                            <button onClick={() => handleRemoveCity(index)}
+                                                    className="bg-red-500 text-white p-1 rounded-md ml-2">הסרה
+                                            </button>
                                         </li>
                                     ))}
                                 </ul>
@@ -693,7 +726,9 @@ const handleRemoveCityForEditing = (cityToRemove) => {
                                         onChange={(e) => setNewCity(e.target.value)}
                                         className="w-full p-2 border rounded-md mb-4"
                                     />
-                                    <button onClick={handleAddCity} className="bg-green-500 text-white p-2 rounded-md ml-2">הוספה</button>
+                                    <button onClick={handleAddCity}
+                                            className="bg-green-500 text-white p-2 rounded-md ml-2">הוספה
+                                    </button>
                                 </div>
                             </>
                         )}

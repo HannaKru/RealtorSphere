@@ -4,6 +4,7 @@ import axios from "axios";
 
 axios.defaults.withCredentials = true;
 
+
 const PropertyPage = () => {
     const [activeTab, setActiveTab] = useState('כל הנכסים');
     const [searchFilters, setSearchFilters] = useState({
@@ -21,6 +22,7 @@ const PropertyPage = () => {
     const [filteredProperties, setFilteredProperties] = useState([]); // Store filtered properties
     const [properties, setProperties] = useState([]);
     const [isPopupOpen, setIsPopupOpen] = useState(false); // For controlling the popup window
+    const [userName, setUserName] = useState('');
     const [selectedProperty, setSelectedProperty] = useState({
     pictures: '',
     price: 'N/A',
@@ -88,12 +90,14 @@ const PropertyPage = () => {
             const response = await axios.get('http://localhost:5000/propertyPage', {
                 params: {
                     email: sessionStorage.getItem('user_email'),
+
                 },
                 withCredentials: true,
             });
 
             if (response.status === 200) {
-                setProperties(response.data);
+                setProperties(response.data.properties);
+                setUserName(response.data.name);
             } else {
                 console.error('Failed to fetch data, status:', response.status);
             }
@@ -115,12 +119,13 @@ const PropertyPage = () => {
             });
 
             if (response.status === 200) {
-                const fetchedProperties = response.data;
+                const fetchedProperties = response.data.properties;
 
                 if (Array.isArray(fetchedProperties) && fetchedProperties.length === 0) {
                     alert('אין רשומה מתאימה');  // Use alert for no results message
                 } else {
                     setProperties(fetchedProperties); // Set properties if found
+                    setUserName(response.data.name);
                 }
             } else {
                 console.error('Failed to fetch data, status:', response.status);
@@ -791,7 +796,24 @@ const handleArchiveProperty = async () => {
     alert('Error occurred while archiving the property');
   }
 };
+const logout = async () => {
+    try {
+        // Send a logout request to the Flask backend
+        const response = await axios.get('http://localhost:5000/logout', { withCredentials: true });
 
+        if (response.status === 200) {
+            // Remove local storage or any other frontend data
+            localStorage.removeItem('currentUser');
+
+            // Redirect to the login or homepage
+            window.location.href = '/';
+        } else {
+            console.error('Failed to log out:', response.status);
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
+};
 
     return (
 
@@ -804,6 +826,16 @@ const handleArchiveProperty = async () => {
             </header>
 
             <div className="p-6">
+
+                {/* Greeting and Logout */}
+            <div className="flex justify-between p-4 lg:p-6">
+                <div className="text-right text-blue-900 font-bold text-xl lg:text-2xl">
+                    {userName ? `שלום, ${userName}` : 'Loading...'}
+                </div>
+                <div className="text-blue-950 text-xl lg:text-2xl cursor-pointer" onClick={logout}>
+                    התנתק
+                </div>
+            </div>
 
 
 

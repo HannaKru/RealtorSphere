@@ -8,13 +8,30 @@ const SendMessage = () => {
     const [attachment, setAttachment] = useState(null);
     const [dbFiles, setDbFiles] = useState([]);
     const [selectedDbFile, setSelectedDbFile] = useState('');
+    const [userName, setUserName] = useState('');
+
+    useEffect(() => {
+        const fetchNameFromDB = async () => {
+            try {
+                const response = await axios.get('http://localhost:5000/name', {withCredentials: true});
+                console.log("Name:", response.data.name);
+                setUserName(response.data.name);
+            } catch (error) {
+                console.error('Error fetching name from database:', error);
+            }
+        };
+
+        fetchNameFromDB();  // Ensure this function is called
+    }, []);  // An empty dependency array to run only on component mount
 
     useEffect(() => {
         // Fetch available files from the database
         const fetchFilesFromDB = async () => {
             try {
-                const response = await axios.get('http://localhost:5000/getFiles');
+                const response = await axios.get('http://localhost:5000/getFiles', {withCredentials: true});
+                console.log("nam:", response.data.name);
                 setDbFiles(response.data.files || []);
+                setUserName(response.data.name);
             } catch (error) {
                 console.error('Error fetching files from database:', error);
             }
@@ -22,6 +39,10 @@ const SendMessage = () => {
         fetchFilesFromDB();
     }, []);
 
+    useEffect(() => {
+     // Check the current state of loading
+    console.log("User Name:", userName);  // Check what userName is being set to
+}, [ userName]);
     const handleSend = async () => {
         const formData = new FormData();
         formData.append('emails', emails);
@@ -54,12 +75,38 @@ const SendMessage = () => {
         setSelectedDbFile(e.target.value);
     };
 
+    const logout = async () => {
+    try {
+        // Send a logout request to the Flask backend
+        const response = await axios.get('http://localhost:5000/logout', { withCredentials: true });
+
+        if (response.status === 200) {
+            // Remove local storage or any other frontend data
+            localStorage.removeItem('currentUser');
+
+            // Redirect to the login or homepage
+            window.location.href = '/';
+        } else {
+            console.error('Failed to log out:', response.status);
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
+};
+
+
     return (
         <div className="bg-gray-50 min-h-screen rtl">
             <header className="bg-blue-900 p-4 text-white text-center">
                 <h1 className="text-4xl">RealtorSphere</h1>
                 <p className="text-lg">Makes Real Estate Easy</p>
             </header>
+            <div className="text-right text-blue-900 font-bold text-xl lg:text-2xl">
+                {userName ? `שלום, ${userName}` : 'Loading...'}
+            </div>
+            <div className="text-black text-xl lg:text-2xl cursor-pointer" onClick={logout}>
+                התנתק
+            </div>
 
             <div className="p-6 max-w-4xl mx-auto">
                 {/* Email Addresses */}

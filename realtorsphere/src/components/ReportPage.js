@@ -8,6 +8,7 @@ const ReportPage = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [averageDays, setAverageDays] = useState(0);
   const [averageDealTime, setAverageDealTime] = useState(0);
+  const [userName, setUserName] = useState('');
   const [showPopup, setShowPopup] = useState(false); // To control the popup display
 
   // Fetch Active vs Archived report when the page loads
@@ -20,10 +21,12 @@ const ReportPage = () => {
       });
 
       if (response.status === 200) {
-        setActiveVsArchivedReport(response.data);
-      } else {
-        setErrorMessage('לא נמצאו נתונים.');
+        setActiveVsArchivedReport(response.data.report_data);
+        setUserName(response.data.first_name);
       }
+      else {
+      setErrorMessage('לא נמצאו נתונים.'); // Set error message only if data is actually missing
+    }
     } catch (error) {
       setErrorMessage('שגיאה בטעינת הדוח.');
     } finally {
@@ -70,12 +73,40 @@ const ReportPage = () => {
 
   const [showPerformanceReport, setShowPerformanceReport] = useState(false);
 
+  const logout = async () => {
+    try {
+        // Send a logout request to the Flask backend
+        const response = await axios.get('http://localhost:5000/logout', { withCredentials: true });
+
+        if (response.status === 200) {
+            // Remove local storage or any other frontend data
+            localStorage.removeItem('currentUser');
+
+            // Redirect to the login or homepage
+            window.location.href = '/';
+        } else {
+            console.error('Failed to log out:', response.status);
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
+};
+
   return (
     <div className="bg-gray-50 min-h-screen rtl">
       <header className="bg-blue-900 p-4 text-white text-center">
         <h1 className="text-4xl">RealtorSphere</h1>
         <p className="text-lg">Makes real estate easy</p>
       </header>
+      {/* Greeting and Logout */}
+            <div className="flex justify-between p-4 lg:p-6">
+                <div className="text-right text-blue-900 font-bold text-xl lg:text-2xl">
+                    {loading ? 'Loading...' : userName ? `שלום, ${userName}` : 'No Clients Found'}
+                </div>
+                <div className="text-blue-950 text-xl lg:text-2xl cursor-pointer" onClick={logout}>
+                    התנתק
+                </div>
+            </div>
 
       <div className="p-6">
         <div className="p-4">
