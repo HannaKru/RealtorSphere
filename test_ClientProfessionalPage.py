@@ -1,6 +1,6 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-from ClientProfessionalPage import get_filtered_persons, add_person
+from ClientProfessionalPage import get_filtered_persons, add_person, update_person_details, get_person_details
 import unittest
 
 
@@ -279,6 +279,196 @@ class TestAddPerson(unittest.TestCase):
         self.assertEqual(status, 500)  # Ensure it's returning 500 on error
         self.assertIn("An error occurred while adding the person", response["error"])
 
+
+class TestUpdatePersonDetails(unittest.TestCase):
+
+    @patch('ClientProfessionalPage.db')
+    def test_update_person_details_success(self, mock_db):
+        # Mock data
+        person_id = "1"
+        realtor_email = "AsafLotz@gmail.com"
+        mock_person_data = {
+            "FirstName": "Avi",
+            "LastName": "Ron",
+            "Phone": "545381647",
+            "email": "AviRon@gmail.com",
+            "Type": {
+                "Owner": {
+                    "realtor": "AsafLotz@gmail.com",
+                    "sellORrent": "rent"
+                }
+            }
+        }
+
+        # Setup mock
+        mock_person_ref = MagicMock()
+        mock_person_ref.get.return_value = mock_person_data
+        mock_db.child.return_value.child.return_value = mock_person_ref
+
+        # Test data
+        update_data = {
+            "id": person_id,
+            "FirstName": "Avi Updated",
+            "Type": {
+                "Client": {
+                    "PropertiesList": ["1", "-O5hTCrJ0QJD-EddZQoo"],
+                    "budget": 5000,
+                    "buyORrent": "rent",
+                    "maxRooms": 4,
+                    "minRooms": 2,
+                    "maxSize": 100,
+                    "minSize": 50,
+                    "propertyType": "apartment",
+                    "searchCity": ["Acre"]
+                },
+                "Owner": {
+                    "sellORrent": "sell"
+                }
+            }
+        }
+
+        # Call function
+        result, status_code = update_person_details(update_data, realtor_email)
+
+        # Assertions
+        self.assertEqual(status_code, 200)
+        self.assertEqual(result["message"], "Person updated successfully")
+        self.assertEqual(result["updated_data"]["FirstName"], "Avi Updated")
+        self.assertEqual(result["updated_data"]["Type"]["Client"]["realtor"], realtor_email)
+        self.assertEqual(result["updated_data"]["Type"]["Client"]["PropertiesList"], ["1", "-O5hTCrJ0QJD-EddZQoo"])
+        self.assertEqual(result["updated_data"]["Type"]["Owner"]["sellORrent"], "sell")
+
+    @patch('ClientProfessionalPage.db')
+    def test_update_person_details_not_found(self, mock_db):
+        # Mock data
+        person_id = "nonexistent_id"
+        realtor_email = "AsafLotz@gmail.com"
+
+        # Setup mock
+        mock_person_ref = MagicMock()
+        mock_person_ref.get.return_value = None
+        mock_db.child.return_value.child.return_value = mock_person_ref
+
+        # Test data
+        update_data = {
+            "id": person_id,
+            "FirstName": "Test"
+        }
+
+        # Call function
+        result, status_code = update_person_details(update_data, realtor_email)
+
+        # Assertions
+        self.assertEqual(status_code, 404)
+        self.assertEqual(result["message"], "Person not found")
+
+    def test_update_person_details_missing_id(self):
+        # Test data
+        update_data = {
+            "FirstName": "Test"
+        }
+        realtor_email = "AsafLotz@gmail.com"
+
+        # Call function
+        result, status_code = update_person_details(update_data, realtor_email)
+
+        # Assertions
+        self.assertEqual(status_code, 400)
+        self.assertEqual(result["message"], "Person ID is required")
+
+    @patch('ClientProfessionalPage.db')
+    def test_update_person_details_exception(self, mock_db):
+        # Mock data
+        person_id = "1"
+        realtor_email = "AsafLotz@gmail.com"
+
+        # Setup mock to raise an exception
+        mock_db.child.side_effect = Exception("Database error")
+
+        # Test data
+        update_data = {
+            "id": person_id,
+            "FirstName": "Test"
+        }
+
+        # Call function
+        result, status_code = update_person_details(update_data, realtor_email)
+
+        # Assertions
+        self.assertEqual(status_code, 500)
+        self.assertTrue(result["message"].startswith("An error occurred while updating the person"))
+
+
+class TestGetPersonDetails(unittest.TestCase):
+
+    @patch('ClientProfessionalPage.db')
+    def test_get_person_details_success_client(self, mock_db):
+        person_id = "333377666"  # Assuming this is Eli Kopter's ID
+        mock_person_data = {
+            "FirstName": "Eli",
+            "LastName": "Kopter",
+            "Phone": "123456789",  # Assuming a phone number
+            "email": "EliKopter@gmail.com",  # Assuming an email
+            "Type": {
+                "Client": {
+                    "PropertiesList": ["1", "-O5hTCrJ0QJD-EddZQoo"]
+                }
+            }
+        }
+        mock_property_data_1 = {
+            "Street": "מול הים",
+            "house": "18",
+            "city": "חיפה"
+        }
+        mock_property_data_2 = {
+            "Street": "הרצל",
+            "house": "10",
+            "city": "תל אביב"
+        }
+
+        # Setup mocks
+        mock_db.child.return_value.child.return_value.get.side_effect = [
+            mock_person_data,
+            mock_property_data_1,
+            mock_property_data_2
+        ]
+
+        result, error = get_person_details(person_id)
+
+        self.assertIsNone(error)
+        self.assertEqual(result['id'], person_id)
+        self.assertEqual(result['FirstName'], "Eli")
+        self.assertEqual(result['LastName'], "Kopter")
+        self.assertEqual(len(result['PropertiesOwned']), 0)  # Eli is not an owner
+        self.assertEqual(len(result['PropertiesLiked']), 2)
+        self.assertEqual(result['PropertiesLiked'][0]['address'], "מול הים 18, חיפה")
+        self.assertEqual(result['PropertiesLiked'][1]['address'], "הרצל 10, תל אביב")
+
+    @patch('ClientProfessionalPage.db')
+    def test_get_person_details_not_found(self, mock_db):
+        # Mock data
+        person_id = "nonexistent_id"
+
+        # Setup mock
+        mock_db.child.return_value.child.return_value.get.return_value = None
+
+        result, error = get_person_details(person_id)
+
+        self.assertIsNone(result)
+        self.assertEqual(error, "Person not found")
+
+    @patch('ClientProfessionalPage.db')
+    def test_get_person_details_exception(self, mock_db):
+        def test_get_person_details_exception(self, mock_db):
+            person_id = "333377666"
+
+            # Setup mock to raise an exception
+            mock_db.child.side_effect = Exception("Database error")
+
+            result, error = get_person_details(person_id)
+
+            self.assertIsNone(result)
+            self.assertTrue(error.startswith("An error occurred while fetching person details"))
 
 if __name__ == '__main__':
     unittest.main()
