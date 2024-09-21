@@ -161,6 +161,25 @@ const handleCloseDeal = async (dealId) => {
         alert('Failed to close the deal.');
     }
 };
+
+const logout = async () => {
+    try {
+        // Send a logout request to the Flask backend
+        const response = await axios.get('http://localhost:5000/logout', { withCredentials: true });
+
+        if (response.status === 200) {
+            // Remove local storage or any other frontend data
+            localStorage.removeItem('currentUser');
+
+            // Redirect to the login or homepage
+            window.location.href = '/';
+        } else {
+            console.error('Failed to log out:', response.status);
+        }
+    } catch (error) {
+        console.error('Error during logout:', error);
+    }
+};
     return (
         <div className="bg-cover bg-center min-h-screen text-white font-sans" style={{ backgroundImage: `url('/RealtorSphereMain.jpg')` }}>
             <header className="flex flex-col sm:flex-row justify-between items-center p-4 bg-blue-900 bg-opacity-75">
@@ -169,13 +188,16 @@ const handleCloseDeal = async (dealId) => {
                     <p className="text-lg">Makes Real Estate Easy</p>
                 </div>
                 <div className="flex items-center">
-                    <span className="mr-4">,שלום {realtorName}!</span>  {/* Display the realtor's first name */}
+                    <span className="mr-4">,שלום {realtorName}!</span> {/* Display the realtor's first name */}
+                </div>
+                <div className="text-blue-950 text-xl lg:text-2xl cursor-pointer" onClick={logout}>
+                    התנתק
                 </div>
             </header>
 
             <div className="p-6">
                 <div className="flex flex-col sm:flex-row justify-between items-center mb-6">
-                    <input
+                <input
                         type="text"
                         placeholder="חפש לפי מזהה עסקה, בעלים או לקוח"
                         value={searchTerm}
