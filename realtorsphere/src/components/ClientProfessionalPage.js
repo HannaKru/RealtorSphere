@@ -97,8 +97,12 @@ const ClientProfessionalPage = () => {
     };
 
     const handleEditPerson = async () => {
-         if (selectedPerson.Phone.length !== 10) {
+         if (selectedPerson.Phone.length !== 10 || !selectedPerson.Phone.startsWith('05')) {
         alert('מספר הטלפון חייב לכלול 10 ספרות בדיוק');
+        return;
+    }
+       if (!selectedPerson.email.includes('@') || !selectedPerson.email.includes('.')) {
+        alert('האימייל חייב להכיל את הסימן @ ולכלול נקודה');
         return;
     }
         try {
@@ -224,6 +228,10 @@ const handleRemoveCityForEditing = (cityToRemove) => {
     if (name === "Phone") {
         const numericValue = value.replace(/\D/g, '');
         if (numericValue.length > 10) return;
+        if (numericValue.length >= 2 && !numericValue.startsWith('05')) {
+            alert('מספר הטלפון חייב להתחיל ב-05');
+            return;
+        }
         setSelectedPerson((prevPerson) => ({
             ...prevPerson,
             [name]: numericValue,
