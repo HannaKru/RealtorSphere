@@ -471,11 +471,6 @@ def archive_property_route(property_id):
 
     return archive_property(property_id, archive_reason)
 
-from flask import jsonify, request
-from firebase_config import initialize_firebase
-import datetime
-
-db_ref = initialize_firebase()
 
 def generate_report(realtor_email='', report_type='property'):
     try:
