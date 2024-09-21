@@ -1,7 +1,7 @@
 from firebase_config import initialize_firebase
 
 db = initialize_firebase()
-
+##
 def get_filtered_persons(name='', city='', person_id='', tab='owners', email = 'email'):
     try:
         persons_ref = db.child('Person')
