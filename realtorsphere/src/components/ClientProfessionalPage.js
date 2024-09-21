@@ -107,12 +107,7 @@ const ClientProfessionalPage = () => {
         alert('האימייל חייב להכיל את הסימן @ ולכלול נקודה');
         return;
     }
-        // Ensure budget is a number greater than 0
-    const budget = parseFloat(selectedPerson?.Type?.Client?.budget);
-    if (isNaN(budget) || budget <= 0) {
-        alert('התקציב חייב להיות מספר הגדול מ-0');
-        return;
-    }
+
         try {
             const response = await axios.post('http://localhost:5000/editPerson', selectedPerson, { withCredentials: true });
             if (response.status === 200) {

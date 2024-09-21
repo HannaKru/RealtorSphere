@@ -1,6 +1,6 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-from ClientProfessionalPage import get_filtered_persons, add_person, update_person_details, get_person_details
+from ClientProfessionalPage import get_filtered_persons, add_person, update_person_details, get_person_details,update_person_details
 import unittest
 
 
@@ -469,6 +469,66 @@ class TestGetPersonDetails(unittest.TestCase):
 
             self.assertIsNone(result)
             self.assertTrue(error.startswith("An error occurred while fetching person details"))
+
+class TestUpdatePerson(unittest.TestCase):
+    @patch('ClientProfessionalPage.db')
+    def test_update_person_details_success_eli(self, mock_db):
+        # Mocking existing data for Eli Kopter
+        person_id = "333377666"
+        realtor_email = "AsafLotz@gmail.com"
+        mock_person_data = {
+            "FirstName": "Eli",
+            "LastName": "Kopter",
+            "Phone": "504449991",
+            "email": "EliKopter@gmail.com",
+            "Type": {
+                "Client": {
+                    "PropertiesList": ["1", "-O5hTCrJ0QJD-EddZQoo"],
+                    "budget": 2000,
+                    "buyORrent": "rent",
+                    "maxRooms": 5,
+                    "minRooms": 3,
+                    "maxSize": "71",
+                    "minSize": 50,
+                    "propertyType": "Apartment",
+                    "searchCity": ["נשר", "קריית ים", "חיפה", "קריית אתא"]
+                }
+            }
+        }
+
+        # Mock Firebase reference
+        mock_person_ref = MagicMock()
+        mock_person_ref.get.return_value = mock_person_data
+        mock_db.child.return_value.child.return_value = mock_person_ref
+
+        # Test data for updating Eli Kopter's details
+        update_data = {
+            "id": person_id,
+            "FirstName": "Eli Updated",
+            "Type": {
+                "Client": {
+                    "PropertiesList": ["1", "-O5hTCrJ0QJD-EddZQoo"],
+                    "budget": 3000,
+                    "buyORrent": "buy",
+                    "maxRooms": 6,
+                    "minRooms": 4,
+                    "maxSize": 100,
+                    "minSize": 60,
+                    "propertyType": "Apartment",
+                    "searchCity": ["תל אביב"]
+                }
+            }
+        }
+
+        # Call the function
+        result, status_code = update_person_details(update_data, realtor_email)
+
+        # Assertions
+        self.assertEqual(status_code, 200)
+        self.assertEqual(result["message"], "Person updated successfully")
+        self.assertEqual(result["updated_data"]["FirstName"], "Eli Updated")
+        self.assertEqual(result["updated_data"]["Type"]["Client"]["budget"], 3000)
+        self.assertEqual(result["updated_data"]["Type"]["Client"]["searchCity"], ["תל אביב"])
 
 if __name__ == '__main__':
     unittest.main()
