@@ -1,6 +1,6 @@
 from unittest import TestCase
 from unittest.mock import patch, MagicMock
-from ClientProfessionalPage import get_filtered_persons, add_person, update_person_details, get_person_details,update_person_details
+from ClientProfessionalPage import get_filtered_persons, add_person, update_person_details, get_person_details,update_person_details, remove_person
 import unittest
 
 
@@ -472,7 +472,7 @@ class TestGetPersonDetails(unittest.TestCase):
 
 class TestUpdatePerson(unittest.TestCase):
     @patch('ClientProfessionalPage.db')
-    def test_update_person_details_success_eli(self, mock_db):
+    def test_update_person_details_success(self, mock_db):
         # Mocking existing data for Eli Kopter
         person_id = "333377666"
         realtor_email = "AsafLotz@gmail.com"
@@ -529,6 +529,91 @@ class TestUpdatePerson(unittest.TestCase):
         self.assertEqual(result["updated_data"]["FirstName"], "Eli Updated")
         self.assertEqual(result["updated_data"]["Type"]["Client"]["budget"], 3000)
         self.assertEqual(result["updated_data"]["Type"]["Client"]["searchCity"], ["תל אביב"])
+
+    @patch('ClientProfessionalPage.db')
+    def test_update_person_details_not_found(self, mock_db):
+        # Mocking no person found
+        person_id = "nonexistent_id"
+        realtor_email = "AsafLotz@gmail.com"
+
+        # Mock Firebase reference
+        mock_person_ref = MagicMock()
+        mock_person_ref.get.return_value = None
+        mock_db.child.return_value.child.return_value = mock_person_ref
+
+        # Test data
+        update_data = {"id": person_id, "FirstName": "Nonexistent"}
+
+        # Call the function
+        result, status_code = update_person_details(update_data, realtor_email)
+
+        # Assertions
+        self.assertEqual(status_code, 404)
+        self.assertEqual(result["message"], "Person not found")
+
+    def test_update_person_details_missing_id(self):
+        # Test data with no person ID
+        update_data = {"FirstName": "No ID"}
+        realtor_email = "AsafLotz@gmail.com"
+
+        # Call the function
+        result, status_code = update_person_details(update_data, realtor_email)
+
+        # Assertions
+        self.assertEqual(status_code, 400)
+        self.assertEqual(result["message"], "Person ID is required")
+class TestRemovePerson(unittest.TestCase):
+    @patch('ClientProfessionalPage.db')
+    def test_remove_person_success(self, mock_db):
+        person_id = "333377666"
+
+        # Mock Firebase reference
+        mock_person_ref = MagicMock()
+        mock_db.child.return_value.child.return_value = mock_person_ref
+
+        # Call the function
+        result, status_code = remove_person(person_id)
+
+        # Ensure the person was removed
+        mock_person_ref.delete.assert_called_once()
+
+        # Check the response
+        self.assertEqual(status_code, 200)
+        self.assertEqual(result, {"message": "Person removed successfully"})
+
+    @patch('ClientProfessionalPage.db')
+    def test_remove_person_not_found(self, mock_db):
+        person_id = "nonexistent_id"
+
+        # Mock Firebase reference (no person found but delete is still called)
+        mock_person_ref = MagicMock()
+        mock_db.child.return_value.child.return_value = mock_person_ref
+
+        # Call the function
+        result, status_code = remove_person(person_id)
+
+        # Ensure delete was still called even if the person wasn't found
+        mock_person_ref.delete.assert_called_once()
+
+        # Check the response
+        self.assertEqual(status_code, 200)
+        self.assertEqual(result, {"message": "Person removed successfully"})
+
+    @patch('ClientProfessionalPage.db')
+    def test_remove_person_exception(self, mock_db):
+        person_id = "333377666"
+
+        # Mock Firebase to throw an exception during delete
+        mock_db.child.return_value.child.return_value.delete.side_effect = Exception("Database error")
+
+        # Call the function
+        result, status_code = remove_person(person_id)
+
+        # Ensure the response
+        self.assertEqual(status_code, 500)
+        self.assertEqual(result, {"error": "An error occurred while removing the person"})
+
+
 
 if __name__ == '__main__':
     unittest.main()
