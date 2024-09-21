@@ -11,3 +11,6 @@ Realtors:
 Emails For Project: 
 natanlidoch@gmail.com    pass: Aa123456!
 realtorspherehelp@gmail.com pass:Aa12345!
+
+
+The token of the Firebase is in a zip file in the directory "static"
